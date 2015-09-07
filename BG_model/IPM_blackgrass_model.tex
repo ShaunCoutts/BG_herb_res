@@ -1,0 +1,139 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{setspace, graphicx, lineno, caption, color, float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amstext} %to enter text in mathematical formulae
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage{natbib}
+%\usepackage{url, hyperref, makeidx, fancyhdr, booktabs, palatino}
+%\usepackage{euscript} %EuScript, command: \EuScript, for letters in Euler script
+%\usepackage{paralist} %listing (i), (ii), etc.
+\usepackage{rotating} %rotating text
+\usepackage{multirow} %connecting columns in tables
+\usepackage{multicol}
+%image stuff
+%\usepackage{epstopdf}
+%\usepackage{cancel}
+%\usepackage[ngerman, english]{babel} %for different languages in one document
+%\usepackage[utf8]{inputenc}
+%\hypersetup{colorlinks=true, linkcolor=blue}
+%page set up
+\usepackage[left=2.5cm,top=2.5cm,right=2.5cm, bottom=2.5cm,nohead]{geometry}
+\doublespacing
+%paragraph formatting
+\setlength{\parskip}{12pt}
+\setlength{\parindent}{0cm}
+\begin{document}
+%Make a title page
+\title{Black grass IPM}
+\author{Shaun R. Coutts$^\dag$, Dylan Childs$^\dag$, Rob Freckleton$^\ddag$}
+\maketitle
+
+\section{Model}
+The goal of this model is to predict the distribution of black grass and the evolution of herbicide resistance at the field scale (roughly a 100m x 100m). We use an Integral Projection Modelling (IPM) approach similar to that outlined in \cite{Elln2006}. The IPM is spatially explicit and includes a seed-bank, density dependent germination out of the seed-bank, a regular and stochastic effect of the environment on germination (and possibly growth), and an individual quality called herbicide resistance ($r$), which has a genetic and non-genetic component. 
+
+Our spatial IPM tracks the number of individuals of size $k$ at location $x$ with resistance $r$ through time as a function of survival, growth, fecundity and genetic mixing (in the case of $r$).
+
+\begin{subequations}
+\label{eq:overall}
+\begin{align}
+	\label{eq:overall_germ}
+	n(0, x, g, t + 1) &~=~ \phi_e(x, g, t) \\
+	\label{eq:overall_main}
+	n(k, x, g, t + 1) &~=~ \displaystyle\int_0^{i_{max}} n(i, x, g, t)p(i, k, g, t)dt	 
+\end{align}
+\end{subequations}
+Where $n(k, x, g, t)$ is the number of individuals of size $k$ at location $x$ with genotype $g$ at time $t$. Eq. \ref{eq:overall_germ} gives the number of new individuals establishing at location $x$. We assume that all seeds have to pass through the seed bank in order to germinate. Therefore, the number of new individuals at location $x$ with genotype $g$ is simply the density that establish from the seed-bank at time $t$, $\phi_e(x, g, t)$. In Eq. \ref{eq:overall_main} $p(i, k, r, t)$ is the survival-growth kernel that describes the rate at which individuals of size $i$ survive and grow to be size $k$ at time $t$ given they have genotype $g$.  
+
+\subsection*{Genetic model}
+Herbicide resistance is an evolved trait that may be the result of a single mutated gene, or several different genes that control different metabolic pathways or toxin transport. plants in our model are assigned a resistance score, $r(g)$ based on the genotype they inherit from their parents, $g$, and a random non-genetic component. We assume there are $J$ genes, each having two copies that can confer different levels of resistance and come with different costs in terms of survival and reproduction. Each genotype consist of a set of $J$ genes $g = \{l_1, l_2, ..., l_J\}$, each gene is coded as a tuple $l_j = \{\rho_{j,1}, \rho_{j,2}, \epsilon_{j,1}, \epsilon_{j,2}\}$, where $\rho_{j,n}$ is the amount of resistance conferred by copy $n$ of gene $j$ and $\epsilon_{j,n}$ is the cost of copy $n$ of gene $j$. For susceptible versions of gene $j$ we assume $\rho_{j,n} = \epsilon_{j,n} = 0$ and for versions that confer resistance we assume $\rho_{j,n}$ and $\epsilon_{j,n}$ are greater than 0. The resistance score for a given gene combination is calculated by summing the resistance of all the genes in the genotype. The way each pair of copies is aggregated reflects different assumptions about the dominance of the resistance trait. 
+
+\begin{subequations}
+\label{eq:resist}
+\begin{align}
+	\label{eq:res_recessive}
+	 r &= \left(\displaystyle\sum_{\forall j} \textbf{min}(\rho_{j,1}, \rho_{j, 2})\right) + \text{N}(0, \sigma_r)\\
+	\label{eq:res_dom}
+	r &= \left(\displaystyle\sum_{\forall j} \textbf{max}(\rho_{j,1}, \rho_{j, 2})\right) + \text{N}(0, \sigma_r)\\
+	\label{eq:res_addative}
+	r &= \left(\displaystyle\sum_{\forall j} \rho_{j,1} + \rho_{j,2}\right) + \text{N}(0, \sigma_r)\\
+	\label{eq:res_weird}
+	r &= \left(\displaystyle\sum_{\forall j} \rho_{j,1}\rho_{j,2}\right) + \text{N}(0, \sigma_r)	
+	\end{align}
+\end{subequations}
+where $\text{N}(0, \sigma_r)$ is a random non-inheritable component of resistance and $sigma_r$ controls the strength of the non-genetic component. Eq. \ref{eq:res_recessive} gives the case where the gene for resistance is receive, as two copies of the resistant gene are required for resistance. Eq. \ref{eq:res_dom} gives the case where the gene for resistance is dominant, as a single copy of the resistant gene will confer resistance. Eq. \ref{eq:res_addative} gives a intermediate case where two susceptible copies confer no resistance, one susceptible and one resistant copy give some resistance and two copies of the resistant gene give the most resistance. We can even manufacture weird cases like \ref{eq:res_weird}, where if either copy of the gene is susceptible there is no resistance, but if both copies are resistant then very high levels of resistance are conferred. We can construct a cost score $c$ in a similar way to the resistance score $r$
+\begin{subequations}
+\label{eq:cost}
+\begin{align}
+	\label{eq:cost_recessive}
+	c &= \displaystyle\sum_{\forall j} \textbf{min}(\epsilon_{j, 1}, \epsilon_{j, 2})\\
+	\label{eq:cost_dom}
+	c &= \displaystyle\sum_{\forall j} \textbf{max}(\epsilon_{j, 1}, \epsilon_{j, 2})\\
+	\label{eq:cost_addative}
+	c &= \displaystyle\sum_{\forall j} \epsilon_{j,1} + \epsilon_{j,2}\\
+	\label{eq:cost_weird}
+	c &= \displaystyle\sum_{\forall j} \epsilon_{j,1}\epsilon_{j,2}	
+	\end{align}
+\end{subequations}
+        
+\subsection*{seed-bank and fecundity}
+Ultimately we are interested in how resistant genotypes spread through the population. Genes can spread in two ways, through pollen or through seed. In both cases it is the number of each genotype that establish at location $x$ in time $t$ is 
+\begin{equation}\label{eq:estab}
+	\phi_e(x, g, t) = \displaystyle\int_{y min}^{y max}f(y, g, t)K_s(d)dy
+\end{equation}
+Where $f(y, g, t)$ is the number of seeds produced at location $y$ of genotype $g$ at time $t$ and $K_s(d)$ is a dispersal kernel which gives the density of seeds dispersing distance $d$, between locations $y$ and $x$. The number of seeds with genotype $g$ at location $y$, time $t$ is based on the gene frequencies in the population, and the distribution of those genes in the field. 
+
+Work out the relative frequency of each gene in type at each location. 
+
+frequency of gene version $l_v$ in the pool of seeds produced at location $y$ is $forall l_v \in g_j n(k, y, g_j, t)$     
+
+$\forall g_j \forall v : if pos_1 == l_v  \frac{\int_{0}^{k max}n(k, y, g_j, t)\phi_f(k)\psi_s}{2} + \frac{\int_y\dfrac{n(k, y, g_j, t)\phi_f(k)}{N_{y}}}{2}$
+
+NOTE: don't need size as they flower once then are killed by a harvester, if they don't grow fast enough then they die without reproduction, also make the timestep yearly and just say.  
+\subsection*{survival-growth kernel}
+We assume growth is positive (no shrinkage) and stochastic, stopping when an individual flowers and sets seed.After seed set an individual is assumed to die (black grass is an annual). This is the point where herbicide application affects individuals through increased mortality, and so is also the point where herbicide resistance differentiates individuals.  
+\begin{equation} \label{eq:sur_grow_all}
+	p(i, k, r, t) = \phi_p(k - i)[1 - \phi_f(i)]s(i, h_t, r) 
+\end{equation}  
+The probability an individual of size $i$ flowering is 
+\begin{equation}\label{eq:flower_prob}
+	\phi_f(i) = \frac{1}{1+e^{-\alpha(i - m)}} 
+\end{equation}
+where $e$ is Euler's constant, $m$ is a parameter that controls the size at which plants can begin to flower and $\alpha$ is a shape parameter that controls how quickly flowering probability increases with size. The probability that a plant of size $i$ survives to the next time step is a random variable drawn from a beta distribution 
+\begin{subequations}
+\label{eq:survival}
+\begin{align}
+	\label{eq:surv_beta}
+	 s(i, h_t, r) &\sim \text{Beta}\left(\frac{-(\beta - 2)\mu_s(i, h_t, r) - 1}{m - 1}, \beta \right)\\
+	\label{eq:surv_mode}
+	\mu_s(i, h_t, r) &~=~ 	\begin{cases}
+		\frac{\gamma_0 C_0(c) exp[\gamma C(c) i]}{1 + \gamma_0 C_0(c)(exp[\gamma C(c) i] - 1)} &\text{:} h_t = 0 \\
+		\frac{\gamma_0 C_0(c) a_0(r) exp[\gamma C(c) a(r) i]}{1 + \gamma_0 C_0(c) a_0(r) (exp[\gamma_r C(c) a(r) i] - 1)} &\text{:} h_t = 1
+	\end{cases}	 
+\end{align}
+\end{subequations}
+with a dispersion parameter $\beta$ and mode of $\mu_s(i, h_t, r)$. The mode of survival probability is determined by an individuals size, $i$, its resistance to herbicide and if herbicide is being applied in time step $t$. The mode of the beta distribution must fall between 0 and 1, so we model it as a generalised logistic function. With generalised logistic curve both the intercept and the slope can set, we make both a function of herbicide resistance. $\gamma_0$ is the intercept and gives survival rates at small sizes without herbicide present and $\gamma$ is the slope parameter of the logistic curve that controls how quickly survival probability increases with size. $C_0(c)$ is the cost of being resistant in terms of its effect on the survival of very small individuals.    
+
+The effect of the herbicide on very small individuals is given by the herbicide attack rate, which is a function of herbicide resistance. 
+\begin{equation} \label{eq:herb_attack_int}
+	a_0(r) = \frac{\xi_0 e^{-r}}{1 + \xi_0 [e^{-r} - 1]}
+\end{equation} 
+where $\xi_0$ is the herbicide effectiveness for a completely susceptible individual.    
+
+
+ $\gamma_{0,r}$ may differ between resistance types $C_0(r)$ is the fitness cost incurred for having resistance $r$,        
+
+Beta distribution in terms of its mode and scale parameter, $\beta$
+\begin{equation}
+	\text{Beta}\left(\frac{-(\beta - 2)\mu_s(i, h_t, r) - 1}{m - 1}, \beta \right)
+\end{equation}
+
+
+
+\bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
+\bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
+
+\end{document}
