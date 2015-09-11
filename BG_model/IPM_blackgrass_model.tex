@@ -33,107 +33,107 @@
 \maketitle
 
 \section{Model}
-The goal of this model is to predict the distribution of black grass and the evolution of herbicide resistance at the field scale (roughly a 100m x 100m). We use an Integral Projection Modelling (IPM) approach similar to that outlined in \cite{Elln2006}. The IPM is spatially explicit and includes a seed-bank, density dependent germination out of the seed-bank, a regular and stochastic effect of the environment on germination (and possibly growth), and an individual quality called herbicide resistance ($r$), which has a genetic and non-genetic component. 
+The goal of this model is to predict the distribution of black grass and the evolution of herbicide resistance at the field scale (roughly a 100m x 100m). The model is spatially explicit and includes a seed-bank, density dependent germination out of the seed-bank, and an individual quality called herbicide resistance ($r$), which has a genetic and non-genetic component. 
 
-Our spatial IPM tracks the number of individuals of size $k$ at location $x$ with resistance $r$ through time as a function of survival, growth, fecundity and genetic mixing (in the case of $r$).
-
-\begin{subequations}
-\label{eq:overall}
-\begin{align}
-	\label{eq:overall_germ}
-	n(0, x, g, t + 1) &~=~ \phi_e(x, g, t) \\
+The model tracks the number of individuals of size $k$ at location $x$ with genotype $g$ through time as a function of survival, fecundity and genetic mixing.
+\begin{equation}
 	\label{eq:overall_main}
-	n(k, x, g, t + 1) &~=~ \displaystyle\int_0^{i_{max}} n(i, x, g, t)p(i, k, g, t)dt	 
-\end{align}
-\end{subequations}
-Where $n(k, x, g, t)$ is the number of individuals of size $k$ at location $x$ with genotype $g$ at time $t$. Eq. \ref{eq:overall_germ} gives the number of new individuals establishing at location $x$. We assume that all seeds have to pass through the seed bank in order to germinate. Therefore, the number of new individuals at location $x$ with genotype $g$ is simply the density that establish from the seed-bank at time $t$, $\phi_e(x, g, t)$. In Eq. \ref{eq:overall_main} $p(i, k, r, t)$ is the survival-growth kernel that describes the rate at which individuals of size $i$ survive and grow to be size $k$ at time $t$ given they have genotype $g$.  
+	n(x, g, t + 1) \sim \text{B}(z(x, g, t), \phi_s(x, g, t))	 
+\end{equation}
+Where $n(x, g, t)$ is the number of individuals at location $x$ with genotype $g$ at time $t$. We use a yearly time-step and take $t$ to be the point just before plants flower, set seed and die. Eq. \ref{eq:overall_main} gives the number of new individuals establishing at location $x$ and surviving until seed set. We assume the number of individuals with genotype $g$ surviving until seed set is a random variable drawn from a binomial distribution where the number of trials is the number of individuals that germinate from the seed bank, $z(x, g, t)$, and the probability of survival for genotype $g$ at location $x$ is $\phi_s(x, g, t)$.  
 
 \subsection*{Genetic model}
-Herbicide resistance is an evolved trait that may be the result of a single mutated gene, or several different genes that control different metabolic pathways or toxin transport. plants in our model are assigned a resistance score, $r(g)$ based on the genotype they inherit from their parents, $g$, and a random non-genetic component. We assume there are $J$ genes, each having two copies that can confer different levels of resistance and come with different costs in terms of survival and reproduction. Each genotype consist of a set of $J$ genes $g = \{l_1, l_2, ..., l_J\}$, each gene is coded as a tuple $l_j = \{\rho_{j,1}, \rho_{j,2}, \epsilon_{j,1}, \epsilon_{j,2}\}$, where $\rho_{j,n}$ is the amount of resistance conferred by copy $n$ of gene $j$ and $\epsilon_{j,n}$ is the cost of copy $n$ of gene $j$. For susceptible versions of gene $j$ we assume $\rho_{j,n} = \epsilon_{j,n} = 0$ and for versions that confer resistance we assume $\rho_{j,n}$ and $\epsilon_{j,n}$ are greater than 0. The resistance score for a given gene combination is calculated by summing the resistance of all the genes in the genotype. The way each pair of copies is aggregated reflects different assumptions about the dominance of the resistance trait. 
+Herbicide resistance is an evolved trait that may be the result of a single mutated gene, or several different genes that control different metabolic pathways or toxin transport. Plants in our model are assigned a resistance score, $R(g)$ based on the genotype they inherit from their parents, $g$, and a random non-genetic component. 
 
-\begin{subequations}
-\label{eq:resist}
-\begin{align}
-	\label{eq:res_recessive}
-	 r &= \left(\displaystyle\sum_{\forall j} \textbf{min}(\rho_{j,1}, \rho_{j, 2})\right) + \text{N}(0, \sigma_r)\\
-	\label{eq:res_dom}
-	r &= \left(\displaystyle\sum_{\forall j} \textbf{max}(\rho_{j,1}, \rho_{j, 2})\right) + \text{N}(0, \sigma_r)\\
-	\label{eq:res_addative}
-	r &= \left(\displaystyle\sum_{\forall j} \rho_{j,1} + \rho_{j,2}\right) + \text{N}(0, \sigma_r)\\
-	\label{eq:res_weird}
-	r &= \left(\displaystyle\sum_{\forall j} \rho_{j,1}\rho_{j,2}\right) + \text{N}(0, \sigma_r)	
-	\end{align}
-\end{subequations}
-where $\text{N}(0, \sigma_r)$ is a random non-inheritable component of resistance and $sigma_r$ controls the strength of the non-genetic component. Eq. \ref{eq:res_recessive} gives the case where the gene for resistance is receive, as two copies of the resistant gene are required for resistance. Eq. \ref{eq:res_dom} gives the case where the gene for resistance is dominant, as a single copy of the resistant gene will confer resistance. Eq. \ref{eq:res_addative} gives a intermediate case where two susceptible copies confer no resistance, one susceptible and one resistant copy give some resistance and two copies of the resistant gene give the most resistance. We can even manufacture weird cases like \ref{eq:res_weird}, where if either copy of the gene is susceptible there is no resistance, but if both copies are resistant then very high levels of resistance are conferred. We can construct a cost score $c$ in a similar way to the resistance score $r$
-\begin{subequations}
-\label{eq:cost}
-\begin{align}
-	\label{eq:cost_recessive}
-	c &= \displaystyle\sum_{\forall j} \textbf{min}(\epsilon_{j, 1}, \epsilon_{j, 2})\\
-	\label{eq:cost_dom}
-	c &= \displaystyle\sum_{\forall j} \textbf{max}(\epsilon_{j, 1}, \epsilon_{j, 2})\\
-	\label{eq:cost_addative}
-	c &= \displaystyle\sum_{\forall j} \epsilon_{j,1} + \epsilon_{j,2}\\
-	\label{eq:cost_weird}
-	c &= \displaystyle\sum_{\forall j} \epsilon_{j,1}\epsilon_{j,2}	
-	\end{align}
-\end{subequations}
-        
+Each genotype consist of a set genes, each gene, $j$ having two copies, that can either be a susceptible version, $v_{j,0}$, or a resistant version, $v_{j,r}$. The genotype is the set of $J$ genes, $g = \{l_{g,1}, l_{g,2}, ..., l_{g,J}\}$, with each gene coded as a tuple $l_{g,j} = \{\kappa_{1,g,j}, \kappa_{2,g,j}\}$, where $\kappa_{k,g,j}$ is the $k^{\text{th}}$ copy of gene $j$ in genotype $g$ and can be either $v_{j,0}$ or $v_{j,r}$.  
+
 \subsection*{seed-bank and fecundity}
-Ultimately we are interested in how resistant genotypes spread through the population. Genes can spread in two ways, through pollen or through seed. In both cases it is the number of each genotype that establish at location $x$ in time $t$ is 
-\begin{equation}\label{eq:estab}
-	\phi_e(x, g, t) = \displaystyle\int_{y min}^{y max}f(y, g, t)K_s(d)dy
-\end{equation}
-Where $f(y, g, t)$ is the number of seeds produced at location $y$ of genotype $g$ at time $t$ and $K_s(d)$ is a dispersal kernel which gives the density of seeds dispersing distance $d$, between locations $y$ and $x$. The number of seeds with genotype $g$ at location $y$, time $t$ is based on the gene frequencies in the population, and the distribution of those genes in the field. 
-
-Work out the relative frequency of each gene in type at each location. 
-
-frequency of gene version $l_v$ in the pool of seeds produced at location $y$ is $forall l_v \in g_j n(k, y, g_j, t)$     
-
-$\forall g_j \forall v : if pos_1 == l_v  \frac{\int_{0}^{k max}n(k, y, g_j, t)\phi_f(k)\psi_s}{2} + \frac{\int_y\dfrac{n(k, y, g_j, t)\phi_f(k)}{N_{y}}}{2}$
-
-NOTE: don't need size as they flower once then are killed by a harvester, if they don't grow fast enough then they die without reproduction, also make the timestep yearly and just say.  
-\subsection*{survival-growth kernel}
-We assume growth is positive (no shrinkage) and stochastic, stopping when an individual flowers and sets seed.After seed set an individual is assumed to die (black grass is an annual). This is the point where herbicide application affects individuals through increased mortality, and so is also the point where herbicide resistance differentiates individuals.  
-\begin{equation} \label{eq:sur_grow_all}
-	p(i, k, r, t) = \phi_p(k - i)[1 - \phi_f(i)]s(i, h_t, r) 
-\end{equation}  
-The probability an individual of size $i$ flowering is 
-\begin{equation}\label{eq:flower_prob}
-	\phi_f(i) = \frac{1}{1+e^{-\alpha(i - m)}} 
-\end{equation}
-where $e$ is Euler's constant, $m$ is a parameter that controls the size at which plants can begin to flower and $\alpha$ is a shape parameter that controls how quickly flowering probability increases with size. The probability that a plant of size $i$ survives to the next time step is a random variable drawn from a beta distribution 
+Ultimately we are interested in how resistant genotypes spread through the population. The number of individuals with genotype $g$ that establish at location $x$ in time $t$ is 
 \begin{subequations}
-\label{eq:survival}
+\label{eq:germ}
 \begin{align}
-	\label{eq:surv_beta}
-	 s(i, h_t, r) &\sim \text{Beta}\left(\frac{-(\beta - 2)\mu_s(i, h_t, r) - 1}{m - 1}, \beta \right)\\
-	\label{eq:surv_mode}
-	\mu_s(i, h_t, r) &~=~ 	\begin{cases}
-		\frac{\gamma_0 C_0(c) exp[\gamma C(c) i]}{1 + \gamma_0 C_0(c)(exp[\gamma C(c) i] - 1)} &\text{:} h_t = 0 \\
-		\frac{\gamma_0 C_0(c) a_0(r) exp[\gamma C(c) a(r) i]}{1 + \gamma_0 C_0(c) a_0(r) (exp[\gamma_r C(c) a(r) i] - 1)} &\text{:} h_t = 1
-	\end{cases}	 
+	\label{eq:germ_draw}
+	z(x, g, t) &\sim  \text{B}(b(x, g, t), \phi_e)\\
+	\label{eq:seedbank}
+	b(x, g, t) &\sim \text{B}(b(x, g, t - 1) - z(x, g, t - 1), \phi_b) + \text{Pois}\left(\displaystyle\sum_{\forall y}f(y, g, t)K_s(x,y)\right)  
+\end{align}
+\end{subequations} 
+
+We model establishment of each genotype $g$ from the seed bank at location $x$ and time $t$ ($z(x, g, t)$) as a random draw from a binomial distribution (B($\cdot$) Eq. \ref{eq:germ_draw}). The number of independent trials is $b(x, g, t)$, the number of seeds in the seed bank at location $x$ of genotype $g$ at time $t$, and the density independent probability that a seed germinates is $\phi_e$. The number of seeds in the seed bank at time $t$ (Eq. \ref{eq:seedbank}) is made of the number of seeds in the seed bank in the previous time step that did not germinate in the last time step and survived to the current time step, plus the input of new seeds from the entire field (summation over all locations $y$). The number of seed bank seeds that don't germinate and survive is a random number drawn from a binomial distribution ($\text{B}(b(x, g, t - 1) - z(x, g, t - 1), \phi_b)$, Eq. \ref{eq:seedbank}), where $\phi_b$ is the probability that a seed survives one time step. The number of new seeds that arrive at location $x$ is a random draw from a Poisson distribution. The expected arrival rate is $\sum_{\forall y}f(y, g, t)K_s(x,y)$, where $f(y, g, t)$ is number of seeds produced at location $y$ of genotype $g$ at time $t$ and $K_s(x,y)$ is a dispersal kernel which gives the probability of seeds dispersing between locations $y$ and $x$. Drawing the number of arriving seeds from a Poisson distribution guarantees that the number of seeds arriving is integer, which is required by the binomial distribution. Over the whole landscape over a long time period the number of seeds that arrive at a location will be very close to the expected rate of arrival, but in any one time step the total number of seeds produced (summed over the whole landscape) might be larger or smaller than the expected number summed over the whole landscape. That is, using a random draw will 'create' or 'destroy' seeds in any given time step. This variation could be thought of as natural stochastic variation in seed production. There is no way to round the expected number of seeds to an integer number without creating or destroying some seeds.                                  
+
+The number of seeds produced at location $y$ of genotype $g$ at time $t$ is determined by the gene frequencies in the population and how the population is distributed around the landscape. We assume that black grass is an obligate out-crossing species and so only model two sources of genes, the individual producing the seed and pollen. Because gene copies can spread through pollen individuals with a genotype other than $g$ could still produce seeds with genotype $g$ by receiving different versions of genes ($v_{j,w}$) from pollen. Thus, in Eq. \ref{eq:fecund} we sum the seed contribution across the set of all possible genotypes, $G$ (first summation term).
+     
+\begin{subequations}
+\label{eq:fecund_full}
+\begin{align}
+	\displaystyle
+	\label{eq:fecund}	
+	f(y, g, t) &= \sum_{\forall g' \in G} n(y, g', t) \psi \prod_{j=1}^{j=J} \left(\sum_{k=1}^{k=2} Q(\kappa_{k,g,j}, l_{g',j})q(y, g, j, k, t)\right)\\
+	\label{eq:self_gene}
+	Q(\kappa_{k,g,j}, l_{g',j}) &= 
+		\begin{cases} 
+		0.5 ~\text{if}~ \kappa_{k,g,j} \in l_{g',j}\\
+		0 ~\text{otherwise}\\
+		\end{cases}\\
+	\label{eq:pollen_gene}
+	q(y, g, j, k, t) &= \frac{\displaystyle\sum_{\forall y'} \sum_{\forall g^* \in G} n(y', g^*, t)\eta(k, g^*, g, j)K_p(y',y)}{\displaystyle \sum_{\forall y'} \sum_{\forall g^* \in G} n(y', g^*, t)K_p(y',y)}\\
+	\label{eq:pollen_freq}
+	\eta(k, g^*, g, j) &= 
+	\begin{cases}
+	0.5~\text{if}~\kappa_{h\neq k, g, j} \in l_{g^*,j} \\
+	0~\text{otherwise}
+	\end{cases}      
 \end{align}
 \end{subequations}
-with a dispersion parameter $\beta$ and mode of $\mu_s(i, h_t, r)$. The mode of survival probability is determined by an individuals size, $i$, its resistance to herbicide and if herbicide is being applied in time step $t$. The mode of the beta distribution must fall between 0 and 1, so we model it as a generalised logistic function. With generalised logistic curve both the intercept and the slope can set, we make both a function of herbicide resistance. $\gamma_0$ is the intercept and gives survival rates at small sizes without herbicide present and $\gamma$ is the slope parameter of the logistic curve that controls how quickly survival probability increases with size. $C_0(c)$ is the cost of being resistant in terms of its effect on the survival of very small individuals.    
 
-The effect of the herbicide on very small individuals is given by the herbicide attack rate, which is a function of herbicide resistance. 
-\begin{equation} \label{eq:herb_attack_int}
-	a_0(r) = \frac{\xi_0 e^{-r}}{1 + \xi_0 [e^{-r} - 1]}
-\end{equation} 
-where $\xi_0$ is the herbicide effectiveness for a completely susceptible individual.    
+The number of seeds contributed from each genotype $g'$ to the target genotype $g$ (Eq. \ref{eq:fecund_full}) is the number of individuals of genotype $g'$ ($n(y, g', t)$) multiplied by the number of seeds each individual produces, $\psi$, multiplied by the proportion of seeds with the target genotype ($g$) expected to be produced by the genotype being evaluated ($g'$). This proportion (the product term in Eq. \ref{eq:fecund}) is the probability all $J$ tuples in genotype $g$ ($l_{g,j}$) are produced in the same seed made by and individual of genotype $g'$. Genes copies have two sources, the individual producing the seed provides half the copies of a gene, while pollen provides the other half. In Eq. \ref{eq:fecund_full} these two processes are modelled with the functions $Q(\kappa_{k,g,j}, l_{g',j})$, which contributes gene versions ($v_{j,w}$) from the mother, and $q(y, g, j, k, t)$, which contributed gene versions from pollen. $Q(\kappa_{k,g,j}, l_{g',j})$ is a function that returns 0.5 if the value held by copy $k$ of gene $j$ in the target genotype $g$ ($\kappa_{k,g,j}$) is in tuple $j$ of the genotype being evaluated $l_{g',j}$, and returns 0 otherwise. This function returns 0.5 since the mother can only supply one out of two copies for each gene. The second copy of the gene is supplied from the pollen using function $q(y, g, j, k, t)$. We assume that the probability of getting the version of gene $j$ required to complete the tuple $l_{g,j}$ is the proportion all pollen arriving at location $y$ which contains that copy of gene $j$. We assume that the amount of pollen produced with genotype $g$ is proportional to the number of individuals with that genotype. Thus,  the denominator of Eq. \ref{eq:pollen_gene} is proportional to the total amount of pollen that arrives at location $y$ from all other location (first summation in the denominator) for all genotypes (second summation in denominator). The numerator of Eq. \ref{eq:pollen_gene} is proportional to the amount of pollen that contains the version of gene $j$ in the target genotype $g$, that is not supplied by the mother. It is function $\eta(k, g^*, g, j)$ that determines if this gene version will be produced by the genotype being evaluated for pollen production, $g^*$ (Eq. \ref{eq:pollen_freq}). $\eta(k, g^*, g, j)$ returns 0.5 if the version of gene $j$ in target genotype $g$       not provided by copy $\kappa_{k,g,j}$ (i.e. copy provided by the mother) is a member of the tuple $l_{g^*,j}$ in the genotype being evaluated for pollen production.                               
 
-
- $\gamma_{0,r}$ may differ between resistance types $C_0(r)$ is the fitness cost incurred for having resistance $r$,        
-
-Beta distribution in terms of its mode and scale parameter, $\beta$
-\begin{equation}
-	\text{Beta}\left(\frac{-(\beta - 2)\mu_s(i, h_t, r) - 1}{m - 1}, \beta \right)
+\subsection*{survival-growth}
+We assume that probability of survival to flowering and seed set ($\phi_s$) is influenced by genotype, herbicide application and density. It is at this point that herbicide application separates the different genotypes and drives the spread of herbicide resistant genotypes.     
+\begin{equation}\label{eq:survival}
+	\phi_s(x, g, t) = \gamma(x, g, t)s(h_t, g) 
 \end{equation}
 
+Where $s(h_t, g)$ is the survival probability for an individual with genotype $g$ given the herbicide application in time step $t$, $h_t$, and $\gamma(N_x)$ is a density dependent term that reduces establishment and survival above some density threshold.  
 
+Survival probability, $s(h_t, g)$, must be bound between 0 and 1, thus we model it as a generalised logistic function of genotype     
+\begin{equation}\label{eq:herb_surv}
+	s(h_t, g) =	\begin{cases}
+		\frac{\beta_0 e^{-C(g)}}{1 + \beta_0 (e^{-C(g)} - 1)} &\text{:} h_t = 0 \\
+		\frac{\beta_0 R(g) e^{-C(g)}}{1 + \beta_0 R(g) (e^{-C(g)} - 1)} &\text{:} h_t = 1
+	\end{cases}	
+\end{equation}
+where $\beta_0$ is the survival probability for an individual with no resistance gene versions in their genotype, $e$ is Euler's constant, $C(g)$ is function that describes the survival costs of having genotype $g$ and $R(g)$ is a function that describe the herbicide resistance of genotype $g$.
 
-\bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
-\bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
+The cost and resistance functions ($C(g)$ and $R(g)$) are how the genotype interacts with the population model through the cost of having a given genotype and the resistance that genotype provides. The survival cost of having genotype $g$ is assumed to be a linear function of the summed cost of each gene in $g$, with and intercept of 0 (implying that individuals with no expressed copies of a resistant gene have no cost)                
+\begin{equation}
+	\displaystyle
+	\label{eq:cost_funct}	
+	C(g) = \sum_{\forall j} \textbf{max}(\epsilon(\kappa_{1,g,j}), \epsilon(\kappa_{2,g,j}))\\
+\end{equation}
+where $\epsilon(\kappa_{k,g,j})$ is the cost, in terms of reduced survival, of having the version of gene $j$ held in copy $\kappa_{k,g,j}$ (recall that $\kappa_{k,g,j}$ can be $v_{j,0}$ or $v_{j,r}$). The resistance function, $R(g)$ is bound to be between 0 and 1, thus we use another generalised logistic function to meet these constraints.    
+\begin{subequations} \label{eq:herb_attack}
+\begin{align}
+	\displaystyle
+	\label{eq:herb_attack_logit} 
+	R(g) &= \frac{\xi_0 e^{r(g)}}{1 + \xi_0 (e^{r(g)} - 1)} \\
+	\label{eq:resist_score}
+	r(g) &= \left(\sum_{\forall j} \textbf{max}(\rho(\kappa_{1,g,j}), \rho(\kappa_{2,g,j}))\right) + \text{N}(0, \sigma_r) \\
+\end{align} 
+\end{subequations} 
+where $\xi_0$ is the herbicide effectiveness for a completely susceptible individual and $\rho(\kappa_{k,g,j})$ is the amount of herbicide resistance conferred by having the version of gene $j$ held in copy $\kappa_{k,g,j}$. $\text{N}(0, \sigma_r)$ is a random variable drawn from a normal distribution that gives the non-inheritable part of herbicide resistance, with $\sigma_r$ controlling the strength of non-inheritable resistance. We assume $\rho(v_0) = \epsilon(v_0) = 0$ and for versions that confer resistance we assume $\rho(v_r)$ and $\epsilon(v_r)$ are greater than 0. Thus, the $\textbf{max}({\cdot})$ function assumes that the resistance version of the gene is the dominant one for all $j$ genes. We could use other cost and resistance functions to change this behaviour. For example we could use $r(g) = \sum_{\forall j} \textbf{min}(\rho(\kappa_{1,g,j}), \rho(\kappa_{2,g,j}))$ to make resistant genes receive, or $\rho(\kappa_{1,g,j}) + \rho(\kappa_{2,g,j})$ to make the copies additive in their effect. If we want some genes to be dominant and others receive we need to replace the summation over all $j$ genes with a function that has a separate aggregator for each gene.             
+
+Without a density dependent term any increasing population would continue growing until infinitely large. We model this density dependence with the term 
+\begin{equation}\label{eq:density_dependence}
+	\gamma(x, g, t) =
+		\begin{cases}
+			\frac{M}{\sum_{\forall g}s(h_t, g)z(x, g, t)} ~\text{if}~ \sum_{\forall g}s(h_t, g)z(x, g, t) > M \\
+			1 ~\text{if}~ \sum_{\forall g}s(h_t, g)z(x, g, t) \leq M  
+		\end{cases}
+\end{equation}
+where $\gamma(x, g, t)$ reduces establishment and survival probability at each location $x$ in response to the total number of individuals at location $x$ which are expected to establish at time $t$ (summation term in Eq. \ref{eq:density_dependence}). $s(h_t, g)$ and $z(x, g, t)$ are defined in Eq.'s \ref{eq:herb_surv} and \ref{eq:germ} respectively. $M$ is the average number of individuals that can establish at a given location. 
+
+%\bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
+%\bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
 
 \end{document}
