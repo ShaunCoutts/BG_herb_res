@@ -1,0 +1,47 @@
+This is BibTeX, Version 0.99d (TeX Live 2013/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: IPM_blackgrass_model.aux
+The style file: /home/shauncoutts/Dropbox/shauns_paper/referencing/bes.bst
+Database file #1: /home/shauncoutts/Dropbox/shauns_paper/referencing/refs.bib
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+You've used 1 entry,
+            3274 wiz_defined-function locations,
+            676 strings with 5424 characters,
+and the built_in function-call counts, 652 in all, are:
+= -- 54
+> -- 18
+< -- 1
++ -- 7
+- -- 6
+* -- 50
+:= -- 96
+add.period$ -- 2
+call.type$ -- 1
+change.case$ -- 7
+chr.to.int$ -- 1
+cite$ -- 1
+duplicate$ -- 50
+empty$ -- 53
+format.name$ -- 11
+if$ -- 125
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 10
+newline$ -- 13
+num.names$ -- 4
+pop$ -- 20
+preamble$ -- 1
+purify$ -- 6
+quote$ -- 0
+skip$ -- 16
+stack$ -- 0
+substring$ -- 36
+swap$ -- 27
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 9
+warning$ -- 0
+while$ -- 5
+width$ -- 0
+write$ -- 20
