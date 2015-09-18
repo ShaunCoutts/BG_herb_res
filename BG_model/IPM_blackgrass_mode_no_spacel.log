@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.9.18)  18 SEP 2015 15:17
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.9.18)  18 SEP 2015 16:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**IPM_blackgrass_model.tex
-(./IPM_blackgrass_model.tex
+**IPM_blackgrass_mode_no_spacel.tex
+(./IPM_blackgrass_mode_no_spacel.tex
 LaTeX2e <2011/06/27>
 Babel <3.9h> and hyphenation patterns for 78 languages loaded.
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
@@ -310,39 +310,8 @@ Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
 \Gm@layoutvoffset=\dimen154
 \Gm@dimlist=\toks31
 )
-(./IPM_blackgrass_model.aux
-
-LaTeX Warning: Label `eq:seedbank' multiply defined.
-
-
-LaTeX Warning: Label `eq:fecund' multiply defined.
-
-
-LaTeX Warning: Label `eq:pollen_freq' multiply defined.
-
-
-LaTeX Warning: Label `eq:survival' multiply defined.
-
-
-LaTeX Warning: Label `eq:herb_surv' multiply defined.
-
-
-LaTeX Warning: Label `eq:cost_funct' multiply defined.
-
-
-LaTeX Warning: Label `eq:herb_attack' multiply defined.
-
-
-LaTeX Warning: Label `eq:herb_attack_logit' multiply defined.
-
-
-LaTeX Warning: Label `eq:resist_score' multiply defined.
-
-
-LaTeX Warning: Label `eq:density_dependence' multiply defined.
-
-)
-\openout1 = `IPM_blackgrass_model.aux'.
+(./IPM_blackgrass_mode_no_spacel.aux)
+\openout1 = `IPM_blackgrass_mode_no_spacel.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 29.
 LaTeX Font Info:    ... okay on input line 29.
@@ -356,7 +325,8 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 29.
 LaTeX Font Info:    ... okay on input line 29.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 29.
 LaTeX Font Info:    ... okay on input line 29.
- (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
+
+(/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count129
 \scratchdimen=\dimen155
@@ -462,21 +432,26 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 33.
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3] [4] [5] [6] [7] [8
-] [9] [10]
-[11] [12] (./IPM_blackgrass_model.bbl) [13] (./IPM_blackgrass_model.aux)
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3] [4] [5] [6]
 
-LaTeX Warning: There were multiply-defined labels.
+LaTeX Warning: Reference `eq:germ' on page 7 undefined on input line 138.
+
+(./IPM_blackgrass_mode_no_spacel.bbl) [7] (./IPM_blackgrass_mode_no_spacel.aux)
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
  ) 
 Here is how much of TeX's memory you used:
- 5214 strings out of 493304
- 77333 string characters out of 6139871
- 153459 words of memory out of 5000000
- 8585 multiletter control sequences out of 15000+600000
+ 5209 strings out of 493304
+ 77355 string characters out of 6139871
+ 152345 words of memory out of 5000000
+ 8580 multiletter control sequences out of 15000+600000
  13371 words of font info for 51 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
- 38i,16n,38p,2606b,225s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 38i,16n,38p,2273b,225s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pfb></usr/share/
@@ -490,10 +465,10 @@ onts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
 cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.
 pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></u
 sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb>
-Output written on IPM_blackgrass_model.pdf (13 pages, 183876 bytes).
+Output written on IPM_blackgrass_mode_no_spacel.pdf (7 pages, 164574 bytes).
 PDF statistics:
- 103 PDF objects out of 1000 (max. 8388607)
- 73 compressed objects within 1 object stream
+ 84 PDF objects out of 1000 (max. 8388607)
+ 60 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

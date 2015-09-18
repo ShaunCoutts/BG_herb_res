@@ -1,12 +1,12 @@
 This is BibTeX, Version 0.99d (TeX Live 2013/Debian)
 Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
-The top-level auxiliary file: IPM_blackgrass_model.aux
+The top-level auxiliary file: IPM_blackgrass_mode_no_spacel.aux
 The style file: /home/shauncoutts/Dropbox/shauns_paper/referencing/bes.bst
 Database file #1: /home/shauncoutts/Dropbox/shauns_paper/referencing/refs.bib
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 You've used 1 entry,
             3274 wiz_defined-function locations,
-            677 strings with 5509 characters,
+            677 strings with 5527 characters,
 and the built_in function-call counts, 724 in all, are:
 = -- 57
 > -- 26

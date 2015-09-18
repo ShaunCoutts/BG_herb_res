@@ -32,8 +32,8 @@
 \author{Shaun R. Coutts$^\dag$, Dylan Childs$^\dag$, Rob Freckleton$^\ddag$}
 \maketitle
 
-\section{Model}
-The goal of this model is to predict the distribution of black grass and the evolution of herbicide resistance at the field scale (roughly a 100m x 100m). The model is spatially explicit and includes a seed-bank, density dependent germination out of the seed-bank, and an individual quality called herbicide resistance ($r$), which has a genetic and non-genetic component. 
+\section{Genotype based Model}
+The goal of this model is to predict the distribution of black grass and the evolution of herbicide resistance at the field scale (roughly a 100m x 100m). The model is spatially explicit and includes a seed-bank, density dependent germination out of the seed-bank, and an individual quality called herbicide resistance ($r$), which has a genetic and non-genetic component.  
 
 The model tracks the number of individuals of size $k$ at location $x$ with genotype $g$ through time as a function of survival, fecundity and genetic mixing.
 \begin{equation}
@@ -133,7 +133,7 @@ Without a density dependent term any increasing population would continue growin
 \end{equation}
 where $\gamma(x, g, t)$ reduces establishment and survival probability at each location $x$ in response to the total number of individuals at location $x$ which are expected to establish at time $t$ (summation term in Eq. \ref{eq:density_dependence}). $s(h_t, g)$ and $z(x, g, t)$ are defined in Eq.'s \ref{eq:herb_surv} and \ref{eq:germ} respectively. $M$ is the average number of individuals that can establish at a given location. 
 
-%\bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
-%\bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
+\bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
+\bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
 
 \end{document}
