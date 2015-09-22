@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.9.18)  18 SEP 2015 16:07
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.9.18)  22 SEP 2015 16:41
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -433,25 +433,16 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3] [4] [5] [6]
-
-LaTeX Warning: Reference `eq:germ' on page 7 undefined on input line 138.
-
 (./IPM_blackgrass_mode_no_spacel.bbl) [7] (./IPM_blackgrass_mode_no_spacel.aux)
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
  ) 
 Here is how much of TeX's memory you used:
- 5209 strings out of 493304
- 77355 string characters out of 6139871
- 152345 words of memory out of 5000000
- 8580 multiletter control sequences out of 15000+600000
+ 5208 strings out of 493304
+ 77329 string characters out of 6139871
+ 152342 words of memory out of 5000000
+ 8579 multiletter control sequences out of 15000+600000
  13371 words of font info for 51 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
- 38i,16n,38p,2273b,225s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 38i,16n,38p,2270b,223s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pfb></usr/share/
@@ -465,7 +456,7 @@ onts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
 cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.
 pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></u
 sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb>
-Output written on IPM_blackgrass_mode_no_spacel.pdf (7 pages, 164574 bytes).
+Output written on IPM_blackgrass_mode_no_spacel.pdf (7 pages, 162762 bytes).
 PDF statistics:
  84 PDF objects out of 1000 (max. 8388607)
  60 compressed objects within 1 object stream

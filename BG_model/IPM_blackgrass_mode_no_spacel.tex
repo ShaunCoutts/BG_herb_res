@@ -32,19 +32,17 @@
 \author{Shaun R. Coutts$^\dag$, Dylan Childs$^\dag$, Rob Freckleton$^\ddag$}
 \maketitle
 \section{non-spatial IPM}
-We develop a simple model of two genotypes, target site resistant (TSR) individuals and metabolically resistant (MRS) individuals. In TSR plants resistance is very high (i.e. the lethal dose is far higher than any economically feasible herbicide application rate) and incurs no life-history costs. In MR plants resistance is lower and incurs life history costs. The goal of this model is to test how the strength and speed of MR affects the speed of TSR, and how both types of resistance affect the growth of a weeds population over time.
-
-need a MR population number and a TSR population number, probability that a MR individual creates a TSR offspring, the number of TSR a TSR individual will produce, the number of MR offspring a TSR individual will produce and the number of MR individuals a MR individual will produce. Also need the mean and variance in LD50 for the next generation of MR individuals. Also 1 or 2 different types of herbicide with MR individuals resistant to both and TSR individuals only resistant to one. Also resistance and cost (intercept on fecundity) are negatively correlated, there the slope of the correlation giving size of the cost. We can have MR as a selected trait following the approach of \citep{Coul2010} eqn. 2 and eqn. 4. We then have some proportion of all individuals that also have TSR in the next generation of seeds in the seed bank.
+We develop a simple model of herbicide resistance in black grass. We include two mechanisms of resistance, Target Site Resistance (TSR) and Non-Target Site Resistance (NTSR). In TSR plants resistance is very high (i.e. the lethal dose is far higher than any economically feasible herbicide application rate) and incurs no life-history costs. In NTSR plants resistance is lower and incurs life history costs. The goal of this model is to test how the strength and speed of NTSR affects how quickly TSR evolves, and how both types of resistance affect the growth of a weeds population over time.
 
 \subsection{overall model}
-
-\begin{equation}
+We model the population using a yearly time step and assume all seeds emerge from the seed bank. The number of individuals of TSR genotype $g$, with NTSR score $z$ at time $t$, $n(g, z, t)$, is taken just post emergence before any mortality has acted on the population. Thus, $n(g, z, t)$ is simply the number of individuals that emerge from the seed bank    
+\begin{equation}\label{eq:estab}
 	n(g, z, t + 1) = b(g, z, t)\phi_e
 \end{equation} 
-Where $n(g, z, t)$ is the number of individuals of TSR genotype $g$, with MR $z$ at time $t$, $b(g, z, t)$ is the number of seeds in the seed bank of TSR genotype $g$, with MR $z$ at time $t$, $\phi_e$ is the germination probability. 
+Where $b(g, z, t)$ is the number of seeds in the seed bank of TSR genotype $g$, with NTSR score $z$ at time $t$ and $\phi_e$ is the germination probability. Both $n(g, z, t)$ and $b(g, z, t)$ are distributions across $z$, while $\phi_e$ is a probability.  
 
 \subsection{genetic model}
-We assume that TSR is controlled by a single gene, which has two versions, the susceptible version $v_0$ and the resistant version $v_r$. We assume that every individual has two copies of the TSR gene, each of which could be $v_0$ or $v_r$. This leads to three TSR genotypes, $G = \{(v_0, v_0), (v_0, v_r), (v_r, v_r)\}$, where $G$ is the set of all possible TSR gene combinations and $g_i$ is the $i^\text{th}$ copy of the gene in tuple $g$. MR on the other hand is assumed to be controlled by a large number of genes so that quantitative genetics can be used to model its evolution through time as a normal distribution of resistance values $Z(t)$ across the whole population. 
+Herbicide resistance occurs through two main mechanisms, TSR where a single protein or binding site is altered, possibly by a single gene mutation, and NTSR  where the herbicide is metabolized or transported away from the target binding site. We assume that TSR is controlled by a single gene, which has two versions, the susceptible version $v_0$ and the resistant version $v_r$. We assume that every individual has two copies of the TSR gene, each of which could be $v_0$ or $v_r$. This leads to three TSR genotypes, $G = \{(v_0, v_0), (v_0, v_r), (v_r, v_r)\}$, where $G$ is the set of all possible TSR gene combinations and $g_i$ is the $i^\text{th}$ copy of the gene in tuple $g$. NTSR on the other hand is assumed to be controlled by a large number of genes so that quantitative genetics can be used to model its evolution through time as a normal distribution of resistance values $Z(t)$ across the whole population of survivors. 
 \begin{equation}\label{eq:MR_dist}
 	Z(t) = N(\bar{z}(t),\sqrt{\sigma_s^2(t)})
 \end{equation}
@@ -52,18 +50,18 @@ where (following \cite{Coul2010})
 \begin{equation}\label{eq:MR_mean}
 	\bar{z}_s(t) = \frac{\int \text{d}z~z\displaystyle\sum_{\forall g \in G}n(g, z, t)s(g, z, t)}{\int \text{d}z\displaystyle\sum_{\forall g \in G}n(g, z, t)s(g, z, t)}
 \end{equation}
-where $s(g, z, t)$ is the probability that an individual of TSR genotype $g$, with MR score $z$ that germinates in time $t$ will survive until flowering and seed set. $\sigma_s^2(t)$ is the variance of the distribution of MR scores, $Z(t)$, calculated as 
+where $s(g, z, t)$ is the probability that an individual of TSR genotype $g$, with NTSR score $z$ that germinates in time $t$ will survive until flowering and seed set. $\sigma_s^2(t)$ is the variance of the distribution of NTSR scores, $Z(t)$, calculated as 
     
 \begin{equation}\label{eq:MR_sd}
 	\sigma_s^2(t) = \frac{\int \text{d}z~z^2\displaystyle\sum_{\forall g \in G}n(g, z, t)s(g, z, t)}{\int \text{d}z\displaystyle\sum_{\forall g \in G}n(g, z, t)s(g, z, t)}
 \end{equation}
 
 \subsection{seed bank and fecundity}
-We assume that all seeds germinate out of the seed bank at the start of the time step. We model the number of seeds in the seed bank with MR resistance $z(t)$, TSR resistance genotype $g$ at time $t$ as the proportion of seeds already in the seed bank that don't germinate and do survive one time step (first term in Eq. \ref{eq:seedbank}) plus the number of seeds added to the seed bank at the end of the previous turn (second term in Eq. \ref{eq:seedbank}).
+We assume that all seeds germinate out of the seed bank at the start of the time step. We model the number of seeds in the seed bank with NTSR resistance $z$, TSR resistance genotype $g$ at time $t$ as the seeds already in the seed bank that don't germinate and do survive one time step (first term in Eq. \ref{eq:seedbank}) plus the number of seeds added to the seed bank at the end of the previous turn (second term in Eq. \ref{eq:seedbank}).
 \begin{equation}\label{eq:seedbank}
 	b(g, z, t) = b(g, z, t - 1)(1 - \phi_e)\phi_b + f(g, z, t - 1)  
 \end{equation} 
-Where $b(g, z, t - 1)$ is the number of seeds in the seed bank with TSR genotype $g$, herbicide resistance score $z$ in the previous time step. $b(g, z, t)$ is a normal distribution on $z$ with a mean $\bar{z}_b(t) = \bar{z}_b(t - 1) + \bar{z}_s(t)$ and variance $\sigma_b^2(t) = \sigma_b^2(t - 1) + \sigma_s^2(t)$. $(1 - \phi_e)$ is the proportion of seeds that did not germinate and $\phi_b$ is the probability that a seed survives. New seeds are produced by the fecundity function 
+Where $b(g, z, t - 1)$ is the number of seeds in the seed bank with TSR genotype $g$, NTSR resistance score $z$ in the previous time step. $(1 - \phi_e)$ is the proportion of seeds that did not germinate and $\phi_b$ is the probability that a seed survives. New seeds are produced by the fecundity function 
 \begin{subequations}
 \label{eq:fecund}
 \begin{align}
@@ -74,7 +72,7 @@ Where $b(g, z, t - 1)$ is the number of seeds in the seed bank with TSR genotype
 	Q(g_i, g') &= 
 	\begin{cases}
 		0.5 ~\text{if}~ g_i \in g' \\
-		\mu ~\text~{otherwise}
+		\mu ~\text{otherwise}
 	\end{cases}\\
 	\label{eq:fecund_pollen}
 	q(i, t) &= \frac{\displaystyle\sum_{\forall g^* \in G} \eta(i, g^*) \int \text{d}z~n(g^*, z, t)}{\displaystyle \sum_{\forall g^* \in G} \int \text{d}z~n(g^*, z, t)}\\
@@ -86,56 +84,50 @@ Where $b(g, z, t - 1)$ is the number of seeds in the seed bank with TSR genotype
 	\end{cases}    
 \end{align} 
 \end{subequations}
-The seeds produced by individuals with TSR genotype $g$ and MR at time $t$ are assumed to have MR scores, $z$ that follow the normal distribution $Z(t)$ described in Eq. \ref{eq:MR_dist} (total number of seeds multiplied by $Z(t)$ in Eq. \ref{eq:fecund_main}). Because black grass is an outcrossing species individuals from other gneotypes ($g'$) can contribute gene copies to the geneotype being evaluated ($g$), thus in Eq. \ref{eq:fecund_main} the first summation term sums the seeds of TS genotype $g$ from all possible TS genotype parents ($\forall g' \in G$). The integration term in Eq. \ref{eq:fecund_main} gives the number of seeds prodced by all individuals of genotype $g'$, where $\psi(z)$ is the number of seeds produced by and individual with MR score $z$, modeled as a decresing function of $z$.
+The seeds produced by individuals with TSR genotype $g$ that survive until the end of time $t$ are assumed to have NTSR scores, $z$ that follow the normal distribution $Z(t)$ described in Eq. \ref{eq:MR_dist} (total number of seeds multiplied by $Z(t)$ in Eq. \ref{eq:fecund_main}). Because black grass is an out-crossing species individuals from other genotypes ($g'$) can contribute gene copies to the genotype being evaluated ($g$), thus in Eq. \ref{eq:fecund_main} the first summation term sums the seeds of TSR genotype $g$ from all possible TSR genotype parents ($\forall g' \in G$). The integration term in Eq. \ref{eq:fecund_main} gives the number of seeds produced by all individuals of genotype $g'$, where $s(g', z, t)$ is the probability of survival until flowering for an individual of TSR genotype $g'$, with NTSR score $z$ if they germinated at the start of time $t$, and is calculated in Eq. \ref{eq:survival}. $\psi(z)$ is the number of seeds produced by an individual with NTSR score $z$, modelled as a decreasing function of $z$.
 \begin{equation}\label{eq:fecund_seed_num}
-	\phi(z) = \frac{\phi_\text{max}}{1 + e^{-\alpha(z - z_{50})}}
+	\psi(z) = \frac{\psi_\text{max}}{1 + e^{-\alpha_f(z - z_{50}^f)}}
 \end{equation}         
-where $\phi_{max}$ is the maximum number of seeds an individual can produce, $e$ is Euler's constant, $\alpha$ is a shape parameter that affects how quickley increasing MR score, $z$ reduces feundity and $z_{50}$ is the $z$ score where fecundity is 50\% of $\phi_\text{max}$. The second summation term across gene copies $i$ gives the probability seeds with tuple $g$ will be produced by an individual of genotype $g'$. Genes copies, $g_i$, have two sources, the individual producing the seed provides half the copies of a gene, while pollen provides the other half. In Eq. \ref{eq:fecund_main} these two processes are modelled with the functions $Q(g_i, g)$, which contributes gene versions ($g_i$) from the mother, and $q(i, t)$, which contributes gene versions from pollen. $Q(g_i, g)$ is a function that returns 0.5 if the value held by copy $i$ in the target genotype $g$ ($g_i$) is in the genotype being evaluated $g'$, and returns $\mu$ otherwise. $mu$ is the probability that gene version $g'_i$ mutates gene $g_i$. This function returns 0.5 since the mother can only supply one out of two copies for each gene. The second copy of the gene is supplied from the pollen using function $q(i, t)$. We assume that the probability of getting gene version $g_i$ required to complete the tuple $g$ is the proportion of all pollen which contains that gene version. We assume that the amount of pollen produced with TSR gene version $g_i$ is proportional to the number of individuals with that gene copy. Thus, the denominator of Eq. \ref{eq:fecund_pollen} is proportional to the total amount of pollen for all genotypes (integral in denominator). The numerator of Eq. \ref{eq:fecund_pollen} is proportional to the amount of pollen that contains the gene version in the target genotype $g$, that is not supplied by the mother. It is function $\eta(i, g^*)$ that determines if this gene version will be produced by the genotype being evaluated for pollen production, $g^*$ (Eq. \ref{eq:pollen_freq}). $\eta(i, g^*)$ returns 0.5 if the version of the gene not provided by copy $g_i$ (i.e. $g_{k \neq i}$ , the copy provided by the mother) is a member of the tuple $g^*$, the genotype being evaluated for pollen production.
+where $\psi_\text{max}$ is the maximum number of seeds an individual can produce, $e$ is Euler's constant, $\alpha_f$ is a shape parameter that affects how quickly increasing MR score, $z$, reduces fecundity and $z_{50}^f$ is the $z$ score where fecundity is 50\% of $\psi_\text{max}$. The second summation term across gene copies $i$ gives the probability seeds with tuple $g$ will be produced by an individual of genotype $g'$. Genes copies, $g_i$, have two sources, the individual producing the seed provides half the copies of a gene, while pollen provides the other half. In Eq. \ref{eq:fecund_main} these two processes are modelled with the functions $Q(g_i, g)$, which contributes gene versions ($g_i$) from the mother, and $q(i, t)$, which contributes gene versions from pollen. $Q(g_i, g)$ is a function that returns 0.5 if the value held by copy $g_i$ in the target genotype $g$ is in the genotype being evaluated $g'$, and returns $\mu$ otherwise. $\mu$ is the probability that gene version $g'_i$ mutates gene $g_i$. This function returns 0.5 since the mother can only supply one out of two copies for each gene. The second copy of the gene is supplied from the pollen using function $q(i, t)$. We assume that the probability of getting gene version $g_i$ required to complete the tuple $g$ is the proportion of all pollen which contains that gene version. We assume that the amount of pollen produced with TSR gene version $g_i$ is proportional to the proportion of individuals with that gene copy. Thus, the denominator of Eq. \ref{eq:fecund_pollen} is proportional to the total amount of pollen for all genotypes. The numerator of Eq. \ref{eq:fecund_pollen} is proportional to the amount of pollen that contains the gene version in the target genotype $g$, that is not supplied by the mother. It is function $\eta(i, g^*)$ that determines if this gene version will be produced by the genotype being evaluated for pollen production, $g^*$ (Eq. \ref{eq:pollen_freq}). $\eta(i, g^*)$ returns 0.5 if the version of the gene not provided by copy $g_i$ (i.e. $g_{k \neq i}$ , where $gi$ is the copy provided by the mother) is a member of the tuple $g^*$, the genotype being evaluated for pollen production.
 
 \subsection{survival}   
-We assume that probability of survival to flowering and seed set ($s(g, z, t)$) is influenced by genotype, herbicide application and density. It is at this point that herbicide application separates the different genotypes and drives the spread of herbicide resistant genotypes.     
+We assume that probability of survival to flowering and seed set, $s(g, z, t)$ is influenced by TSR genotype $g$, NTSR score $z$, along with herbicide application and density at time $t$. It is at this point that herbicide application separates the different genotypes and drives the spread of herbicide resistant.     
 \begin{equation}\label{eq:survival}
-	s(g, z, t) = \gamma(g, t)\phi_s(h_t, z, g) 
+	s(g, z, t) = \gamma(t)\phi_s(h(t), z, g) 
 \end{equation}
 
-Where $\phi_s(h_t, z, g)$ is the survival probability for an individual with genotype $g$ given the herbicide application in time step $t$, $h_t$, and $\gamma(N_x)$ is a density dependent term that reduces establishment and survival above some density threshold.  
+Where $\phi_s(h(t), z, g)$ is the density independent survival probability for an individual with genotype $g$ given the herbicide application in time step $t$, $h(t)$, and is a distribution across $z$. $\gamma(t)$ is a density dependent term that reduces establishment and survival above some density threshold.  
 
-Survival probability, $s(h_t, g)$, must be bound between 0 and 1, thus we model it as a generalised logistic function of genotype     
+Survival probability, $s(h(t), z, g)$, must be bound between 0 and 1, thus we model it as a logistic function of genotype     
 \begin{equation}\label{eq:herb_surv}
-	s(h_t, g) =	\begin{cases}
-		\frac{\beta_0 e^{-C(g)}}{1 + \beta_0 (e^{-C(g)} - 1)} &\text{:} h_t = 0 \\
-		\frac{\beta_0 R(g) e^{-C(g)}}{1 + \beta_0 R(g) (e^{-C(g)} - 1)} &\text{:} h_t = 1
-	\end{cases}	
+	\phi_s(h(t), z, g) =	\phi_\text{min}^{h(t)} + \frac{\phi_\text{max}^z - \phi_\text{min}^{h(t)}}{1 + e^{R(z, g) - R_{50}^s}}	
 \end{equation}
-where $\beta_0$ is the survival probability for an individual with no resistance gene versions in their genotype, $e$ is Euler's constant, $C(g)$ is function that describes the survival costs of having genotype $g$ and $R(g)$ is a function that describe the herbicide resistance of genotype $g$.
+where $\phi_\text{min}^{h(t)}$ is the survival rate for a completely susceptible individual and is a decreasing function of herbicide dose in time $t$, $h(t)$ 
+\begin{equation}\label{eq:dose_response}
+	\phi_\text{min}^{h(t)} = \frac{\phi_\text{max}^z e^{-\xi h(t)}}{1 + \phi_\text{max}^z(e^{-\xi h(t)} - 1)}
+\end{equation}
+where $\xi$ is a shape parameter that determines how increasing herbicide dose decreases survival for susceptible individuals and $h_{50}$ is the herbicide dose where $\phi_\text{min}^{h(t)}$ is half of $\phi_\text{max}^z$. $\phi_\text{max}^z$ is the survival rate for a maximally resistant individual and is a decreasing function of NTSR score $z$. It can be thought of as the survival cost associated with NTSR and is calculated as 
+\begin{equation}\label{eq:surv_cost}
+	\phi_\text{max}^z = \frac{\phi_s^0}{1 + e^{-\alpha_s(z - z_{50}^s)}} 
+\end{equation}
+where $\phi_s^0$ is survival rate for a completely susceptible individual when $h(t) = 0$, $\alpha_s$ is a parameter that controls how quickly increasing NTSR decreases maximum possible survival (cost parameter) and $z_{50}^s$ is the value of $z$ where $\phi_\text{max}^z$ is half $\phi_s^0$.       
 
-The cost and resistance functions ($C(g)$ and $R(g)$) are how the genotype interacts with the population model through the cost of having a given genotype and the resistance that genotype provides. The survival cost of having genotype $g$ is assumed to be a linear function of the summed cost of each gene in $g$, with and intercept of 0 (implying that individuals with no expressed copies of a resistant gene have no cost)                
-\begin{equation}
-	\displaystyle
-	\label{eq:cost_funct}	
-	C(g) = \sum_{\forall j} \textbf{max}(\epsilon(\kappa_{1,g,j}), \epsilon(\kappa_{2,g,j}))\\
+$R(z, g)$ is a function that combines the NTSR resistance score $z$ with the TSR genotype $g$ to give an overall resistance score. 
+\begin{equation}\label{eq:resist}
+	R(z, g) = rz + \textbf{max}(\rho(g_1), \rho(g_2)) + \text{N}(0, \sigma_e)
 \end{equation}
-where $\epsilon(\kappa_{k,g,j})$ is the cost, in terms of reduced survival, of having the version of gene $j$ held in copy $\kappa_{k,g,j}$ (recall that $\kappa_{k,g,j}$ can be $v_{j,0}$ or $v_{j,r}$). The resistance function, $R(g)$ is bound to be between 0 and 1, thus we use another generalised logistic function to meet these constraints.    
-\begin{subequations} \label{eq:herb_attack}
-\begin{align}
-	\displaystyle
-	\label{eq:herb_attack_logit} 
-	R(g) &= \frac{\xi_0 e^{r(g)}}{1 + \xi_0 (e^{r(g)} - 1)} \\
-	\label{eq:resist_score}
-	r(g) &= \left(\sum_{\forall j} \textbf{max}(\rho(\kappa_{1,g,j}), \rho(\kappa_{2,g,j}))\right) + \text{N}(0, \sigma_r) \\
-\end{align} 
-\end{subequations} 
-where $\xi_0$ is the herbicide effectiveness for a completely susceptible individual and $\rho(\kappa_{k,g,j})$ is the amount of herbicide resistance conferred by having the version of gene $j$ held in copy $\kappa_{k,g,j}$. $\text{N}(0, \sigma_r)$ is a random variable drawn from a normal distribution that gives the non-inheritable part of herbicide resistance, with $\sigma_r$ controlling the strength of non-inheritable resistance. We assume $\rho(v_0) = \epsilon(v_0) = 0$ and for versions that confer resistance we assume $\rho(v_r)$ and $\epsilon(v_r)$ are greater than 0. Thus, the $\textbf{max}({\cdot})$ function assumes that the resistance version of the gene is the dominant one for all $j$ genes. We could use other cost and resistance functions to change this behaviour. For example we could use $r(g) = \sum_{\forall j} \textbf{min}(\rho(\kappa_{1,g,j}), \rho(\kappa_{2,g,j}))$ to make resistant genes receive, or $\rho(\kappa_{1,g,j}) + \rho(\kappa_{2,g,j})$ to make the copies additive in their effect. If we want some genes to be dominant and others receive we need to replace the summation over all $j$ genes with a function that has a separate aggregator for each gene.             
+where $r$ is a coefficient that increases survival under herbicide application so that higher $z$ scores lead to higher survival probabilities. $\text{N}(0, \sigma_e)$ is a normal distribution with a mean of 0 and a standard deviation of $\sigma_e$. $\sigma_e$ can be thought of as environmental noise and non-heritable factors that increase or decrease resistance to herbicide. This noise term makes $R(z, g, h(t))$ a distribution of values for every value of $z$. Putting the environmental noise inside the function $\phi_s(h(t), z g)$ implies that different seeds experience different levels of environmental impact on resistance. It is also possible that climatic conditions affect the effectiveness of herbicide so that all individuals experience the same increase or decrease in herbicide effectiveness. This could be done in numerical simulations by drawing a random variable for a normal distribution once at the start of the time step and add this number to Eq. \ref{eq:resist}. $\rho(g_i)$ is the amount of herbicide resistance conferred by having the version of gene $g$ held in copy $g_i$. We assume $\rho(v_0) = 0$ and for versions that confer resistance we assume $\rho(v_r) > 0$. Thus, the $\textbf{max}(\cdot)$ function assumes that the resistance version of the gene is dominant. We could use other forms to make different assumptions. For example we could use $\textbf{min}(\rho(g_1), \rho(g_2))$ to make resistant genes receive, or $\rho(g_1) + \rho(g_2)$ to make the copies additive in their effect. 
 
 Without a density dependent term any increasing population would continue growing until infinitely large. We model this density dependence with the term 
 \begin{equation}\label{eq:density_dependence}
-	\gamma(x, g, t) =
+	\gamma(t) =
 		\begin{cases}
-			\frac{M}{\sum_{\forall g}s(h_t, g)z(x, g, t)} ~\text{if}~ \sum_{\forall g}s(h_t, g)z(x, g, t) > M \\
-			1 ~\text{if}~ \sum_{\forall g}s(h_t, g)z(x, g, t) \leq M  
+			\frac{M}{\sum_{\forall g}\int \text{d}z~ s(g, z, t)b(g, z, t)\phi_e} &\text{if}~ \sum_{\forall g}\int \text{d}z~ s(g, z, t)b(g, z, t)\phi_e > M \\
+			1 &\text{if}~ \sum_{\forall g}\int \text{d}z~ s(g, z, t)b(g, z, t)\phi_e \leq M  
 		\end{cases}
 \end{equation}
-where $\gamma(x, g, t)$ reduces establishment and survival probability at each location $x$ in response to the total number of individuals at location $x$ which are expected to establish at time $t$ (summation term in Eq. \ref{eq:density_dependence}). $s(h_t, g)$ and $z(x, g, t)$ are defined in Eq.'s \ref{eq:herb_surv} and \ref{eq:germ} respectively. $M$ is the average number of individuals that can establish at a given location. 
+
+where $\gamma(t)$ reduces establishment and survival probability in response to the total number of individuals in the population which are expected to establish at time $t$. $s(g, z, t)$ and $b(g, z, t)$ are defined in Eq.'s \ref{eq:survival} and \ref{eq:seedbank} respectively, $\phi_e$ is defined in \ref{eq:estab}. $M$ is the number of individuals that can exist above ground in the population at any one time. 
 
 \bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
 \bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
