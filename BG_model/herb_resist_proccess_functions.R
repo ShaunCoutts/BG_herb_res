@@ -50,22 +50,23 @@ survival <- function(N_0, eval_points, herb_rate, sur_g_min_herb_0, g_s50, alpha
   survival_g_max = (sur_g_min_herb_0) / (1 + exp(alpha_s * (eval_points - g_s50))) #survival rate for compleatly compleatly resistant individual when herb_rate = 0, can be though of as a survival cost of NTSR
   survival_g_min = (survival_g_max * exp(-zeta * herb_rate)) / (1 + survival_g_max * (exp(-zeta * herb_rate) - 1)) #survial rate for minimmaly resistant individual under herb_rate
   resiatance = eval_points * g2resist  #resistnce score set by eval_points and a slope parameter 
-  density_independent_survival = survival_g_min + ((survival_g_max - survival_g_min) / (1 + exp(resiatance - g_res50)))   
-
+  density_independent_survival = survival_g_min + ((survival_g_max - survival_g_min) / (1 + exp(abs(resiatance - g_res50))))   
+  density_independent_survival
 }
 
 eval_points = seq(-10, 10, 1.5)
 N_0 = dnorm(eval_points, 0, 2)  
-herb_rate = 0:10 
+herb_rate = 2 
 sur_g_min_herb_0 = 0.8 
-g_s50 = 10
+g_s50 = 100
 alpha_s = 0.5
 zeta = 0.5
-g2resist = 0.1 
+g2resist = 10 
 g_res50 = 3
 
-
-  
+out = survival(N_0 = N_0, eval_points = eval_points, herb_rate = herb_rate, sur_g_min_herb_0 = sur_g_min_herb_0, g_s50 = g_s50, alpha_s = alpha_s, zeta = zeta, g2resist = g2resist, g_res50 = g_res50)
+plot(eval_points,out)
+#So this does not work, low resistnce indviduals always have better survival reguardless of herbiside rate  
 
   
   
