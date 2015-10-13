@@ -1,7 +1,7 @@
 #set of functions for herbicide resitance model covering various processes like genotype production and seed bank dynamics
-working_loc = '/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_model' 
-setwd(working_loc)
-test_obj_name <- load('nonspatial_model_test_answer_key.Rdata') #load the test key
+#working_loc = '/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_model' 
+#setwd(working_loc)
+#test_obj_name <- load('nonspatial_model_test_answer_key.Rdata') #load the test key
 
 ## EVAL_POINTS_BUILDER(lower_eval_point, upper_eval_point, resolution, seed_expantion)
 ## produces a matrix of evaluation points. The first row is evaluation points for evaluating above ground individuals, second row (which contains the first row) is evalution points for seeds
@@ -16,11 +16,6 @@ eval_points_builder <- function(lower_eval_point, upper_eval_point, resolution, 
   seed_eval = c(seed_lower[1:(length(seed_lower) - 1)], above_ground_eval, seed_upper[2:length(seed_upper)])
   list(above_ground = above_ground_eval, seed = seed_eval, above_ground_index = which(seed_eval %in% above_ground_eval))
 }
-eval(parse(text = nonspace_test_answer_key[[3]]$question))#set parameters for the test run
-test3 = eval_points_builder(lower_eval_point = lower_eval_point, upper_eval_point = upper_eval_point, resolution = resolution, seed_expantion = seed_expantion)
-#nonspace_test_answer_key[[3]] = list(question = 'lower_eval_point = -10\nupper_eval_point = 10\nresolution = 0.5\nseed_expantion = 4\n', answer = test3)
-#setwd(working_loc)
-#save(nonspace_test_answer_key, file = 'nonspatial_model_test_answer_key.Rdata')
 
 ## EVAL_POINYS_UPDATE()
 ## Takes and eval_points_builder object and a above ground distribtuion of plants: returns an eval_points_builder object with an updated the above_ground eval window based on above ground distribution
@@ -29,14 +24,10 @@ test3 = eval_points_builder(lower_eval_point = lower_eval_point, upper_eval_poin
 ## density_cutoff = population density (on distrbution over g) above which seed evaluation points are retained in the above ground evaluation points
 eval_points_update <- function(eval_points_object, above_ground_dist, density_cutoff){
   eval_points_object$above_ground = eval_points_object$seed[which(above_ground_dist > density_cutoff)]
+  if(length(eval_points_object$above_ground) < 10) eval_points_object$above_ground = eval_points_object$seed[which(above_ground_dist %in% tail(sort(above_ground_dist), 10))]
   eval_points_object$above_ground_index = which(eval_points_object$seed %in% eval_points_object$above_ground)
   eval_points_object
 }
-eval(parse(text = nonspace_test_answer_key[[8]]$question))#set parameters for the test run
-test8 = eval_points_update(eval_points_object = eval_points_object, above_ground_dist = above_ground_dist, density_cutoff = density_cutoff)
-#nonspace_test_answer_key[[8]] = list(question = 'eval_points_object = test3\nabove_ground_dist = dnorm(eval_points_object$seed , 1, 3)\ndensity_cutoff = 0.00001\n', answer = test8)
-#setwd(working_loc)
-#save(nonspace_test_answer_key, file = 'nonspatial_model_test_answer_key.Rdata')
 
 
 ## QUANT_GEN_OFFSPRING_DISTRIBUTION(N_f, eval_points, additive_variance, offspring_dist_res) 
@@ -58,15 +49,6 @@ quant_gen_offspring_distribution <- function(N_f, eval_points, additive_variance
   summing_grid = matrix(1:(length(eval_points) * length(eval_points)), ncol = length(eval_points), byrow = TRUE)
   t(apply(summing_grid, MARGIN = 1, FUN = function(x) colSums(offspring_3D_kernel[x, ])))
 }
-#test of quant_gen_offspring_distribution() with dummy input and a fixed known output so I can see if I break this at some point in the future
-eval(parse(text = nonspace_test_answer_key[[1]]$question))#set parameters for the test run
-test1 = quant_gen_offspring_distribution(N_f = N_f, eval_points = eval_all$above_ground, additive_variance = additive_variance, seed_eval_points = eval_all$seed) #get the output form the current version of the function
-#evaluate this aginst the reference answer
-#write the output to a named list stored on disk so that this functions output can be tested aginast it at future date if it is changed.
-#nonspace_test_answer_key = list()
-#nonspace_test_answer_key[[1]] = list(question = 'eval_all = eval_points_builder(lower_eval_point = -10, upper_eval_point = 10, resolution = 0.5, seed_expantion = 4)\nN_f = dnorm(eval_all$above_ground, 0, 2)\nadditive_variance = 0.5\n', answer = test1)
-#setwd(working_loc)
-#save(nonspace_test_answer_key, file = 'nonspatial_model_test_answer_key.Rdata')
 
 ## SURVIVAL(N_0, eval_points, herb_rate, sur0, sur_cost_resist, herb_effect, survive_resist, max_sur, ceiling_pop)
 ## produces a distribution (i.e. vector on eval_points) of survivors after herbicide application from a distribution of indivduals that emerge from the seed bank (N_0). 
@@ -78,10 +60,8 @@ test1 = quant_gen_offspring_distribution(N_f = N_f, eval_points = eval_all$above
 ## survive_resist = protective effect of a one unit increase in resistance score g
 ## max_sur = maximum survival possible
 #be careful this functions relies on N_0 being evaluated on eval_points before being passed to this function so that the indexes all match up
-
-## THIS IS NOW BROKEN
 survival <- function(N_0, eval_points, herb_rate, sur0, sur_cost_resist, herb_effect, survive_resist, max_sur, ceiling_pop){
-  plant_happiness_sur = sur0 - sur_cost_resist * eval_points - herb_rate * (herb_effect - (survive_resist * eval_points)) #Think this is broken try herb_effect * exp(-survive_resist * abs(g) + g) or herb_effect - maax(0, survive_resist * g)
+  plant_happiness_sur = sur0 - sur_cost_resist * eval_points - herb_rate * (herb_effect - pmin(herb_effect, survive_resist * eval_points)) #alt: herb_effect * exp(-survive_resist * abs(g) + g)
   density_independent_survival = max_sur / (1 + exp(-plant_happiness_sur))
   density_independent_establishment = N_0 * density_independent_survival
   if((sum(density_independent_establishment)) > ceiling_pop){
@@ -91,17 +71,6 @@ survival <- function(N_0, eval_points, herb_rate, sur0, sur_cost_resist, herb_ef
   }
   return(N_1)
 }
-
-N_0 = emergence(seedbank(seedbank0 = seedbank_current, seed_survival = seed_survival, germination = germination, eval_object = eval_object, 
-	  N_m =  survivors, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, N_f =  survivors, additive_variance = additive_variance)[eval_object$above_ground_index], germination = germination)
-eval_points = eval_object$above_ground
-
-#evaluate this aginst the reference answer
-eval(parse(text = nonspace_test_answer_key[[2]]$question))#set parameters for the test run
-test2 = survival(N_0 = N_0, eval_points = eval_points, herb_rate = herb_rate, sur0 = sur0, sur_cost_resist = sur_cost_resist, herb_effect = herb_effect, survive_resist = survive_resist, max_sur = max_sur, ceiling_pop = ceiling_pop) 
-#put the question and answer in the answer key
-#nonspace_test_answer_key[[2]] = list(question = 'eval_points = seq(-10, 10, 1.5)\nN_0 = dnorm(eval_points, 0, 2)\nherb_rate = 1\nsur0 = 5\nsur_cost_resist = 0.1\nherb_effect = 3\nsurvive_resist = 5\nmax_sur = 0.95\nceiling_pop = 2\n', answer = test2)
-#save(nonspace_test_answer_key, file = 'nonspatial_model_test_answer_key.Rdata')
 
 ##FECUNDITY(N_m, eval_points, fec_max, fec0, fec_cost, N_f, additive_variance, seed_eval_points)
 ## produces a distribution of seeds on eval_points of g produced by population N_m (distribution of mothers on g evaluated at eval_points)
@@ -120,12 +89,6 @@ fecundity <- function(N_m, eval_points, fec_max, fec0, fec_cost, N_f, additive_v
   seeds_each_g = N_m * (fec_max / (1 + exp(-plant_happiness_fec)))
   colSums(seeds_each_g * quant_gen_offspring_distribution(N_f, eval_points, additive_variance, seed_eval_points)) * dg 
 }
-
-eval(parse(text = nonspace_test_answer_key[[4]]$question))#set parameters for the test run
-test4 = fecundity(N_m = N_m, eval_points = eval_all$above_ground, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, N_f = N_f, additive_variance = additive_variance, seed_eval_points = eval_all$seed) 
-#put the question and answer in the answer key
-#nonspace_test_answer_key[[4]] = list(question = 'eval_all = eval_points_builder(lower_eval_point = -10, upper_eval_point = 10, resolution = 0.5, seed_expantion = 4)\nN_m = N_f = dnorm(eval_all$above_ground, 0, 2)\nadditive_variance = 0.5\nfec0 = 1\nfec_cost = 0.8\nfec_max = 100\n', answer = test4)
-#save(nonspace_test_answer_key, file = 'nonspatial_model_test_answer_key.Rdata')
   
 ## SEEDBANK()
 ## produces a distribution of seeds in the seed bank over the eval_points on g. 
@@ -144,12 +107,6 @@ seedbank <- function(seedbank0, seed_survival, germination, eval_object, N_m, fe
   seedbank0 * seed_survival * (1 - germination) + fecundity(N_m = N_m, eval_points = eval_object$above_ground, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, N_f = N_f, additive_variance = additive_variance, seed_eval_points = eval_object$seed)
 }
 
-eval(parse(text = nonspace_test_answer_key[[5]]$question))#set parameters for the test run
-test5 = seedbank(seedbank0 = seedbank0 * 100, seed_survival = seed_survival, germination = germination, eval_object = eval_object, N_m = N_m, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, N_f = N_f, additive_variance = additive_variance) 
-#put the question and answer in the answer key
-#nonspace_test_answer_key[[5]] = list(question = 'seed_survival = 0.8\ngermination = 0.1\neval_object = eval_points_builder(lower_eval_point = -10, upper_eval_point = 10, resolution = 0.5, seed_expantion = 4)\nseedbank0 = dnorm(eval_object$seed, 1, 5)\nN_m = N_f = dnorm(eval_object$above_ground, 0, 2)\nadditive_variance = 0.5\nfec0 = 1\nfec_cost = 0.8\nfec_max = 100\n', answer = test5)
-#save(nonspace_test_answer_key, file = 'nonspatial_model_test_answer_key.Rdata')
-
 ## EMERGENCE()
 ## produces a distribution of emerged indviduals  
 ## seedbank_current = distribution of seeds in the seed bank over g (returned from SEEDBANK()) 
@@ -157,15 +114,10 @@ test5 = seedbank(seedbank0 = seedbank0 * 100, seed_survival = seed_survival, ger
 emergence <- function(seedbank_current, germination){
   seedbank_current * germination
 }
-eval(parse(text = nonspace_test_answer_key[[6]]$question))#set parameters for the test run
-test6 = emergence(seedbank_current = seedbank_current, germination = germination) 
-
-#nonspace_test_answer_key[[6]] = list(question = 'seedbank_current = test5\ngermination = 0.1\n', answer = test6)
-#save(nonspace_test_answer_key, file = 'nonspatial_model_test_answer_key.Rdata')
 
 ## SINGLE_INTERATION()
 ## produces a distrbution over g of indivduals in the seed bank including survival, reproduction and emergence 
-## seedbank_current = distribution of seeds in the seed bank over g (returned from SEEDBANK()) 
+## seedbank_current = distribution of seeds in the seed bank over g (returned from SEEDBANK() or another call to SINGLE_INTERATION()) 
 ## germination = germination probability
 ## seed_survival = probability that a seed in the seed bank survives one year
 ## eval_object = object from EVAL_POINTS_BUILDER() that defines the above ground and below ground evaluation points
@@ -188,46 +140,107 @@ single_iteration <- function(seedbank_current, germination, eval_object, herb_ra
 	  herb_effect = herb_effect, survive_resist = survive_resist, max_sur = max_sur, ceiling_pop = ceiling_pop) 
   new_seedbank = seedbank(seedbank0 = seedbank_current, seed_survival = seed_survival, germination = germination, eval_object = eval_object, 
 	  N_m =  survivors, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, N_f =  survivors, additive_variance = additive_variance) 
+  new_seedbank
 }
-eval(parse(text = nonspace_test_answer_key[[7]]$question))#set parameters for the test run
-test7 = single_iteration(seedbank_current = seedbank_current, germination = germination, eval_object = eval_object, herb_rate = herb_rate, sur0 = sur0, sur_cost_resist = sur_cost_resist,
-  herb_effect = herb_effect, survive_resist = survive_resist, max_sur = max_sur, ceiling_pop = ceiling_pop, seed_survival = seed_survival, fec_max = fec_max, fec0 = fec0, 
-  fec_cost = fec_cost, additive_variance = additive_variance) 
+
+## MULTI_ITERATION()
+## produces a num_iter by length(eval_object$seed) matrix where each row is a distrbution over g of indivduals in the seedbank for 1 iteration   
+## num_iter = number of iterations to run the simulation form
+## initial_seedbank = distribution of seeds in the seed bank over g
+## herb_schedual = vector of 0,1's of length num_iter that defines when herbicide is applied 
+## germination = germination probability
+## seed_survival = probability that a seed in the seed bank survives one year
+## eval_object = object from EVAL_POINTS_BUILDER() that defines the above ground and below ground evaluation points
+## fec_max = the maximum number of seeds per mothers
+## fec0 = cost of resistance when g = 0, in logits
+## fec_cost = reduction in fecundity each additional unit of g causes, in logits
+## additive_variance (passed to quant_gen_offspring_distribution()) = variance of conditional offspring distribution
+## sur0 = susrvial rate when g is 0 and there is no herbicide
+## sur_cost_resist = cost of higher resistenace score in terms of reduced survival
+## herb_effect = effect of herbicide on survival
+## survive_resist = protective effect of a one unit increase in resistance score g
+## max_sur = maximum survival possible
+## density_cutoff = population density (on distrbution over g) above which seed evaluation points are retained in the above ground evaluation points
+multi_iteration <- function(num_iter, initial_seedbank, herb_schedual, germination, eval_object, sur0, sur_cost_resist, herb_effect, survive_resist, max_sur, ceiling_pop, seed_survival, fec_max, fec0, fec_cost, additive_variance, density_cutoff){
+  results = matrix(NA, nrow = num_iter, ncol = length(eval_object$seed))
+  results[1, ] = single_iteration(seedbank_current = initial_seedbank, germination = germination, eval_object = eval_object, herb_rate = herb_schedual[1], sur0 = sur0, sur_cost_resist = sur_cost_resist,
+    herb_effect = herb_effect, survive_resist = survive_resist, max_sur = max_sur, ceiling_pop = ceiling_pop, seed_survival = seed_survival, fec_max = fec_max, fec0 = fec0, 
+    fec_cost = fec_cost, additive_variance = additive_variance, density_cutoff = density_cutoff) 
+  for(i in 2:num_iter){
+    results[i, ] = single_iteration(seedbank_current = results[i - 1, ], germination = germination, eval_object = eval_object, herb_rate = herb_schedual[i], sur0 = sur0, sur_cost_resist = sur_cost_resist,
+      herb_effect = herb_effect, survive_resist = survive_resist, max_sur = max_sur, ceiling_pop = ceiling_pop, seed_survival = seed_survival, fec_max = fec_max, fec0 = fec0, 
+      fec_cost = fec_cost, additive_variance = additive_variance, density_cutoff = density_cutoff)
+  }
+  
+  results
+}
+
+seedbank_animator <- function(results_matrix, eval_object, herb_schedual, pause = 1, ...){
+  max_value = max(results_matrix)
+  for(i in 1:dim(results_matrix)[1]){
+    plot(eval_object$seed, eval_object$seed, type = 'n', ylim = c(0, max_value), bty = 'n', xlab = 'resistance score', 
+      main = paste0(ifelse(herb_schedual[i] == 0, 'No herbicide applied', 'Herbicide being applied'), '\nturn ', i), ...)
+    polygon(x = eval_object$seed, y = results_matrix[i, ], col = ifelse(herb_schedual[i] == 0, 'skyblue', 'red'))
+    Sys.sleep(pause)
+  }
+}
 
 
-#put the question and answer in the answer key
-nonspace_test_answer_key[[7]] = list(question = 'seedbank_current = test5\ngermination = 0.5\neval_object = eval_points_builder(lower_eval_point = -10, upper_eval_point = 10, resolution = 0.5, seed_expantion = 4)\nherb_rate = 1\nsur0 = 5\nsur_cost_resist = 0\nherb_effect = 1\nsurvive_resist = 0\nmax_sur = 1\nceiling_pop = 200\nseed_survival = 0.5\nfec_max = 1000\nfec0 = 1\nfec_cost = 0.8\nadditive_variance = 0.5\ndensity_cutoff = 0.0001\n', answer = 0)
-#save(nonspace_test_answer_key, file = 'nonspatial_model_test_answer_key.Rdata')
+#Check the test results  
+test_functions_broken <- function(file_loc){
+  setwd(file_loc)
+  test_obj_name <- load('nonspatial_model_test_answer_key.Rdata') #load the test key
+  eval(parse(text = nonspace_test_answer_key[[1]]$question))#set parameters for the test run
+  test1 = quant_gen_offspring_distribution(N_f = N_f, eval_points = eval_all$above_ground, additive_variance = additive_variance, seed_eval_points = eval_all$seed) #get the output form the current version of the function
+  eval(parse(text = nonspace_test_answer_key[[2]]$question))#set parameters for the test run
+  test2 = survival(N_0 = N_0, eval_points = eval_points, herb_rate = herb_rate, sur0 = sur0, sur_cost_resist = sur_cost_resist, herb_effect = herb_effect, survive_resist = survive_resist, max_sur = max_sur, ceiling_pop = ceiling_pop) 
+  eval(parse(text = nonspace_test_answer_key[[3]]$question))#set parameters for the test run
+  test3 = eval_points_builder(lower_eval_point = lower_eval_point, upper_eval_point = upper_eval_point, resolution = resolution, seed_expantion = seed_expantion)
+  eval(parse(text = nonspace_test_answer_key[[4]]$question))#set parameters for the test run
+  test4 = fecundity(N_m = N_m, eval_points = eval_all$above_ground, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, N_f = N_f, additive_variance = additive_variance, seed_eval_points = eval_all$seed) 
+  eval(parse(text = nonspace_test_answer_key[[5]]$question))#set parameters for the test run
+  test5 = seedbank(seedbank0 = seedbank0 * 100, seed_survival = seed_survival, germination = germination, eval_object = eval_object, N_m = N_m, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, N_f = N_f, additive_variance = additive_variance) 
+  eval(parse(text = nonspace_test_answer_key[[6]]$question))#set parameters for the test run
+  test6 = emergence(seedbank_current = seedbank_current, germination = germination) 
+  eval(parse(text = nonspace_test_answer_key[[7]]$question))#set parameters for the test run
+  test7 = single_iteration(seedbank_current = seedbank_current, germination = germination, eval_object = eval_object, herb_rate = herb_rate, sur0 = sur0, sur_cost_resist = sur_cost_resist,
+    herb_effect = herb_effect, survive_resist = survive_resist, max_sur = max_sur, ceiling_pop = ceiling_pop, seed_survival = seed_survival, fec_max = fec_max, fec0 = fec0, 
+    fec_cost = fec_cost, additive_variance = additive_variance, density_cutoff = density_cutoff) 
+  eval(parse(text = nonspace_test_answer_key[[8]]$question))#set parameters for the test run
+  test8 = eval_points_update(eval_points_object = eval_points_object, above_ground_dist = above_ground_dist, density_cutoff = density_cutoff)
+  eval(parse(text = nonspace_test_answer_key[[9]]$question))#set parameters for the test run
+  test9 = multi_iteration(num_iter = num_iter, initial_seedbank = initial_seedbank, germination = germination, eval_object = eval_object, herb_schedual = herb_schedual, sur0 = sur0, sur_cost_resist = sur_cost_resist,
+    herb_effect = herb_effect, survive_resist = survive_resist, max_sur = max_sur, ceiling_pop = ceiling_pop, seed_survival = seed_survival, fec_max = fec_max, fec0 = fec0, 
+    fec_cost = fec_cost, additive_variance = additive_variance, density_cutoff = density_cutoff) 
+
+  test_results <- ifelse(all.equal(test1, nonspace_test_answer_key[[1]]$answer), 'QUANT_GEN_OFFSPRING_DISTRIBUTION() still fine', 'Something you did broke the function QUANT_GEN_OFFSPRING_DISTRIBUTION()')
+  test_results[2] <- ifelse(identical(test2, nonspace_test_answer_key[[2]]$answer), 'SURVIVAL() still fine', 'Something you did broke the function SURVIVAL()')
+  test_results[3] <- ifelse(identical(test3, nonspace_test_answer_key[[3]]$answer), 'EVAL_POINTS_BUILDER() still fine', 'Something you did broke the function EVAL_POINTS_BUILDER()')
+  test_results[4] <- ifelse(identical(test4, nonspace_test_answer_key[[4]]$answer), 'FECUNDITY() still fine', 'Something you did broke the function FECUNDITY()')
+  test_results[5] <- ifelse(identical(test5, nonspace_test_answer_key[[5]]$answer), 'SEEDBANK() still fine', 'Something you did broke the function SEEDBANK()')
+  test_results[6] <- ifelse(identical(test6, nonspace_test_answer_key[[6]]$answer), 'EMERGENCE() still fine', 'Something you did broke the function EMERGENCE()')
+  test_results[7] <- ifelse(identical(test7, nonspace_test_answer_key[[7]]$answer), 'SINGLE_INTERATION() still fine', 'Something you did broke the function SINGLE_INTERATION()')
+  test_results[8] <- ifelse(identical(test8, nonspace_test_answer_key[[8]]$answer), 'EVAL_POINTS_UPDATE() still fine', 'Something you did broke the function EVAL_POINTS_UPDATE()')
+  test_results[9] <- ifelse(identical(test9, nonspace_test_answer_key[[9]]$answer), 'MULTI_ITERATION() still fine', 'Something you did broke the function MULTI_ITERATION()')
+
+  print(test_results) 
+}
+
+
 
 
 
 #NOTE TO SELF add non-heritable variance in resitance in the fecundity function so individuals can be resistant through their life time, basically n(g) should be n(g, z) and resistance should then 
 #be a function of g and z, so that survival is actually a distribtuion for each element of eval_points do simple version for now.
-  
-  
-  
-  
-  
- plot(eval_object$seed, new_plants)
- points(eval_object$above_ground, survivors, col = 'red')
-  
-  
-  
-  
-  
-  
-  
-  
-#Check the test results  
-test_results <- ifelse(all.equal(test1, nonspace_test_answer_key[[1]]$answer), 'QUANT_GEN_OFFSPRING_DISTRIBUTION() still fine', 'Something you did broke the function QUANT_GEN_OFFSPRING_DISTRIBUTION()')
-test_results[2] <- ifelse(identical(test2, nonspace_test_answer_key[[2]]$answer), 'SURVIVAL() still fine', 'Something you did broke the function SURVIVAL()')
-test_results[3] <- ifelse(identical(test3, nonspace_test_answer_key[[3]]$answer), 'EVAL_POINTS_BUILDER() still fine', 'Something you did broke the function EVAL_POINTS_BUILDER()')
-test_results[4] <- ifelse(identical(test4, nonspace_test_answer_key[[4]]$answer), 'FECUNDITY() still fine', 'Something you did broke the function FECUNDITY()')
-test_results[5] <- ifelse(identical(test5, nonspace_test_answer_key[[5]]$answer), 'SEEDBANK() still fine', 'Something you did broke the function SEEDBANK()')
-test_results[6] <- ifelse(identical(test6, nonspace_test_answer_key[[6]]$answer), 'EMERGENCE() still fine', 'Something you did broke the function EMERGENCE()')
 
-test_results[8] <- ifelse(identical(test8, nonspace_test_answer_key[[8]]$answer), 'EVAL_POINTS_UPDATE() still fine', 'Something you did broke the function EVAL_POINTS_UPDATE()')
-print(test_results) 
+  
+  
+  
+  
+  
+  
+
+
   
   
   
@@ -236,42 +249,40 @@ print(test_results)
   
   
   ##area to test things with throw away code#######################################################################################################################
-mat = cbind(g_m = rep.int(1:10, length(1:10)), g_f = rep(1:10, each = length(1:10)))
-aperm('dim<-' (mat, list(10, 10, 2)), c(2, 1, 3))
+#library(microbenchmark)
+
+#speed_test = microbenchmark(quant_gen_offspring_distribution(N_f = N_f, eval_points = eval_all$above_ground, additive_variance = additive_variance, seed_eval_points = eval_all$seed),
+#  quant_gen_offspring_distribution_vect(N_f = N_f, eval_points = eval_all$above_ground, additive_variance = additive_variance, seed_eval_points = eval_all$seed),
+#  times = 100)
+#speed_test #turns out the fully vectorised version is much a bit slower which was unexpected but possibly due to large number of multiplications and additions required
+
+#out1 = quant_gen_offspring_distribution(N_f = N_f, eval_points = eval_all$above_ground, additive_variance = additive_variance, seed_eval_points = eval_all$seed)
+#out2 = quant_gen_offspring_distribution_vect(N_f = N_f, eval_points = eval_all$above_ground, additive_variance = additive_variance, seed_eval_points = eval_all$seed)
+#all.equal(out1, out2)
 
 
-library(microbenchmark)
-library(shiny)
-
-eval_all = eval_points_builder(lower_eval_point = -10, upper_eval_point = 10, resolution = 0.5, seed_expantion = 4)
-N_m = N_f = dnorm(eval_all$above_ground, 0, 2)
-fec_max = 100 
-fec0 = 0
-additive_variance = 0.5
-seed_eval_points = eval_all$seed
-eval_points = eval_all$above_ground
-fec_cost = 1
-
-quant_gen_offspring_distribution_vect <- function(N_f, eval_points, additive_variance, seed_eval_points){
-  dN = eval_points[2] - eval_points[1]
-  additive_sd = sqrt(additive_variance)
-  eval_grid = cbind(rep.int(eval_points, length(eval_points)), rep(eval_points, each = length(eval_points)))#make every combination of evaluation points
-  N_fathers = N_f / sum(N_f) #turns the distribution of fathers into a frequency distribution
-  vect_seed_eval_points = rep(seed_eval_points, times = length(eval_grid[,1]))
-  vect_breed_val_means = rep(eval_grid[,1] * 0.5 + eval_grid[,2] * 0.5, each = length(seed_eval_points))
-  cond_offspring_dist = matrix(dnorm(vect_seed_eval_points, vect_breed_val_means, additive_sd), ncol = length(seed_eval_points), byrow = TRUE)
-  cond_offspring_dist = cond_offspring_dist * dN #scales the distribtuion so that it sums to one, the assumption being that all offspring produced by a parental combination have to have a breeding value
-  offspring_3D_kernel = cond_offspring_dist * N_fathers
-  summing_grid = matrix(1:(length(eval_points) * length(eval_points)), ncol = length(eval_points), byrow = TRUE)
-  t(apply(summing_grid, MARGIN = 1, FUN = function(x) colSums(offspring_3D_kernel[x, ])))
-}
 
 
-speed_test = microbenchmark(quant_gen_offspring_distribution(N_f = N_f, eval_points = eval_all$above_ground, additive_variance = additive_variance, seed_eval_points = eval_all$seed),
-  quant_gen_offspring_distribution_vect(N_f = N_f, eval_points = eval_all$above_ground, additive_variance = additive_variance, seed_eval_points = eval_all$seed),
-  times = 100)
-speed_test #turns out the fully vectorised version is much a bit slower which was unexpected but possibly due to large number of multiplications and additions required
 
-out1 = quant_gen_offspring_distribution(N_f = N_f, eval_points = eval_all$above_ground, additive_variance = additive_variance, seed_eval_points = eval_all$seed)
-out2 = quant_gen_offspring_distribution_vect(N_f = N_f, eval_points = eval_all$above_ground, additive_variance = additive_variance, seed_eval_points = eval_all$seed)
-all.equal(out1, out2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
