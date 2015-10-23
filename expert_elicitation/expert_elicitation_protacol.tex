@@ -1,0 +1,79 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{setspace, graphicx, lineno, caption, color, float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amstext} %to enter text in mathematical formulae
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage{natbib}
+%\usepackage{url, hyperref, makeidx, fancyhdr, booktabs, palatino}
+%\usepackage{euscript} %EuScript, command: \EuScript, for letters in Euler script
+%\usepackage{paralist} %listing (i), (ii), etc.
+\usepackage{rotating} %rotating text
+\usepackage{multirow} %connecting columns in tables
+\usepackage{multicol}
+%image stuff
+%\usepackage{epstopdf}
+%\usepackage{cancel}
+%\usepackage[ngerman, english]{babel} %for different languages in one document
+%\usepackage[utf8]{inputenc}
+%\hypersetup{colorlinks=true, linkcolor=blue}
+%page set up
+\usepackage[left=2.5cm,top=2.5cm,right=2.5cm, bottom=2.5cm,nohead]{geometry}
+\doublespacing
+%paragraph formatting
+\setlength{\parskip}{12pt}
+\setlength{\parindent}{0cm}
+\begin{document}
+%Make a title page
+\title{Black grass: Expert Elicitation}
+\author{Shaun R. Coutts$^\dag$, Helen Hicks$^\dag$, Dylan Childs$^\dag$, Rob Freckleton$^\ddag$, probably some others}
+\maketitle
+
+\section*{Introduction}
+Much that is known about black grass is in the grey literature, or even only held in the minds of various experts that have either worked for a long time on the black grass problem, or farmers who control black grass on a regular basis. There are however some well known problems with expert knowledge. Single experts tend not to be very accurate \citep{Burg2014}, there can be biases and it is often not clear which expert to use when there is disagreement \citep{Burg2011, Mart2012}. Especially given that our ability to determine who has the best judgement is very poor \citep{Burg2011}.
+
+There are methods that can increase the accuracy of expert information and decrease bias. The main thrust of these is to use multiple experts and then either average across them, allow them to reach a consensus answer. Recommend best practice is a hybrid system where you elicit answers from all the experts, then allow them to see everyone else's answers, then let each expert revise their answer \citep{Mart2012}.          
+
+\cite{Mart2012} set out five steps in the elicitation process:
+\subsection{Decide how the information will be used}
+Expert information will be used to parametrize a model of the evolution of herbicide resistance in blackgrass. The expert data will compliment data from the literature and experiments. Possibly to help validate the model output? 
+
+\subsection{Determine what to elicit}
+This requires that we define the research question. \\
+Potential questions:\\
+\begin{enumerate}
+	\item Can herbicide resistance be stopped or slowed with the use of non-chemical control (i.e. seed bank manipulation, change in crop). What about temporal frequency of that control, every year,every second, apply both in the same year. Need seed bank model, or could just manipulate survival rate, and some sort of optimization, this seems doable with dynamic programming. Similar question could be asked about multiple herbicides (model would need to use g_1 and g_2 trait values with potentially some cross resistance between them). If we sold this broadly enough to be about integrated pest management could maybe go to JAE? Biol. Invas. or weeds research more likely.     
+	\item When is it too late to act (possibly with spatial model). If a farmer sees a few resistant individuals is it already to late, or can early intervention stop herbicide resistance. For this we would need to model exactly what an intervention looks like, so could build on the previous question.  
+	\item At what scale do we need to act (some sort of patch model possibly). Given that resistance can be imported between farms how tightly do resistance prevention measures need to be coordinated between farms.   
+	\item How does NTSR and TSR interact, does one make the other more likely to arise.
+\end{enumerate}
+
+Regardless of question we will likely want estimates of herbicide effectiveness, change in that effectiveness over time, fecundity, cost of resistance, survival rate, seed bank longevity, germination rates. What we need to elicit will depend on what we can get from other sources. 
+	
+
+\subsection{Design the elicitation process}
+The major aspects of the elicitation process are worked out at this stage including how to deal with uncertainty and bias. 
+\begin{enumerate}
+	\item[format:] probably email or phone, possibly an existing meeting of farmers group.
+	\item[experts:] Farmers, people in Rothemstead possibly
+	\item[materials:] Questionnaire, develop and test questions
+	\item[synthesis:] Are all experts weighted equally, do we average, vote, try to find a consensus answer? How do we treat the uncertainty between experts, and also with in experts.
+	\item[roles:] Problem owner analyst are likely to be SRC, facilitator might be someone different.
+	\item[training:] Experts may need some guidance on meaning and our intention.    
+\end{enumerate}
+
+\subsection{Perform the elicitation}
+This step requires deciding what experts can reasonably provide information on, will there be single or multiple experts, how those answers will be combined, are experts allowed to see the answers of the other experts? If so are they allowed to reevaluate their own answers. How are they allowed to evaluate those answers.  
+
+\subsection{Encode the information}
+In this step we decide how the expert knowledge will be included in the model. What if it disagrees with data from the literature, which one do we trust, could we use expert knowledge as a prior? Do we use the range in expert opinion to represent parameter uncertainty. 
+
+Will we need ethics for this, especially if we use farmers?
+
+\bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
+\bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
+
+\end{document}
