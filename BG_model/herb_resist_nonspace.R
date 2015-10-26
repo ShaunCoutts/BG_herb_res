@@ -2,6 +2,7 @@
 working_loc = '/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_model' 
 setwd(working_loc)
 source('herb_resist_proccess_functions.R')
+source('nonpatial_dynamic_program.R')
 test_functions_broken(working_loc)
 #set up evaluation points on g
 eval_object = eval_points_builder(lower_eval_point = -10, upper_eval_point = 10, resolution = 0.5, seed_expantion = 5)
@@ -51,6 +52,7 @@ A_herb = [0, 1, 0] # herbicide for each action
 A_cost = [0, cost_herb, 0] #assume all cost and profit defined in reward function for action 3 (alt)
 A_sur = [max_sur, max_sur, 0] #no above ground individuals survive to reproduction in new crop
 
+#start building the tree
 
 
 

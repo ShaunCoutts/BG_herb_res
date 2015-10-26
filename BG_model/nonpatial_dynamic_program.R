@@ -1,7 +1,7 @@
 #functions for the dynamic programing of the non-spatial model of herb-resistance 
 
 ## creat a node with all the information needed.
-node <- function(act, parent, alt_profit, min_reward, seed_survival, base_profit, ...){
+node <- function(act, parent, alt_profit, min_reward, seed_survival, base_profit, herb_cost, dg, dis_rate, ...){
   if(act == 3){
     new_state = seedbank_update(parent$state, seed_survival)
     value = parent$value + ((base_profit - alt_profit) / ((1 + dis_rate) ^ (parent$time_step + 1)))
@@ -14,17 +14,18 @@ node <- function(act, parent, alt_profit, min_reward, seed_survival, base_profit
   list(acts = c(act, partent$acts), time_step = parent$time_step + 1, value = value, state = new_state)
 }
 
+intial_node <- function(state0){
+  list(acts = 0, time_step = 0, value = 0, state = state0)
+}
+
 reward <- function(act, survivors, base_profit, herb_cost, dg){
   N = sum(survivors) * dg
   max(0, base_profit - N * herb_cost) - A_cost[act] 
 }
 
-
 seedbank_update(seedbank_current, seed_survival){
   seedbank_current * seed_survival
 }
-
-
 
 state_transition <- function(seedbank_current, germination, eval_object, herb_rate, sur0, sur_cost_resist, herb_effect, survive_resist, max_sur, ceiling_pop, seed_survival, fec_max, fec0, fec_cost, additive_variance, density_cutoff){
   new_plants = emergence(seedbank_current = seedbank_current, germination = germination) 
@@ -36,11 +37,3 @@ state_transition <- function(seedbank_current, germination, eval_object, herb_ra
   list(new_state = new_seedbank, survivors = survivors)
 }
 
-
-
-x = seq(-10, 10, 0.5)
-y = (0.6 * exp(-0.001 * x)) / (1 + (0.6 * (exp(-0.001 * x) - 1)))
-Q = -1 + 1
-y = K / (1 + Q * exp(-alpha * (x - M)))
-y = 0.9 / (1 + 0.2 * exp(0.5 * (x - 2)))
-plot(x, y)
