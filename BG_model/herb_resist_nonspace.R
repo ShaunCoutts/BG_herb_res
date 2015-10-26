@@ -33,6 +33,23 @@ seedbank_animator(results_matrix = result, eval_object = eval_object, herb_sched
 
 
 
+## try a simple dynamic program on IPM aimed at reducing resistance, the optimal solution will be found using Dijkstra's algorithm where the poroblem is writtena as a decision tree
+## the nodes are action-timestep pairs and distance between nodes is the reward for that action timestep pair given the inital state and all the previous visited nodes 
+## (i.e. actions), we want to find the biggest cumulative discounted reward. Is similar to Bellman equation but is solved foward in time rather than backwards due to difficulty in calculating 
+## what the final state will be. 
+
+##DEFINE PARAMETERS
+herb_cost = 0.1
+base_profit = 1 #profit from wheat with no herb and no black grass
+alt_profit = 0.5
+
+
+
+##DEFINE ACTIONS
+# there are three actions herb0 (whet no herbicide), herb (herbicide, wheat) or alt (alternative crop which is assumed less profitable but is unaffected by black grass.)
+A_herb = [0, 1, 0] # herbicide for each action
+A_cost = [0, cost_herb, 0] #assume all cost and profit defined in reward function for action 3 (alt)
+A_sur = [max_sur, max_sur, 0] #no above ground individuals survive to reproduction in new crop
 
 
 
