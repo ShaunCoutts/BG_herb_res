@@ -39,37 +39,51 @@ There are two main questions, firstly, under what conditions would a profit maxi
 \subsection{overall model}
 We model the population using a yearly time step and assume all seeds that emerge do so from the seed bank. The number with resistance score $g$ at time $t$, $n(g, t)$, is taken just post emergence before any mortality has acted on the population. Thus, $n(g, t)$ is simply the number of individuals that emerge from the seed bank    
 \begin{equation}\label{eq:estab}
-	n(g, t + 1) = b(g, t)\phi_e
+	n(g, t + 1) = b(g, d = 1, t)\phi_e + b(g, d = 2, t)\phi_e\varphi_e		
 \end{equation} 
-Where $b(g, t)$ is the number of seeds in the seed bank of TSR genotype $g$, with NTSR score $z$ at time $t$ and $\phi_e$ is the germination probability. Both $n(g, z, t)$ and $b(g, z, t)$ are distributions across $z$, while $\phi_e$ is a probability.  
+Where $b(g, d, t)$ is the number of seeds in the seed bank at depth $d \in \{1, 2\}$, with resistance score $g$ at time $t$. $\phi_e$ is the germination probability and $\varphi_e \in [0, 1]$. Both $n(g, t)$ and $b(g, d, t)$ are distributions across $g$.  
 
 \subsection{genetic model}
-Herbicide resistance occurs through two main mechanisms, TSR where a single protein or binding site is altered, possibly by a single gene mutation, and NTSR  where the herbicide is metabolized or transported away from the target binding site. We assume that TSR is controlled by a single gene, which has two versions, the susceptible version $v_0$ and the resistant version $v_r$. We assume that every individual has two copies of the TSR gene, each of which could be $v_0$ or $v_r$. This leads to three TSR genotypes, $G = \{(v_0, v_0), (v_0, v_r), (v_r, v_r)\}$, where $G$ is the set of all possible TSR gene combinations and $g_i$ is the $i^\text{th}$ copy of the gene in tuple $g$. NTSR on the other hand is assumed to be controlled by a large number of genes so that quantitative genetics can be used to model its evolution through time as a normal distribution of resistance values $Z(t)$ across the whole population of survivors. 
-\begin{equation}\label{eq:MR_dist}
-	Z(t) = N(\bar{z}(t),\sqrt{\sigma_s^2(t)})
-\end{equation}
-where (following \cite{Coul2010})
-\begin{equation}\label{eq:MR_mean}
-	\bar{z}_s(t) = \frac{\int \text{d}z~z\displaystyle\sum_{\forall g \in G}n(g, z, t)s(g, z, t)}{\int \text{d}z\displaystyle\sum_{\forall g \in G}n(g, z, t)s(g, z, t)}
-\end{equation}
-where $s(g, z, t)$ is the probability that an individual of TSR genotype $g$, with NTSR score $z$ that germinates in time $t$ will survive until flowering and seed set. $\sigma_s^2(t)$ is the variance of the distribution of NTSR scores, $Z(t)$, calculated as 
-    
-\begin{equation}\label{eq:MR_sd}
-	\sigma_s^2(t) = \frac{\int \text{d}z~z^2\displaystyle\sum_{\forall g \in G}n(g, z, t)s(g, z, t)}{\int \text{d}z\displaystyle\sum_{\forall g \in G}n(g, z, t)s(g, z, t)}
-\end{equation}
+We assume that herbicide resistance is affected by lots of genes that might control toxin metabolism or toxin transport, each with a small effect, thus we model resistance as a quantitative trait. We assume that black grass are diploid, and are obligate out-crossers.   
 
 \subsection{seed bank and fecundity}
-We assume that all seeds germinate out of the seed bank at the start of the time step. We model the number of seeds in the seed bank with NTSR resistance $z$, TSR resistance genotype $g$ at time $t$ as the seeds already in the seed bank that don't germinate and do survive one time step (first term in Eq. \ref{eq:seedbank}) plus the number of seeds added to the seed bank at the end of the previous turn (second term in Eq. \ref{eq:seedbank}).
-\begin{equation}\label{eq:seedbank}
-	b(g, z, t) = b(g, z, t - 1)(1 - \phi_e)\phi_b + f(g, z, t - 1)  
-\end{equation} 
-Where $b(g, z, t - 1)$ is the number of seeds in the seed bank with TSR genotype $g$, NTSR resistance score $z$ in the previous time step. $(1 - \phi_e)$ is the proportion of seeds that did not germinate and $\phi_b$ is the probability that a seed survives. New seeds are produced by the fecundity function 
+We assume that all seeds germinate out of the seed bank at the start of the time step. We model the number of seeds in the seed bank with resistance $g$ at depth $d$, as the seeds already in the seed bank at depth $d$ that don't germinate and do survive one time step (first term in Eq. \ref{eq:seedbank}) plus the number of seeds added to the top level seed bank at the end of the previous time step, $f(g, t -1)$. We also move seeds between depth levels in response to plowing.
+\begin{subequations}\label{eq:seedbank}
+	\begin{equation}\label{eq:seedbank_top}
+	\begin{split}
+		b(g, d = 1, t) = b&(g, d = 1, t - 1)(1 - \phi_e)\phi_b + f(g, t - 1) +\\ 
+		&b(g, d = 2, t - 1)p(2 \rightarrow 1|a_{b,t}) - b(g, d = 1, t - 1)p(1 \rightarrow 2|a_{b,t})   
+	\end{split}
+	\end{equation}
+	\begin{equation}\label{eq:seedbank_bottom}
+	\begin{split}	
+		b(g, d = 2, t) = b&(g, d = 2, t - 1)(1 - \phi_e\varphi_e)\phi_b +\\ 
+		&b(g, d = 1, t - 1)p(1 \rightarrow 2|a_{b,t}) - b(g, d = 2, t - 1)p(2 \rightarrow 1|a_{b,t})
+	\end{split}
+	\end{equation}
+\end{subequations} 
+Where $b(g, d, t - 1)$ is the number of seeds at depth $d$ in the seed bank resistance score $g$ in the previous time step. $\phi_e(d)$ is the proportion of seeds that germinate and is a function of seed depth
+\begin{equation}
+	\phi_e(d) = \begin{cases}
+	d = 1~\text{:}~\phi_e \\
+	d = 2~\text{:}~\phi_e \varphi_e  	
+	\end{cases}
+\end{equation}
+where $\phi_e$ is the germination rate from the top of the soil profile and $\varphi_e \in [0, 1]$ is the proportional reduction in germination rate for seeds deeper in the soil profile, at depth $d = 2$. $d'$ is the depth class not being assessed (i.e. $d \neq d'$) and $p(d' \rightarrow d|a_{b,t})$ is the proportion of seeds that move from depth class $d'$ to depth class $d$ given action to manage the seed bank $a_b \in {\text{plow}, \text{no\_plow}}$ is taken in time $t$. 
+\begin{equation}
+	p(d' \rightarrow d|a_{b,t}) = \begin{cases}
+		a_{b,t} = \text{plow : } \varrho \\
+		a_{b,t} = \text{no\_plow : } 0
+	\end{cases}
+\end{equation}   
+
+ $\phi_b$ is the probability that a seed survives. The distribution of new seeds over resistance $g$,  $f(g, t)$, is modelled as the joint distribution of survivors after management action $a$ Eq. \ref{eq:fecund}. This forms the link between the genetic model of evolution, the population model and the management actions.      
 \begin{subequations}
 \label{eq:fecund}
 \begin{align}
 	\displaystyle
 	\label{eq:fecund_main}
-	f(g, z, t) &= Z(t)\sum_{\forall g' \in G}\left(\int \text{d}z~n(g', z, t)s(g', z, t)\psi(z) \sum_{i = 1}^{i = 2} Q(g_i, g') + \mu)q(i, t)\right)\\
+	f(g, t) &= \\
 	\label{eq:fecund_maternal}
 	Q(g_i, g') &= 
 	\begin{cases}
