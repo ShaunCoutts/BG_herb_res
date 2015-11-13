@@ -6,6 +6,8 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{amstext} %to enter text in mathematical formulae
+\usepackage{algpseudocode}%psuedo code and 
+\usepackage{algorithm}%puts the psuedo code in a float box
 \usepackage[retainorgcmds]{IEEEtrantools}
 \usepackage{natbib}
 %\usepackage{url, hyperref, makeidx, fancyhdr, booktabs, palatino}
@@ -26,124 +28,202 @@
 %paragraph formatting
 \setlength{\parskip}{12pt}
 \setlength{\parindent}{0cm}
+
+\makeatletter
+\let\OldStatex\Statex
+\renewcommand{\Statex}[1][3]{%
+  \setlength\@tempdima{\algorithmicindent}%
+  \OldStatex\hskip\dimexpr#1\@tempdima\relax}
+\makeatother
+
 \begin{document}
 %Make a title page
-\title{Black grass IPM}
-\author{Shaun R. Coutts$^\dag$, Dylan Childs$^\dag$, Rob Freckleton$^\ddag$}
+\title{Managing the inevitable rise of herbicide resistant}
+\author{Shaun R. Coutts$^\ddag$, Rob Freckleton$^\dag$, Dylan Childs$^\dag$, }
 \maketitle
 \section{non-spatial IPM}
-We develop a simple model of herbicide resistance in black grass, where resistance is assumed to be a quantitative trait. We model the management of black grass under the evolution of herbicide resistance, where control options are chemical control, that leads to herbicide resistance with prolonged use, and above and below ground cultural control, which is more costly but does not lead to evolved resistance. We find the optimal combination of control options over a finite time horizon, aiming either to maximize net present value (i.e. time discounted farm income) or minimize resistance with a fixed budget (where budget includes opportunity cost). We use two optimization tools, a greedy forward search of the decision space for problems with small time horizon, and a genetic algorithm to find near optimal sequences of actions over larger time horizons.
+We develop a simple model of herbicide resistance in black grass, where resistance is assumed to be a quantitative trait. We model the management of black grass under the evolution of herbicide resistance, where control options are chemical control, that leads to herbicide resistance with prolonged use, and above and below ground cultural control, which is more costly but does not lead to evolved resistance. We find the optimal combination of control options over a finite time horizon, aiming either to maximize net present value (i.e. time discounted farm income) or minimize resistance with a fixed budget (where budget includes opportunity cost). We use two optimization tools, a greedy forward search of the decision space for problems with small time horizon, and a genetic algorithm to find near optimal sequences of actions over longer time horizons.
 
 There are two main questions, firstly, under what conditions would a profit maximizing manager act in a way that avoided selecting for herbicide resistance. Secondly is there a set of actions that can meaningfully reduce herbicide resistance for a reasonable cost. This might apply in cases where profit is not the main motivator, such as control of invasive species on public lands (e.g. national parks and road sides).                  
 
-\subsection{overall model}
-We model the population using a yearly time step and assume all seeds that emerge do so from the seed bank. The number with resistance score $g$ at time $t$, $n(g, t)$, is taken just post emergence before any mortality has acted on the population. Thus, $n(g, t)$ is simply the number of individuals that emerge from the seed bank    
-\begin{equation}\label{eq:estab}
-	n(g, t + 1) = b(g, d = 1, t)\phi_e + b(g, d = 2, t)\phi_e\varphi_e		
-\end{equation} 
-Where $b(g, d, t)$ is the number of seeds in the seed bank at depth $d \in \{1, 2\}$, with resistance score $g$ at time $t$. $\phi_e$ is the germination probability and $\varphi_e \in [0, 1]$. Both $n(g, t)$ and $b(g, d, t)$ are distributions across $g$.  
+This problem consists of four main parts, the state of the system, the objective function, action space and system model. The state of our system is defined by the number of individuals in the seed bank and their distribution of herbicide resistance. The objective function translates the state of the system into how happy a manager is with the system. The action space defines what actions can be taken at each time step. There are three types of actions that can be combined at each time step, those that affect the seed bank, $a_b \in \{\text{plow}, \text{no\_plow}\}$, herbicide application, $a_h \in \{\text{herb}, \text{no\_herb}\}$ and crop choice $a_c \in \{\text{wheat}, \text{alt}, \text{fallow}\}$, which affects the germination rate. A single action is a combination of these three action types, $\textbf{a}_k \in \{a_b, a_h, a_c\}$, and the action space is every possible combination of these actions, $\textbf{A} = \{\textbf{a}_1, \textbf{a}_2, ..., \textbf{a}_{12}\}$. Finally there is the system model that predicts how the system will change from one state to another given that action $\textbf{a}_k$ is taken.        
 
-\subsection{genetic model}
-We assume that herbicide resistance is affected by lots of genes that might control toxin metabolism or toxin transport, each with a small effect, thus we model resistance as a quantitative trait. We assume that black grass are diploid, and are obligate out-crossers.   
+We will start by describing the system model and then the optimization process.
 
-\subsection{seed bank and fecundity}
-We assume that all seeds germinate out of the seed bank at the start of the time step. We model the number of seeds in the seed bank with resistance $g$ at depth $d$, as the seeds already in the seed bank at depth $d$ that don't germinate and do survive one time step (first term in Eq. \ref{eq:seedbank}) plus the number of seeds added to the top level seed bank at the end of the previous time step, $f(g, t -1)$. We also move seeds between depth levels in response to plowing.
+NOTE: should we model the fallow and alt crop actions work through germination or survival, if through survival then we assume that seeds germinate but don't survive, if through germination we assume seeds respond by not germinating. This can have a big effect on how the seed bank responds to these different management actions. I have modelled it through germination here  
+ 
+\subsection{System model}
+We model the population using a yearly time step and assume all seeds that emerge do so from the seed bank We start the time step at the start of the growing season before any seeds have emerged. We track the number of seeds in the seed bank with resistance $g$ at depth $d$, as the seeds already in the seed bank at depth $d$ that don't germinate and do survive one time step (first term in Eq. \ref{eq:seedbank_top}) plus the number of seeds added to the top level seed bank given action $a_h$ was taken, $f(g, t|a_h)$. We also move seeds between depth levels in response to plowing.
 \begin{subequations}\label{eq:seedbank}
 	\begin{equation}\label{eq:seedbank_top}
 	\begin{split}
-		b(g, d = 1, t) = b&(g, d = 1, t - 1)(1 - \phi_e)\phi_b + f(g, t - 1) +\\ 
-		&b(g, d = 2, t - 1)p(2 \rightarrow 1|a_{b,t}) - b(g, d = 1, t - 1)p(1 \rightarrow 2|a_{b,t})   
+		b(g, d = 1, t + 1) = [b&(g, d = 1, t) - b(g, d = 1, t)p(1 \rightarrow 2|a_b) + \\
+		&b(g, d = 2, t)p(2 \rightarrow 1|a_b)](1 - \phi_e(a_c))\phi_b + f(g, t|a_h) 
 	\end{split}
 	\end{equation}
 	\begin{equation}\label{eq:seedbank_bottom}
 	\begin{split}	
-		b(g, d = 2, t) = b&(g, d = 2, t - 1)(1 - \phi_e\varphi_e)\phi_b +\\ 
-		&b(g, d = 1, t - 1)p(1 \rightarrow 2|a_{b,t}) - b(g, d = 2, t - 1)p(2 \rightarrow 1|a_{b,t})
+		b(g, d = 2, t + 1) = [b(g, d = 2 2&, t) - b(g, d = 2, t)p(2 \rightarrow 1|a_b) + \\
+		 &b(g, d = 1, t)p(1 \rightarrow 2|a_b)](1 - \phi_e(a_c)\varphi_e)\phi_b 
 	\end{split}
 	\end{equation}
-\end{subequations} 
-Where $b(g, d, t - 1)$ is the number of seeds at depth $d$ in the seed bank resistance score $g$ in the previous time step. $\phi_e(d)$ is the proportion of seeds that germinate and is a function of seed depth
-\begin{equation}
-	\phi_e(d) = \begin{cases}
-	d = 1~\text{:}~\phi_e \\
-	d = 2~\text{:}~\phi_e \varphi_e  	
-	\end{cases}
-\end{equation}
-where $\phi_e$ is the germination rate from the top of the soil profile and $\varphi_e \in [0, 1]$ is the proportional reduction in germination rate for seeds deeper in the soil profile, at depth $d = 2$. $d'$ is the depth class not being assessed (i.e. $d \neq d'$) and $p(d' \rightarrow d|a_{b,t})$ is the proportion of seeds that move from depth class $d'$ to depth class $d$ given action to manage the seed bank $a_b \in {\text{plow}, \text{no\_plow}}$ is taken in time $t$. 
-\begin{equation}
-	p(d' \rightarrow d|a_{b,t}) = \begin{cases}
-		a_{b,t} = \text{plow : } \varrho \\
-		a_{b,t} = \text{no\_plow : } 0
-	\end{cases}
-\end{equation}   
-
- $\phi_b$ is the probability that a seed survives. The distribution of new seeds over resistance $g$,  $f(g, t)$, is modelled as the joint distribution of survivors after management action $a$ Eq. \ref{eq:fecund}. This forms the link between the genetic model of evolution, the population model and the management actions.      
-\begin{subequations}
-\label{eq:fecund}
-\begin{align}
-	\displaystyle
-	\label{eq:fecund_main}
-	f(g, t) &= \\
-	\label{eq:fecund_maternal}
-	Q(g_i, g') &= 
-	\begin{cases}
-		0.5 ~\text{if}~ g_i \in g' \\
-		\mu ~\text{otherwise}
-	\end{cases}\\
-	\label{eq:fecund_pollen}
-	q(i, t) &= \frac{\displaystyle\sum_{\forall g^* \in G} \eta(i, g^*) \int \text{d}z~n(g^*, z, t)}{\displaystyle \sum_{\forall g^* \in G} \int \text{d}z~n(g^*, z, t)}\\
-	\label{eq:pollen_freq}
-	\eta(i, g^*) &= 
-	\begin{cases}
-	0.5~\text{if}~g_{k \neq i} \in g^* \\
-	\mu ~\text{otherwise}
-	\end{cases}    
-\end{align} 
 \end{subequations}
-The seeds produced by individuals with TSR genotype $g$ that survive until the end of time $t$ are assumed to have NTSR scores, $z$ that follow the normal distribution $Z(t)$ described in Eq. \ref{eq:MR_dist} (total number of seeds multiplied by $Z(t)$ in Eq. \ref{eq:fecund_main}). Because black grass is an out-crossing species individuals from other genotypes ($g'$) can contribute gene copies to the genotype being evaluated ($g$), thus in Eq. \ref{eq:fecund_main} the first summation term sums the seeds of TSR genotype $g$ from all possible TSR genotype parents ($\forall g' \in G$). The integration term in Eq. \ref{eq:fecund_main} gives the number of seeds produced by all individuals of genotype $g'$, where $s(g', z, t)$ is the probability of survival until flowering for an individual of TSR genotype $g'$, with NTSR score $z$ if they germinated at the start of time $t$, and is calculated in Eq. \ref{eq:survival}. $\psi(z)$ is the number of seeds produced by an individual with NTSR score $z$, modelled as a decreasing function of $z$.
-\begin{equation}\label{eq:fecund_seed_num}
-	\psi(z) = \frac{\psi_\text{max}}{1 + e^{-\alpha_f(z - z_{50}^f)}}
-\end{equation}         
-where $\psi_\text{max}$ is the maximum number of seeds an individual can produce, $e$ is Euler's constant, $\alpha_f$ is a shape parameter that affects how quickly increasing MR score, $z$, reduces fecundity and $z_{50}^f$ is the $z$ score where fecundity is 50\% of $\psi_\text{max}$. The second summation term across gene copies $i$ gives the probability seeds with tuple $g$ will be produced by an individual of genotype $g'$. Genes copies, $g_i$, have two sources, the individual producing the seed provides half the copies of a gene, while pollen provides the other half. In Eq. \ref{eq:fecund_main} these two processes are modelled with the functions $Q(g_i, g)$, which contributes gene versions ($g_i$) from the mother, and $q(i, t)$, which contributes gene versions from pollen. $Q(g_i, g)$ is a function that returns 0.5 if the value held by copy $g_i$ in the target genotype $g$ is in the genotype being evaluated $g'$, and returns $\mu$ otherwise. $\mu$ is the probability that gene version $g'_i$ mutates gene $g_i$. This function returns 0.5 since the mother can only supply one out of two copies for each gene. The second copy of the gene is supplied from the pollen using function $q(i, t)$. We assume that the probability of getting gene version $g_i$ required to complete the tuple $g$ is the proportion of all pollen which contains that gene version. We assume that the amount of pollen produced with TSR gene version $g_i$ is proportional to the proportion of individuals with that gene copy. Thus, the denominator of Eq. \ref{eq:fecund_pollen} is proportional to the total amount of pollen for all genotypes. The numerator of Eq. \ref{eq:fecund_pollen} is proportional to the amount of pollen that contains the gene version in the target genotype $g$, that is not supplied by the mother. It is function $\eta(i, g^*)$ that determines if this gene version will be produced by the genotype being evaluated for pollen production, $g^*$ (Eq. \ref{eq:pollen_freq}). $\eta(i, g^*)$ returns 0.5 if the version of the gene not provided by copy $g_i$ (i.e. $g_{k \neq i}$ , where $gi$ is the copy provided by the mother) is a member of the tuple $g^*$, the genotype being evaluated for pollen production.
-
-\subsection{survival}   
-We assume that probability of survival to flowering and seed set, $s(g, z, t)$ is influenced by TSR genotype $g$, NTSR score $z$, along with herbicide application and density at time $t$. It is at this point that herbicide application separates the different genotypes and drives the spread of herbicide resistant.     
-\begin{equation}\label{eq:survival}
-	s(g, z, t) = \gamma(t)\phi_s(h(t), z, g) 
+where $b(g, d, t)$ distribution of seeds over $g$ at depth class $d \in \{1, 2\}$ at time $t$. $\varphi \in [0, 1]$ is the proportional reduction in germination rate at the deeper depth class and $\phi_b$ is the probability that a seed survives. $p(d' \rightarrow d|a_b)$ is the proportion of seeds that move from depth class $d'$ to depth class $d$ given action to manage the seed bank $a_b \in \{\text{plow}, \text{no\_plow}\}$ is taken.    
+\begin{equation}
+	p(d' \rightarrow d|a_b) = \begin{cases}
+		\varrho &\text{if}~a_b = \text{plow} \\
+		0 &\text{if}~a_b = \text{no\_plow}
+	\end{cases}
+\end{equation}  
+where $\varrho$ is the proportion of seeds moved between depth levels by plowing. 
+   
+The distribution of new seeds over resistance $g$, $f(g, t|a_h)$, is modelled as the offspring produced by the joint distribution of maternal and paternal survivors after herbicide action $a_h \in \{\text{herb}, \text{no\_herb}\}$.     
+\begin{equation}
+\label{eq:fecund}
+\begin{split}
+	f(g, t|a_h, a_c, a_b) = \displaystyle\int_{g_m}\int_{g_p} \text{N}(0.5 g_m + &0.5 g_p, \sigma_f)s(g_m, t|a_h)\psi(g_m)\times \\ 
+		&s(g_f, t|a_h)n(g_m, t, a_c, a_b)n(g_p, t, a_c, a_b)\text{d}g_m\text{d}g_p 
+\end{split}
 \end{equation}
-
-Where $\phi_s(h(t), z, g)$ is the density independent survival probability for an individual with genotype $g$ given the herbicide application in time step $t$, $h(t)$, and is a distribution across $z$. $\gamma(t)$ is a density dependent term that reduces establishment and survival above some density threshold.  
-
-Survival probability, $s(h(t), z, g)$, must be bound between 0 and 1, thus we model it as a logistic function of genotype     
-\begin{equation}\label{eq:herb_surv}
-	\phi_s(h(t), z, g) =	\phi_\text{min}^{h(t)} + \frac{\phi_\text{max}^z - \phi_\text{min}^{h(t)}}{1 + e^{R(z, g) - R_{50}^s}}	
+We assume that the maternal and paternal distributions are the same (i.e. $n(g_m, t) = n(g_f, t) = n(g, t)$), since individuals produce both seeds and pollen. The offspring produced by every pair of $g_m$:$g_f$ values are assumed to be normally distributed over $g$ with a mean of $0.5g_m + 0.5g_f$ and a standard deviation of $\sigma_f$ (first term in Eq. \ref{eq:fecund}). The number of individuals that emerge from the seed bank is
+\begin{equation}\label{eq:above_ground}
+\begin{split}
+	n(g, t, a_c, a_b) = [b&(g, d = 1, t) - b(g, d = 1, t)p(1 \rightarrow 2|a_b) + b(g, d = 2, t)p(2 \rightarrow 1|a_b)] \times \\
+	&\phi_e(a_c)\phi_b + [b(g, d = 2, t) - b(g, d = 2, t)p(2 \rightarrow 1|a_b) +\\ 
+	&b(g, d = 1, t)p(1 \rightarrow 2|a_b)]\phi_e(a_c)\varphi\phi_b
+\end{split}		
 \end{equation}
-where $\phi_\text{min}^{h(t)}$ is the survival rate for a completely susceptible individual and is a decreasing function of herbicide dose in time $t$, $h(t)$ 
-\begin{equation}\label{eq:dose_response}
-	\phi_\text{min}^{h(t)} = \frac{\phi_\text{max}^z e^{-\xi h(t)}}{1 + \phi_\text{max}^z(e^{-\xi h(t)} - 1)}
+where $\phi_e(a_c)$ is the germination rate from the top of the soil profile given that crop choice $a_c \in \{\text{alt}, \text{fallow}, \text{wheat}\}$ is made. 
+\begin{equation}\label{eq:estab}
+	\phi_e(a_c) = \begin{cases}
+		z_\text{wheat}&\text{if}~a_c = \text{wheat}\\
+		z_\text{alt}&\text{if}~a_c = \text{alt}\\
+		z_\text{fallow}&\text{if}~a_c = \text{fallow}	
+	\end{cases}
 \end{equation}
-where $\xi$ is a shape parameter that determines how increasing herbicide dose decreases survival for susceptible individuals and $h_{50}$ is the herbicide dose where $\phi_\text{min}^{h(t)}$ is half of $\phi_\text{max}^z$. $\phi_\text{max}^z$ is the survival rate for a maximally resistant individual and is a decreasing function of NTSR score $z$. It can be thought of as the survival cost associated with NTSR and is calculated as 
-\begin{equation}\label{eq:surv_cost}
-	\phi_\text{max}^z = \frac{\phi_s^0}{1 + e^{-\alpha_s(z - z_{50}^s)}} 
-\end{equation}
-where $\phi_s^0$ is survival rate for a completely susceptible individual when $h(t) = 0$, $\alpha_s$ is a parameter that controls how quickly increasing NTSR decreases maximum possible survival (cost parameter) and $z_{50}^s$ is the value of $z$ where $\phi_\text{max}^z$ is half $\phi_s^0$.       
-
-$R(z, g)$ is a function that combines the NTSR resistance score $z$ with the TSR genotype $g$ to give an overall resistance score. 
-\begin{equation}\label{eq:resist}
-	R(z, g) = rz + \textbf{max}(\rho(g_1), \rho(g_2)) + \text{N}(0, \sigma_e)
-\end{equation}
-where $r$ is a coefficient that increases survival under herbicide application so that higher $z$ scores lead to higher survival probabilities. $\text{N}(0, \sigma_e)$ is a normal distribution with a mean of 0 and a standard deviation of $\sigma_e$. $\sigma_e$ can be thought of as environmental noise and non-heritable factors that increase or decrease resistance to herbicide. This noise term makes $R(z, g, h(t))$ a distribution of values for every value of $z$. Putting the environmental noise inside the function $\phi_s(h(t), z g)$ implies that different seeds experience different levels of environmental impact on resistance. It is also possible that climatic conditions affect the effectiveness of herbicide so that all individuals experience the same increase or decrease in herbicide effectiveness. This could be done in numerical simulations by drawing a random variable for a normal distribution once at the start of the time step and add this number to Eq. \ref{eq:resist}. $\rho(g_i)$ is the amount of herbicide resistance conferred by having the version of gene $g$ held in copy $g_i$. We assume $\rho(v_0) = 0$ and for versions that confer resistance we assume $\rho(v_r) > 0$. Thus, the $\textbf{max}(\cdot)$ function assumes that the resistance version of the gene is dominant. We could use other forms to make different assumptions. For example we could use $\textbf{min}(\rho(g_1), \rho(g_2))$ to make resistant genes receive, or $\rho(g_1) + \rho(g_2)$ to make the copies additive in their effect. 
+where $z_{a_c}$ is the germination rate under crop choice $a_c$. The number of those individuals that emerge and survive long enough to contribute seeds and pollen to the next generation is $s(g, t|a_n)$, the probability that an individual with resistance score $g$ survives at time $t$ given that action $a_n$ is taken to manage the above ground population. 
+\begin{equation}
+\label{eq:survival}
+	s(g, t|a_n) = \eta(t)\phi_s(a_h, g) 
+\end{equation}   
+where the density independent survival rate is 
+\begin{align}\label{eq:sur_dens_ind}
+	\phi_s(a_h, g) =& \frac{s_\text{max}}{1 + e^{-\Phi}}\\
+	\Phi =& s_0 - s_rg - h(a_h)\left(\xi - \textbf{min}(\xi, \rho g) \right)\\
+	h(a_h) =& \begin{cases}
+		1 &\text{if}~a_h = \text{herb}\\
+		0 &\text{if}~a_h = \text{no\_herb}
+	\end{cases} 
+\end{align}
+where $s_\text{max}$ is the maximum survival rate for black grass. $s_0$ is the survival probability (in logits) when there is no herbicide for individuals with resistance score $g = 0$ and $\xi$ is the reduction in survival (in logits) caused by herbicide for individuals with a resistance score $g = 0$. $s_r$ is the survival cost of herbicide resistance (in logits) and $\rho$ is the protective effect of a one unit increase in resistance score $g$. $h(a_h)$ is a function that returns 0 or 1 depending on the action $a_h$.
 
 Without a density dependent term any increasing population would continue growing until infinitely large. We model this density dependence with the term 
 \begin{equation}\label{eq:density_dependence}
-	\gamma(t) =
+	\eta(t) =
 		\begin{cases}
-			\frac{M}{\sum_{\forall g}\int \text{d}z~ s(g, z, t)b(g, z, t)\phi_e} &\text{if}~ \sum_{\forall g}\int \text{d}z~ s(g, z, t)b(g, z, t)\phi_e > M \\
-			1 &\text{if}~ \sum_{\forall g}\int \text{d}z~ s(g, z, t)b(g, z, t)\phi_e \leq M  
+			\frac{M}{\sum_{\forall d}\int \text{d}g~ \phi_s(a_h, g)b(g, d, t)\phi_e(a_c)} &\text{if}~ \sum_{\forall d}\int \text{d}g~ \phi_s(a_h, g)b(g, d, t)\phi_e(a_c) > M \\
+			1 &\text{if}~ \sum_{\forall d}\int \text{d}g~ \phi_s(a_h, g)b(g, d, t)\phi_e(a_c) \leq M  
 		\end{cases}
 \end{equation}
+where $\eta(t)$ reduces establishment and survival probability in response to the total number of individuals in the population which are expected to establish at time $t$. $\phi_s(a_h, g)$ and $b(g, d, t)$ are defined in Eq.'s \ref{eq:sur_dens_ind} and \ref{eq:seedbank} respectively, $\phi_e(a_c)$ is defined in Eq. \ref{eq:estab}. $M$ is the number of individuals that can exist above ground in the population at any one time. The number of seeds produced per individual, $\psi(g)$, is a function of resistance, with greater resistance reducing the number of seeds produced. 
+\begin{equation}\label{eq:seed_production}
+	\psi(g) = \frac{\psi_\text{max}}{1 + e^{-(f_0 - f_rg)}}\\
+\end{equation}  
+where $\psi_\text{max}$ is the maximum possible number of seeds per individual, $f_0$ controls the number of seeds produced when $g = 0$, and $f_r$ is the cost of resistance in terms of reduction in seed production.
 
-where $\gamma(t)$ reduces establishment and survival probability in response to the total number of individuals in the population which are expected to establish at time $t$. $s(g, z, t)$ and $b(g, z, t)$ are defined in Eq.'s \ref{eq:survival} and \ref{eq:seedbank} respectively, $\phi_e$ is defined in \ref{eq:estab}. $M$ is the number of individuals that can exist above ground in the population at any one time. 
+\subsection{Finding the optimal policy}
+The goal is to find the set of actions for a given set of states (in optimization research called a policy and denoted with $\pi$) that maximize the value of the discounted cumulative reward function. The immediate reward function $R(x, a)$ gives the immediate reward of being in state $x$ and taking action $a$. State $x$ is a point in the continuous state domain $\mathbf{x}$, $x$ is based on the number of seeds in the seed bank at each depth and the resistance of those seeds, $b(g, d)$. We assume that $b(g, d)$ is normally distributed with a constant standard deviation $sigma_b$. We estimate $\sigma_b$ before the optimization process starts by running the system model and observing the standard deviation over $g$ in $b(g, t)$. Assuming constant standard deviation means the whole state space, $\mathbf{x}$, is defined over four dimensions, the total number of seeds at each depth level $d$ $B_d = \int b(g, d)\text{d}g$, and mean resistance score of those seeds $\overline{g}_d$, $d \in \{1, 2\}$. The action space is discrete and there are three types of actions that can be combined at each time step; those that affect the seed bank, $a_b \in \{\text{plow}, \text{no\_plow}\}$, herbicide application, $a_h \in \{\text{herb}, \text{no\_herb}\}$ and crop choice $a_c \in \{\text{wheat}, \text{alt}, \text{fallow}\}$, which affects the germination rate. A single action is a tuple of these three action types, $a_k = \langle a_b, a_h, a_c \rangle$, and the action space is every possible tuple, $\textbf{A} = \{a_1, a_2, ..., a_{9}\}$. There are only $2 times 2 \times 2 + 1 = 9$ actions in the action space rather than $3 \times 2 \times 2 = 12$ because only $a_b = \text{no\_plow}$ and $a_h = \text{no\_herb}$ are allowed when $a_c = \text{fellow}$. The policy $pi$ is a mapping of each state to an action (i.e. it tells the agent what to do in each state) and the optimal policy $pi^*$ is the policy that chose the action in each state that maximizes the discounted long term rewards. 
+
+There are two main ways to find $pi^*$ direct policy search and a reinforced learning algorithm, we use a greedy-$\epsilon$ Q-learning approach for its relative simplicity \citep{vanH2012}. 
+
+For direct policy search we try and maximize value function, $V(x_0|\mathbf{a})$, that gives the accumulated rewards of starting in state $x_0$ and following the action sequence $\mathbf{a} = \{a_k^1, a_k^2, ... a_k^T\}$, where $a_k^t$ is the action taken at time $t$. We use two different types of value function that represent different motivations. The first value function (Eq. \ref{rewards:ds_NPV}) focuses on a purely profit driven decision maker and is the discounted income. 
+\begin{equation}\label{rewards:ds_NPV}
+	V(x_0|\mathbf{a}) = \sum_{t = 1}^{T} \gamma^t R(x_t, a_k^t) 
+\end{equation}
+Where $\gamma$ is the discount rate and 
+\begin{equation}\label{rewards:immediate}
+	R(x, a) = \nu(x, a) - \zeta(a)  
+\end{equation},
+with
+\begin{equation}
+	\nu(x, a) = \begin{cases}
+		\text{max}(0, y_\text{wheat} - y_\text{loss}\int s(g|a\langle a_h \rangle)n(x, a\langle a_c, a_b \rangle)\text{d}g) &\text{if } a\langle a_c \rangle = \text{wheat}\\
+		y_\text{alt} &\text{if } a_c = \text{alt}\\
+		0 &\text{if } a_c = \text{fallow} 
+	\end{cases}
+\end{equation}
+where $y_{a_c}$ is the expected income from crop choice $a_c$, we assume there is no income from leaving the field fallow. $y_\text{loss}$ is the amount of income lost caused by each above ground black grass individual. Recall that $x$ is the state variable and it contains information on the number of seeds at each level of the seed bank ($B_d$) and the mean resistance score, $\overline{g}_d$. By assuming $b(g, d)$ is a normal distribution with standard deviation $\sigma_b$ we can reconstruct $b(g, d)$ from $x$, and thus calculate the distribution over $g$ of emerging individual $n(x, a_c, a_b)$ using Eq. \ref{eq:above_ground}. The number of those individuals that survive, $s(g|a_h)$, depends on their resistance score and herbicide action $a_c$ (Eq. \ref{eq:survival}). The cost of doing action $a$ is
+\begin{equation}
+	\zeta_{a} = \sum_{\forall a_u \in a} \theta(a_u)
+\end{equation} 
+where $\theta(a_u)$ is the cost of doing sub action $a_u$, $a_u \in \{\text{plow}, \text{no\_plow}, \text{herb}, \text{no\_herb}, \text{wheat}, \text{alt}, \text{fallow}\}$. We assume that $\theta(a_c) = 0$ so that $y_{a_c}$ is the profit of that crop, excluding herbicide for black grass and plowing. Recall that $a$ is a tuple of three sub actions so only three of these costs are ever included for one action     
+
+The second value function we look at represents a manager tasked with minimizing the mean resistance score, $\overline{g}$, of the black grass population. To make this problem definition more realistic we add the constraint that the discounted economic returns the action sequence $\mathbf{a}$, cannot fall below the overall acceptable income $I_{min}$.   
+\begin{equation}\label{rewards:ds_g_min}
+	V(x_0|\mathbf{a}) = \begin{cases}
+	-\overline{g}_T &\text{if } \sum_{t = 1}^{T} \gamma^t R(x_t, a_k^t) \geq I_\text{min}\\
+	-\infty &\text{if } \sum_{t = 1}^{T} \gamma^t R(x_t, a_k^t) \leq I_\text{min}    
+	\end{cases}  
+\end{equation}
+
+The goal now is to find the sequence of actions $\mathbf{a}$ that maximizes $V(x_0|\mathbf{a})$. This is a combinatorial optimization problem, which are classically solved using a genetic algorithm. Starting with population, $P$ of random sequences we evaluate the value function (Eq. \ref{rewards:ds_NPV} or \ref{rewards:ds_g_min}) for each $\mathbf{a}_i \in P = \{\mathbf{a}_1, \mathbf{a}_2, ..., \mathbf{a}_{P_\text{size}}\}$. The $P^*$ action sequences with the best value are allowed to be parents to the next generation of action sequences. These sequences are recombined with each other using a cross over process to form new action sequences. These new action sequences also experience mutations that randomly switch one action in the sequence to another. These action sequences now make up the population $P$ and the process is repeated until a single action sequence comes to dominate the entire population. This action sequence will be near optimal, although there are no guarantees that this is a global optimum. We can restart the genetic algorithm with a new initial $P$ to see if that starting set of action sequences reaches the same optimal action sequence. 
+
+In an alternative approach we can formulate this problem as a Markov Decision Process (MDP), where the state at each time step is determined only by the state and action take in the last time step. This means that the value functions can no longer time dependent as in Eq.'s \ref{rewards:ds_NPV} and \ref{rewards:ds_g_min}, but have to be redefined in terms of the sate. Once this is done we can use a powerful set of tools called dynamic programming to find the optimal policy $\pi^*$. A policy is a mapping of states to actions, so that in any state the system can be in the policy suggests an action to take in that policy. $\pi^*$ then is the policy where the action suggested in each state is the one that maximizes the value of being in that state. To find the optimal policy we use a version of dynamic programming called heuristic dynamic programming \citep{Werb1992}, solved using backward iterations of the Bellman equation 
+\begin{equation}\label{eq:bellman}
+	V(x) = \max\limits_{a \in A}\lbrace R(x, a) + \gamma V(x'|a, x) \rbrace 
+\end{equation}                  
+Where $V(x)$ is the value of being in state $x$ and $V(x'|a, x)$ is the value of the state the system will be in at the next time step, $x'$, given the current state is $x$ and action $a$ is taken. $x'$ is calculated using the system model in Eq. \ref{eq:seedbank}. $R(x, a)$ and $\gamma$ are defined in Eq. \ref{rewards:ds_NPV}. The goal of dynamic programing is to find $V(x)$ for all $x \in \mathbf{x}$. We can do this efficiently by making three strong assumptions; The next state is completely determined by the current and the action taken (system is memory-less), all future actions will be optimal, and we do not care about rewards obtained after time horizon $T$. These three assumptions mean we can use a simple version of backward iteration to find $\pi^*$. The only complication is the state space is continuous and multi-dimensional, thus we evaluate $V(x)$ at a set of points and use a spline to interpolate between those evaluation points, $V(\mathbf{x})$ is actually a spline that approximates the real value function. We do this using Algorithm \ref{alg:HDP}.
+
+The only difference between Algorithm \ref{alg:HDP} and standard dynamic programming via backward iteration is the need to generate a set of points, $\hat{\mathbf{x}}$ and fit a spline ($Q$) to the values calculated for each evaluated state. This is required because our state space is a continuous 4D surface and we need a means of approximating that surface.
+
+{\setstretch{1.0}
+\begin{algorithm}[H]
+\caption{Heuristic Dynamic Programming algorithm using backward iteration}
+\label{alg:HDP}
+\begin{algorithmic}[1]
+	\State Use Latin hyper-cube sampling to generate a set of evaluation points $\hat{\mathbf{x}}$. 	
+	\ForAll{$x \in \hat{\mathbf{x}}$} 
+		\State $\hat{V}(x) = \max\limits_{a \in A} R(x, a)$ 
+	\EndFor
+	\State Fit spline $Q$ to the values of the evaluated states $\hat{V}(\hat{\mathbf{x}})$ to approximate the value 			
+	\Statex[1] function, $V(\mathbf{x}) = Q$.
+	\For{$t = T$ \textbf{to} $t = 1$}
+		\State Use Latin hyper-cube sampling to generate a set of evaluation points $\hat{\mathbf{x}}$ 
+		\ForAll{$x \in \hat{\mathbf{x}}$}
+			\State Generate normal distributions $b(g, d = 1, t) = x\langle B_1 \rangle \text{N}(x\langle \overline{g}_1\rangle, \sigma_b)$ and 
+			\Statex[3] $b(g, d = 2, t) = x\langle B_2 \rangle \text{N}(x\langle \overline{g}_2\rangle, \sigma_b)$
+			\State $\hat{V}(x) \gets -\infty$
+			\ForAll{$a \in A$}
+				\ForAll{$d \in \{1,2\}$}
+					\State Use $b(g, d, t)$ to calculate $b(g, d, t + 1)$ using Eq. \ref{eq:seedbank} (note action $a$ affects 
+					\Statex[5]this calculation).
+				\EndFor
+				\State Encode state $x' = \langle B_1 = \int b(g, d = 1, t + 1)\text{d}g, \overline{g}_1 =\text{mean}(b(g, d = 1, t + 1)),$
+				\Statex[4]$B_2 = \int b(g, d = 2, t + 1)\text{d}g, \overline{g}_2 = \text{mean}(b(g, d = 2, t + 1)) \rangle$
+				\State Predict value of $x'$ using spline $Q$: $V(x'|a, x) = Q(x')$
+				\State Calculate the tentative state value $\hat{V}(x)_\text{tet} =  R(x, a) + \gamma V(x'|a, x)$ 
+				\If{$\hat{V}(x)_\text{tet} > \hat{V}(x)$} 
+					\State$\hat{V}(x) \gets \hat{V}(x)_\text{tet}$
+					\State $\pi_t^*(x) \gets a$
+				\EndIf   
+			\EndFor
+		\EndFor
+		\State Fit spline $Q$ to the values of the evaluated states $\hat{V}(\hat{\mathbf{x}})$ to approximate the value 
+	\EndFor
+\end{algorithmic}
+\end{algorithm}  
+}
+Using this approach to minimize $\overline{g}$ we also need to add a fifth dimension to the state space to keep track of the total income upto time $t$, $I_t$, and modify line 15 to build a state with income $I$ and modify line 16 to update that income to $I'$. The immediate reward also needs to be modified to       
+\begin{equation}\label{reward:HDP_g_min}
+	R(x, a) = \begin{cases}
+		-\overline{g} &\text{if } t = T \bigwedge I > I_\text{min}\\
+		0 &\text{if } t \neq T \bigwedge I > I_\text{min}\\
+		-\infty &\text{if } I \leq I_\text{min}\\
+	\end{cases}
+\end{equation}
+In addition when building the policy $\pi_{t=0}^*$ care must be taken that only states where $I = 0$ are used.
+
+The genetic algorithm and the dynamic programming achieve similar goals so we may only end up doing one. But they do offer different strengths. HDP is more efficient and finds the policy across all states, not just a few states, also HDP is likely to find a better policy (if $Q$ is a good representation of $V(\mathbf{x})$). However HDP will only show the single optimal policy, there may be a much simpler policy that is almost as good, the genetic algorithm will show a set of good (but not quiet optimal) action sequences. Also the $\overline{g}$ minimization problem works more naturally with the GA. Might be good to compare their results, it will be hard to tell how well each method is doing and they have different weaknesses. HGP will not do well if the value function is very bumpy, as in that case we will need lots of evaluation at each iteration to capture its shape. The Genetic algorithm will be slower but will work better if the solution space is very bumpy.       
 
 \bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
 \bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
