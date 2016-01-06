@@ -90,22 +90,20 @@ The distribution of new seeds over resistance $g$, $f(g, t, a_k)$, is modelled a
 \begin{equation}
 \label{eq:fecund}
 \begin{split}
-	f(g, t, a_k) = \displaystyle\int_{g_m}\int_{g_p} \text{N}(0.5 g_m + &0.5 g_p, \sigma_f)s(g_m, t, a_h, a_m, a_c)\psi(g_m,a_d)\times \\ 
-		&s(g_f, t, a_h, a_m, a_c)n(g_m, t, a_b)n(g_p, t, a_b)\text{d}g_m\text{d}g_p 
+	f(g, t, a_k) = \displaystyle&\int_{g_m}\int_{g_p} \text{N}(0.5 g_m + 0.5 g_p, \sigma_f)s(g_m, t, a_h, a_c)\psi(g_m,a_d)s(g_f, t, a_h, a_c)\times \\ 
+		&~~~~~~m(a_m)^2 n(g_m, t, a_b)n(g_p, t, a_b)\varsigma^2\text{d}g_m\text{d}g_p + \\
+		&\int_{g_m}\int_{g_p} \text{N}(0.5 g_m + 0.5 g_p, \sigma_f)s^*(g_m, t, a_c)\psi(g_m,a_d)s^*(g_f, t, a_c)\times \\ 
+		&~~~~~~m(a_m)^2 n(g_m, t, a_b)n(g_p, t, a_b)(1 - \varsigma)^2 \text{d}g_m \text{d}g_p 
 \end{split}
 \end{equation}
+
 We assume that the maternal and paternal distributions are the same (i.e. $n(g_m, t, a_b) = n(g_f, t, a_b) = n(g, t, a_b)$), since individuals produce both seeds and pollen. The offspring produced by every pair of $g_m$:$g_f$ values are assumed to be normally distributed over $g$ with a mean of $0.5g_m + 0.5g_f$ and a standard deviation of $\sigma_f$ (first term in Eq. \ref{eq:fecund}). We assume that only seeds in the top layer of the seed bank germinate, thus the number of individuals that emerge from the seed bank is
 \begin{equation}\label{eq:above_ground}
 	n(g, t, a_b) = [b(g, d = 1, t) - b(g, d = 1, t)p(1 \rightarrow 2|a_b) + b(g, d = 2, t)p(2 \rightarrow 1|a_b)]\phi_e\phi_b
 \end{equation}
-where $\phi_e$ is the germination rate from the top of the soil profile. The probability that those germinated individuals survive long enough to contribute seeds and pollen to the next generation given sub-actions $a_h$, $a_m$ and $a_c$ are taken is 
-\begin{equation}
-\label{eq:survival}
-	s(g, t, a_h, a_m, a_c) = \phi_s(g, a_h, a_c)m(a_m) 
-\end{equation}   
-where the survival rate is 
-\begin{align}\label{eq:sur_dens_ind}
-	\phi_s(a_h, a_c, g) =& \frac{s_\text{max}}{1 + e^{-\Phi_s}}\\
+where $\phi_e$ is the germination rate from the top of the soil profile. We assume that not all seeds emerge at the same time so that only portion $\varsigma$ of the individuals are exposed to the herbicide if it is applied. The probability that those germinated individuals exposed to herbicide survive long enough to contribute seeds and pollen to the next generation given sub-actions $a_h$ and $a_c$ are taken is 
+\begin{align}\label{eq:survival_herb}
+	s(g, t, a_h, a_c) =& \frac{s_\text{max}}{1 + e^{-\Phi_s}}\\
 	\Phi_s =& s_0 - s_rg - h(a_h)\left(\xi_h - \textbf{min}(\xi_h, \rho g) \right) - c(a_c)\\
 	h(a_h) =& \begin{cases}
 		1 &\text{if}~a_h = \text{herb}\\
@@ -117,7 +115,11 @@ where the survival rate is
 		\alpha_\text{fallow} &\text{if}~a_c = \text{fallow}
 	\end{cases} 
 \end{align}
-where $s_\text{max}$ is the maximum survival rate for black grass. $s_0$ is the survival probability (in logits) when there is no herbicide for individuals with resistance score $g = 0$ and $\xi_h$ is the reduction in survival (in logits) caused by herbicide for individuals with a resistance score $g = 0$. $s_r$ is the survival cost of herbicide resistance (in logits) and $\rho$ is the protective effect of a one unit increase in resistance score $g$. $h(a_h)$ is a function that returns 0 or 1 depending on the action $a_h$. Survival under different crops is controlled by the function $c(a_c)$ which returns the reduction in survival (in logits), $\alpha_{a_c}$, given crop choice $a_c$. $m(a_m)$ is the proportion of black grass individuals that survive mechanical control given sub-action $a_m$.
+where $s_\text{max}$ is the maximum survival rate for black grass. $s_0$ is the survival probability (in logits) when there is no herbicide for individuals with resistance score $g = 0$ and $\xi_h$ is the reduction in survival (in logits) caused by herbicide for individuals with a resistance score $g = 0$. $s_r$ is the survival cost of herbicide resistance (in logits) and $\rho$ is the protective effect of a one unit increase in resistance score $g$. $h(a_h)$ is a function that returns 0 or 1 depending on the action $a_h$. Survival under different crops is controlled by the function $c(a_c)$ which returns the reduction in survival (in logits), $\alpha_{a_c}$, given crop choice $a_c$. Survival for individuals that are not exposed to herbicide is   
+\begin{align}\label{eq:survival_noherb}
+	s^*(g, t, a_c) =& \frac{s_\text{max}}{1 + e^{-s_0 - s_rg - c(a_c)}}\\
+\end{align}
+$m(a_m)$ is the proportion of black grass individuals that survive mechanical control given sub-action $a_m$.
 \begin{equation}
 	m(a_m) = \begin{cases}
 		\eta &\text{if}~a_m = \text{mech}\\
@@ -169,19 +171,18 @@ A single action is a tuple of these five sub-action, $a_k = \langle a_b, a_h, a_
 
 For direct search we try and maximize value function, $V(x_0|\mathbf{a})$, that gives the accumulated rewards of starting in state $x_0$ and following the action sequence $\mathbf{a} = \{a_k^1, a_k^2, ... a_k^T\}$, where $a_k^t$ is the action taken at time $t$. We use two different types of value function that represent different motivations. The first value function (Eq. \ref{rewards:ds_NPV}) focuses on a purely profit driven decision maker and is the discounted income. 
 \begin{equation}\label{rewards:ds_NPV}
-	V(x_0|\mathbf{a}) = \sum_{t = 1}^{T} \gamma^t R(x_t, a_k^t) 
+	V(x_0|\mathbf{a}) = \sum_{t = 0}^{T} \gamma^t R(x_t, a_k^t) 
 \end{equation}
 Where $\gamma$ is the discount rate and 
 \begin{equation}\label{rewards:immediate}
-	R(x_t, a_k^t) = \nu(x_t, a_k^t) - \sum_{\forall a_u \in a_k^t} \theta(a_u)  
+	R(x_t, a_k^t) = \text{max}\left[0, y_{a_c} - \varphi_{a_c} M(a_k^t, x_t)\right] - \sum_{\forall a_u \in a_k^t} \theta(a_u)  
 \end{equation}
-The income for action $a_k^t$ is 
-\begin{equation}
-	\nu(x_t, a_k^t) = \text{max}(0, y_{a_c} - \vartheta_{a_c} M(a_k^t, x_t)
-\end{equation}
-where $y_{a_c}$ is the expected income from crop choice $a_c$ (taken from tuple $a_k^t$). $\vartheta_{a_c}$ is the loss in yield of crop type $a_c$ from each black grass individual. Recall that $M(a_k^t, x_t)$ is the total number of above ground individuals after management (Eq. \ref{eq:num_ind}). We replace the time variable $t$ with the state variable $x_t$ since $M(a_k^t, x_t)$ can calculated from the information contained in the state variable $x_t$. We assume there is no income from leaving the field fallow, and also that there is no yield loss, i.e. ($y_\text{fallow} = \vartheta_\text{fallow} = 0$). $\theta(a_u)$ is the cost of doing sub-action $a_u$, $a_u \in \{\text{plow}$, $\text{no\_plow}$, $\text{herb}$, $\text{no\_herb}$, $\text{mech}$, $\text{no\_mech}$, $\text{optim}$, $\text{high\_den}$, $\text{wheat}$, $\text{alt}$, $\text{fallow}\}$. In the case of plowing, planting density, crop choice and herbicide sub-actions $\theta(\bullet)$ is constant. For mechanical control we assume that the cost of control increases with increasing weed numbers (which is in part controlled by the other sub-actions taken).
+where $y_{a_c}$ is the expected income from crop choice $a_c$ (taken from tuple $a_k^t$). $\varphi_{a_c}$ is the loss in yield of crop type $a_c$ from each black grass individual. Recall that $M(a_k^t, x_t)$ is the total number of above ground individuals after management (Eq. \ref{eq:num_ind}). We replace the time variable $t$ with the state variable $x_t$ since $M(a_k^t, x_t)$ can calculated from the information contained in the state variable $x_t$. We assume there is no income from leaving the field fallow, and also that there is no yield loss, i.e. $y_\text{fallow} = \varphi_\text{fallow} = 0$. $\theta(a_u)$ is the cost of doing sub-action $a_u$, $a_u \in \{\text{plow}$, $\text{no\_plow}$, $\text{herb}$, $\text{no\_herb}$, $\text{mech}$, $\text{no\_mech}$, $\text{optim}$, $\text{high\_den}$, $\text{wheat}$, $\text{alt}$, $\text{fallow}\}$. In the case of plowing, planting density, crop choice and herbicide sub-actions $\theta(a_u)$ is constant. For mechanical control we assume that the cost of control increases with increasing weed numbers (which is in part controlled by the other sub-actions taken).
 \begin{equation}\label{eq:cost_mech}
-	\theta(a_m) = \kappa_0 + \kappa \int \text{d}g~ n(g, t, a_b)\phi_s(a_h, a_c, g)
+	\theta(a_m) = \begin{cases}
+	\kappa_0 + \kappa \int \text{d}g~ n(g, t, a_b)\phi_s(a_h, a_c, g) &\text{if } a_m = \text{mech}\\
+	0 &\text{if } a_m = \text{no\_mech}
+	\end{cases} 
 \end{equation}    
 Where $\kappa_0$ is the cost of mechanical control when there are no black grass present (e.g. search costs, equipment costs) and $\kappa$ is the increase in cost for every black grass individual in the population. The integral sums the total number of above ground black grass individuals after plants establish out of the seed bank (Eq. \ref{eq:above_ground}) and after other above ground sub-actions have been taken (Eq. \ref{eq:sur_dens_ind}). This assumes that mechanical control happens after all other management sub-actions. 
 
