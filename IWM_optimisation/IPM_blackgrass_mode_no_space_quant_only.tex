@@ -87,38 +87,41 @@ where $b(g, d, t)$ is the distribution of seeds over $g$ at depth class $d \in \
 where $\varrho$ is the proportion of seeds moved between depth levels by plowing. 
    
 The distribution of new seeds over resistance $g$, $f(g, t, a_k)$, is modelled as the offspring produced by the joint distribution of maternal and paternal survivors given the sub-actions in tuple $a_k$ (see Table \ref{table:actions}). In the following we use the two level structured seed bank, but it is equivalent to the single level seed bank model when we replace $[b(g, d = 1, t) - b(g, d = 1, t)p(1 \rightarrow 2|a_b) + b(g, d = 2, t)p(2 \rightarrow 1|a_b)]$ with $[b(g, t) - b(g, t)p(a_b)]$ in equation \ref{eq:above_ground}.        
-\begin{equation}
+\begin{align}
 \label{eq:fecund}
 \begin{split}
-	f(g, t, a_k) = \displaystyle&\int_{g_m}\int_{g_p} \text{N}(0.5 g_m + 0.5 g_p, \sigma_f)s(g_m, t, a_h, a_c)\psi(g_m,a_d)s(g_f, t, a_h, a_c)\times \\ 
-		&~~~~~~m(a_m)^2 n(g_m, t, a_b)n(g_p, t, a_b)\varsigma^2\text{d}g_m\text{d}g_p + \\
-		&\int_{g_m}\int_{g_p} \text{N}(0.5 g_m + 0.5 g_p, \sigma_f)s^*(g_m, t, a_c)\psi(g_m,a_d)s^*(g_f, t, a_c)\times \\ 
-		&~~~~~~m(a_m)^2 n(g_m, t, a_b)n(g_p, t, a_b)(1 - \varsigma)^2 \text{d}g_m \text{d}g_p 
-\end{split}
-\end{equation}
+	f(g, t, a_k) = \displaystyle\int_{g_m}\int_{g_p} \text{N}(0.5 g_m + 0.5 g_p, \sigma_f)n(g_m, t, a_b)\psi(g_m, a_d)c(a_c)m(a_m) \times \\
+	 \left[s(g_m, a_h)\varsigma\frac{n(g_p, t, a_b)s(g_p, a_h)}{M_s} + s^*(g_m)(1 - \varsigma)\frac{n(g_p, t, a_b)s^*(g_p)}{M^*_s} \right] \text{d}g_m\text{d}g_p 
+\end{split}\\
+	M_s &= \int_{g_p} n(g_p, t, a_b)s(g_p, a_h)\text{d}g_p\\
+	M^*_s &= \int_{g_p} n(g_p, t, a_b)s^*(g_p)\text{d}g_p
+\end{align}
 
-We assume that the maternal and paternal distributions are the same (i.e. $n(g_m, t, a_b) = n(g_f, t, a_b) = n(g, t, a_b)$), since individuals produce both seeds and pollen. The offspring produced by every pair of $g_m$:$g_f$ values are assumed to be normally distributed over $g$ with a mean of $0.5g_m + 0.5g_f$ and a standard deviation of $\sigma_f$ (first term in Eq. \ref{eq:fecund}). We assume that only seeds in the top layer of the seed bank germinate, thus the number of individuals that emerge from the seed bank is
+We assume that the maternal and paternal distributions are the same (i.e. $n(g_m, t, a_b) = n(g_f, t, a_b) = n(g, t, a_b)$), since individuals produce both seeds and pollen. The offspring produced by every pair of $g_m$:$g_p$ values are assumed to be normally distributed over $g$ with a mean of $0.5g_m + 0.5g_p$ and a standard deviation of $\sigma_f$ (first term in Eq. \ref{eq:fecund}). We assume that only seeds in the top layer of the seed bank germinate, thus the number of individuals that emerge from the seed bank is
 \begin{equation}\label{eq:above_ground}
 	n(g, t, a_b) = [b(g, d = 1, t) - b(g, d = 1, t)p(1 \rightarrow 2|a_b) + b(g, d = 2, t)p(2 \rightarrow 1|a_b)]\phi_e\phi_b
 \end{equation}
 where $\phi_e$ is the germination rate from the top of the soil profile. We assume that not all seeds emerge at the same time so that only portion $\varsigma$ of the individuals are exposed to the herbicide if it is applied. The probability that those germinated individuals exposed to herbicide survive long enough to contribute seeds and pollen to the next generation given sub-actions $a_h$ and $a_c$ are taken is 
 \begin{align}\label{eq:survival_herb}
-	s(g, t, a_h, a_c) =& \frac{s_\text{max}}{1 + e^{-\Phi_s}}\\
-	\Phi_s =& s_0 - s_rg - h(a_h)\left(\xi_h - \textbf{min}(\xi_h, \rho g) \right) - c(a_c)\\
+	s(g, a_h) =& \frac{s_\text{max}}{1 + e^{-\Phi_s}}\\
+	\Phi_s =& s_0 - s_rg - h(a_h)\left(\xi_h - \textbf{min}(\xi_h, \rho g) \right)\\
 	h(a_h) =& \begin{cases}
 		1 &\text{if}~a_h = \text{herb}\\
 		0 &\text{if}~a_h = \text{no\_herb}
-	\end{cases}\\
-	c(a_c) =& \begin{cases}
-		0 &\text{if}~a_c = \text{wheat}\\
+	\end{cases}
+\end{align}
+where $s_\text{max}$ is the maximum survival rate for black grass. $s_0$ is the survival probability (in logits) when there is no herbicide for individuals with resistance score $g = 0$ and $\xi_h$ is the reduction in survival (in logits) caused by herbicide for individuals with a resistance score $g = 0$. $s_r$ is the survival cost of herbicide resistance (in logits) and $\rho$ is the protective effect of a one unit increase in resistance score $g$. $h(a_h)$ is a function that returns 0 or 1 depending on the action $a_h$. Survival for individuals that are not exposed to herbicide is   
+\begin{equation}\label{eq:survival_noherb}
+	s^*(g) = \frac{s_\text{max}}{1 + e^{-s_0 - s_rg}}
+\end{equation}
+Survival under different crops is controlled by the function $c(a_c)$ which returns the proportional reduction in survival, $\alpha_{a_c}$, given crop choice $a_c$.
+\begin{equation}
+	c(a_c) = \begin{cases}
+		1 &\text{if}~a_c = \text{wheat}\\
 		\alpha_\text{alt} &\text{if}~a_c = \text{alt}\\
 		\alpha_\text{fallow} &\text{if}~a_c = \text{fallow}
 	\end{cases} 
-\end{align}
-where $s_\text{max}$ is the maximum survival rate for black grass. $s_0$ is the survival probability (in logits) when there is no herbicide for individuals with resistance score $g = 0$ and $\xi_h$ is the reduction in survival (in logits) caused by herbicide for individuals with a resistance score $g = 0$. $s_r$ is the survival cost of herbicide resistance (in logits) and $\rho$ is the protective effect of a one unit increase in resistance score $g$. $h(a_h)$ is a function that returns 0 or 1 depending on the action $a_h$. Survival under different crops is controlled by the function $c(a_c)$ which returns the reduction in survival (in logits), $\alpha_{a_c}$, given crop choice $a_c$. Survival for individuals that are not exposed to herbicide is   
-\begin{align}\label{eq:survival_noherb}
-	s^*(g, t, a_c) =& \frac{s_\text{max}}{1 + e^{-s_0 - s_rg - c(a_c)}}\\
-\end{align}
+\end{equation} 
 $m(a_m)$ is the proportion of black grass individuals that survive mechanical control given sub-action $a_m$.
 \begin{equation}
 	m(a_m) = \begin{cases}
@@ -134,7 +137,7 @@ The number of seeds produced per individual, $\psi(g, a_k)$, is a function of re
 \end{equation}  
 where $\psi_\text{max}$ is the maximum possible number of seeds per individual, $f_0$ controls the number of seeds produced when $g = 0$, $z(a_u) \in [0, 1]$ is the seed mortality when sub-action $a_u$ is taken, $f_r$ is the cost of resistance in terms of reduction in seed production, $1/f_d$ is the population level where individuals start to interfere with each other and 
 \begin{equation}\label{eq:num_ind}
-	M(a_k, t) = \int \text{d}g~n(g, t, a_b)s(g, t, a_h, a_m, a_c)  
+	M(a_k, t) = \int \text{d}g~c(a_c)m(a_m)n(g, t, a_b)\left[\varsigma s(g,t,a_h) + (1 - \varsigma)s^*(g, t)\right]   
 \end{equation}
 is the number of above ground individuals that survive until seed set.
 

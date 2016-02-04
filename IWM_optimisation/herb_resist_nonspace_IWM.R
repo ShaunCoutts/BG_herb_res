@@ -2,11 +2,116 @@
 working_loc = '/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation' 
 setwd(working_loc)
 source('herb_resist_proccess_functions_IWM.R')
-source('nonspatial_dynamic_program_IWM.R')
+source('non-spatial_dynamic_program.R')
+source('non-spatial_dynamic_program_testing_diagnostics.R')
 test_functions_broken(working_loc)
 #set up evaluation points on g
 eval_object = eval_points_builder(lower_eval_point = -10, upper_eval_point = 10, resolution = 0.5, seed_expantion = 5)
+eval_object_int = eval_object
 dg = eval_object$seed[2] - eval_object$seed[1]
+inital_state = 100 * dnorm(eval_object$seed, 0, 2)
+##DEFINE PARAMETERS
+weed_impact = 0.00001
+dis_rate = 0.05
+time_horizon = 10
+start_pop = 100
+seed_survival = 0.5 #probability that a seed in the seed bank survives one year
+fec_max = 100 #the maximum number of seeds per mothers
+fec0 = 0 #cost of resistance when g = 0, in logits
+fec_cost = 0.1 #reduction in fecundity each additional unit of g causes, in logits
+offspring_sd = 0.7 #variance of conditional offspring distribution
+sur0 = 5 #susrvial rate when g is 0 and there is no herbicide (in logits)
+germination = 0.8 #germination rate
+sur_cost_resist = 0 #cost of higher resistenace score in terms of reduced survival (in logits)
+survive_resist = 0.8 #protective effect of a one unit increase in resistance score g
+max_sur = 0.95 #maximum survival possible
+density_cutoff = 0.00001 #population density (on distrbution over g) above which seed evaluation points are retained in the above ground evaluation points
+seed_movement = 0.8
+pro_exposed = 0.8
+dense_depend_fec = 0.002
+burnin = 20
+#managment parameters
+effect_plow = 0.9 #proprtion of seed moved from one depth level to another by plowing 
+effect_herb = 5 #effect of herbicide on survival (in logits)
+
+cost_plow = 0.05
+cost_herb = 0.1
+cost_dens = 0.5
+mech_cost0 = 0.01
+mech_cost = 0.05
+
+income_wheat = 100
+income_alt = 50
+income_fallow = 0
+
+yeild_loss_wheat = 0.0001
+yeild_loss_alt = 0.000001
+
+cost_alt = 0.5
+cost_fallow = 0.5
+
+crop_sur_alt = 0.8
+crop_sur_fal = 0
+crop_fec_alt = 0.95
+dens_fec_effect = 0.9
+mech_sur_effect = 0.1
+plow_effect = 0.3
+
+discount_factor = 0.95
+#actions space and sequences
+sub_action = list(herb = c(0, 1), 
+		  crop_sur = c(1, crop_sur_alt, crop_sur_fal), 
+		  mech_sur = c(1, mech_sur_effect), 
+		  dens_fec = c(1, dens_fec_effect), 
+		  crop_fec = c(1, crop_fec_alt, 1), 
+		  plow = c(0, plow_effect))
+		  
+
+action_seq = cbind(herb = c(1, 1, 1, 1, 1, 2, 2, 2, 2, 2), 
+		   crop = c(1, 1, 1, 2, 2, 3, 1, 1, 1, 1), 
+		   mech = c(1, 2, 1, 1, 1, 1, 1, 1, 1, 2), 
+		   dens = c(1, 1, 2, 1, 1, 1, 2, 2, 2, 1), 
+		   plow = c(1, 1, 1, 1, 1, 1, 1, 2, 2, 2))	  
+#managment cost vectors
+income0 = c(income_wheat, income_alt, income_fallow)
+yeild_loss = c(yeild_loss_wheat, yeild_loss_alt, 0)
+
+cost_space_nomech = list(herb = c(0, cost_herb),
+			 crop = c(0, cost_alt, cost_fallow),
+			 plow = c(0, cost_plow),
+			 dens = c(0, cost_dens))
+ 
+action_space = cbind(herb = c(rep(c(1, 2), each = 8), rep(c(1, 2), each = 4), 1), 
+		     crop = c(rep(1, 16), rep(2, 8), 3), 
+		     mech = c(rep(rep(c(1, 2), each = 2), 4), rep(c(1, 2), 4), 1), 
+		     plow = c(rep(rep(c(1, 2), each = 4), 2), rep(rep(c(1, 2), each = 2), 2), 1), 
+		     dens = c(rep(c(1, 2), 8), rep(1, 9)))
+ 
+ output_loc = '/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation'
+
+# plot of the seed bank through time with lots of differnt plots to see what is happening behind the scenes 
+single_iteration_plot(seedbank_current = seedbank_current, germination = germ_rate_wheat, mech_control = 1, crop_effect_sur = 1, seed_survival = seed_survival, 
+  seed_movement = seed_movement, eval_object = eval_object, pro_exposed = pro_exposed, herb_rate = 1, sur0 = sur0, sur_cost_resist = sur_cost_resist, herb_effect = effect_herb, 
+  survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, offspring_sd = offspring_sd, dense_depend_fec = dense_depend_fec, 
+  density_cutoff = density_cutoff, crop_effect_fec = 1, density_effect_fec = 1, dg = dg)
+ 
+multi_iteration_plot(seedbank_initial = seedbank_current, germination = germination, seed_survival = seed_survival, eval_object = eval_object, pro_exposed = pro_exposed, sur0 = sur0, 
+  sur_cost_resist = sur_cost_resist, herb_effect = effect_herb, survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, 
+  offspring_sd = offspring_sd, dense_depend_fec = dense_depend_fec, density_cutoff = density_cutoff, dg = dg, num_iter = dim(action_seq)[1], sub_action = sub_action, 
+  action_seq = action_seq, output_loc = output_loc, output_name = 'multi_iteration_output.pdf')
+ 
+IMW_dynamic_program(inital_state = inital_state, germination = germination, seed_survival = seed_survival, eval_object = eval_object, pro_exposed = pro_exposed, sur0 = sur0, 
+  sur_cost_resist = sur_cost_resist, effect_herb = effect_herb, survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, 
+  offspring_sd = offspring_sd, dense_depend_fec = dense_depend_fec, density_cutoff = density_cutoff, dg = dg, burnin = burnin, sub_action = sub_action, 
+  noherb_action_seq = noherb_action_seq, burnin_test_out_loc = output_loc, burnin_test_out_name = 'burnin_test_output.pdf')
+ 
+
+
+
+
+
+
+
 
 ##DEFINE PARAMETERS
 herb_cost = 0.1
