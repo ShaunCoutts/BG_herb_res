@@ -124,7 +124,7 @@ sampled_state_2_value_T <- function(current_state, eval_object, action_space, su
   current_max_value = -Inf
   #get the value for each action a, given the current state
   for(a in 1:dim(action_space)[1]){
-    reward_a = state_reward_next_econ_T(current_state = current_state, eval_object = eval_obj_mod, action = action_space[a, ], sub_action = sub_action, 
+    reward_a = state_reward_next_econ_T(current_state = current_state, eval_object = eval_object, action = action_space[a, ], sub_action = sub_action, 
       seed_survival = seed_survival, germination = germination, density_cutoff = density_cutoff, pro_exposed = pro_exposed, max_sur = max_sur, sur0 = sur0, 
       sur_cost_resist = sur_cost_resist, herb_effect = herb_effect, survive_resist = survive_resist, income0 = income0, yeild_loss = yeild_loss, cost_space_nomech = cost_space_nomech, 
       mech_cost0 = mech_cost0, mech_cost = mech_cost, dg = dg)
@@ -146,7 +146,7 @@ sampled_state_2_value <- function(current_state, value_surface_t1, discount_fact
   current_max_value = -Inf
   #get the value for each action a, given the current state
   for(a in 1:dim(action_space)[1]){
-    state_reward = state_reward_next_econ(current_state = current_state, eval_object = eval_obj_mod, action = action_space[a, ], sub_action = sub_action, 
+    state_reward = state_reward_next_econ(current_state = current_state, eval_object = eval_object, action = action_space[a, ], sub_action = sub_action, 
       seed_survival = seed_survival, germination = germination, density_cutoff = density_cutoff, pro_exposed = pro_exposed, max_sur = max_sur, sur0 = sur0, 
       sur_cost_resist = sur_cost_resist, herb_effect = herb_effect, survive_resist = survive_resist, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, 
       offspring_sd = offspring_sd, dense_depend_fec = dense_depend_fec, income0 = income0, yeild_loss = yeild_loss, cost_space_nomech = cost_space_nomech, 
@@ -166,8 +166,8 @@ sampled_state_2_value <- function(current_state, value_surface_t1, discount_fact
 
 #string all these functions together to solve the intergrated weed managment problem 
 IMW_dynamic_program <- function(inital_state, germination, seed_survival, eval_object_int, pro_exposed, sur0, sur_cost_resist, effect_herb, survive_resist, max_sur, fec_max, fec0, 
-  fec_cost, offspring_sd, dense_depend_fec, density_cutoff, dg, burnin, sub_action, action_space, time_horizon, 
-  burnin_test_out_loc, burnin_test_out_name = 'burnin_test_output.pdf'){
+  fec_cost, offspring_sd, dense_depend_fec, density_cutoff, dg, burnin, sub_action, action_space, time_horizon, discount_factor, income0, yeild_loss, cost_space_nomech, mech_cost0, 
+  mech_cost, burnin_test_out_loc, burnin_test_out_name = 'burnin_test_output.pdf'){
     #1. run the model for a burn in period to get the population at some kind of equlibrium under no herbicide, also use this as estimate of lower g that can be expected, 
     noherb_action_seq = cbind(herb = rep(1, burnin), crop = rep(1, burnin), mech = rep(1, burnin), dens = rep(1, burnin), plow = rep(1, burnin))	  
  
@@ -254,7 +254,7 @@ IMW_dynamic_program <- function(inital_state, germination, seed_survival, eval_o
     #add the values to the sampled points in state space
     sample_points_df$values = sapply(value_action_sample_points, FUN = function(x) x$value)
     sample_points_df$policy = sapply(value_action_sample_points, FUN = function(x) x$best_action)
-    value_surface_t = suppressWarnings(gam(values ~ s(mean_g, spar = 0.01) + s(pop, spar = 0.01), data = sample_points_df))
+    value_surface_t = suppressWarnings(gam(values ~ s(mean_g, spar = 0.01)  + s(pop, spar = 0.01), data = sample_points_df))
     Q[[1]] = list(sample_points_df = sample_points_df, value_surface = value_surface_t)
     #start stepping back in time 
     for(i in 2:time_horizon){
@@ -285,22 +285,31 @@ plot_policy <- function(Q, output_loc, output_name = 'policy_output.pdf'){
   lower_pop = min(Q[[1]]$sample_points_df$pop)
   eval_res = 100
   value_grid = data.frame(mean_g = rep.int(seq(lower_mean, upper_mean, length.out = eval_res), eval_res), pop = rep(seq(lower_pop, upper_pop, length.out = eval_res), each = eval_res))#make every combination of evaluation points
-  pdf(file = output_name, width = 20, height = 10)
+  pdf(file = output_name, width = 15, height = 5)
     for(i in seq_along(Q)){
-      par(mfrow = c(1, 2))
+      par(mfrow = c(1, 3))
       plot(x = Q[[i]]$sample_points_df$mean_g, y = Q[[i]]$sample_points_df$pop, type = 'n', xlab = 'mean_g', ylab = 'population', main = paste0('Policy t = T - ', (i - 1)))
       text(x = Q[[i]]$sample_points_df$mean_g , y = Q[[i]]$sample_points_df$pop , labels = paste0('a', Q[[i]]$sample_points_df$policy), 
 	col = col_palett[Q[[i]]$sample_points_df$policy])
       #plot the value surface
       image(matrix(predict(Q[[i]]$value_surface, value_grid), ncol = eval_res, byrow = FALSE), xaxt = 'n', xlab = 'mean_g', yaxt = 'n', ylab = 'population')
-      axis(side = 1, at = c(0, 0.25, 0.5, 0.75, 1), labels = quantile(value_grid$mean_g, probs = c(0, 0.25, 0.5, 0.75, 1)))
-      axis(side = 2, at = c(0, 0.25, 0.5, 0.75, 1), labels = quantile(value_grid$pop, probs = c(0, 0.25, 0.5, 0.75, 1)))
+      axis(side = 1, at = c(0, 0.25, 0.5, 0.75, 1), labels = round(quantile(value_grid$mean_g, probs = c(0, 0.25, 0.5, 0.75, 1)), 1))
+      axis(side = 2, at = c(0, 0.25, 0.5, 0.75, 1), labels = round(quantile(value_grid$pop, probs = c(0, 0.25, 0.5, 0.75, 1)), 1))
+      #plot fitted VS predicted for spline
+      plot(Q[[i]]$sample_points_df$values, predict(Q[[i]]$value_surface, Q[[i]]$sample_points_df), xlab = 'observed', ylab = 'predicted') 
+      abline(0, 1)
     }
   dev.off()
   setwd(inital_loc)
 }
+#run the functions
+DP_policy = IMW_dynamic_program(inital_state = inital_state, germination = germination, seed_survival = seed_survival, eval_object_int = eval_object_int, pro_exposed = pro_exposed,
+  sur0 = sur0, sur_cost_resist = sur_cost_resist, effect_herb = effect_herb, survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost,
+  offspring_sd = offspring_sd, dense_depend_fec = dense_depend_fec, density_cutoff = density_cutoff, dg = dg, burnin = 50, sub_action = sub_action, action_space = action_space, 
+  time_horizon = 10, discount_factor = 0.96, income0 = income0, yeild_loss = yeild_loss, cost_space_nomech = cost_space_nomech, mech_cost0 = mech_cost0, mech_cost = mech_cost, 
+  burnin_test_out_loc = output_loc)
 
-plot_policy(Q = Q, output_loc = output_loc)
+plot_policy(Q = DP_policy, output_loc = output_loc)
 
 #play around with a few spline fitting tools here to see how they work
 # data(mtcars)
