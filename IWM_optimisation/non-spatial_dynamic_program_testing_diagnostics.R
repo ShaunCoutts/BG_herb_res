@@ -4,20 +4,17 @@
 ## SINGLE_ITERATION_PLOT()
 ##just like SINGLE_INTERATION_1LEVEL(), but plots all the internal distributions for diagnostic purposes
 single_iteration_plot <- function(seedbank_current, germination, mech_control, crop_effect_sur, seed_survival, seed_movement, eval_object, pro_exposed, herb_rate, sur0, 
-    sur_cost_resist, herb_effect, survive_resist, max_sur, fec_max, fec0, fec_cost, offspring_sd, dense_depend_fec, density_cutoff, crop_effect_fec, 
-    density_effect_fec, dg){
+    sur_cost_resist, herb_effect, survive_resist, max_sur, fec_max, dense_depend_fec, crop_effect_fec, density_effect_fec, fec_function, iteration, dg){
   
   new_seedbank = (seedbank_current - seedbank_current *  seed_movement) * seed_survival 
   new_plants = new_seedbank * germination * mech_control * crop_effect_sur   
   seedbank_post_germ = new_seedbank * (1 - germination)
-  eval_object = eval_points_update(eval_points_object = eval_object, new_plants, density_cutoff = density_cutoff) #update evaluation window
   survivors_herb = pro_exposed * new_plants[eval_object$above_ground_index] *  (max_sur / (1 + exp(-(sur0 - sur_cost_resist * eval_object$above_ground - herb_rate * (herb_effect - 
     pmin(herb_effect, survive_resist * eval_object$above_ground))))))
   survivors_noherb = (1 - pro_exposed) * new_plants[eval_object$above_ground_index] *  (max_sur / (1 + exp(-(sur0 - sur_cost_resist * eval_object$above_ground))))
   survivors_joint = survivors_herb + survivors_noherb
-  new_seeds = fecundity(N_m = survivors_joint, eval_points = eval_object$above_ground, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, 
-    N_f = survivors_joint, offspring_sd = offspring_sd, seed_eval_points = eval_object$seed, dense_depend_fec = dense_depend_fec, crop_effect_fec = crop_effect_fec, 
-    density_effect_fec = density_effect_fec, dg = dg)
+  new_seeds = fec_function(N_m = survivors_joint, fec_max = fec_max, dense_depend_fec = dense_depend_fec, 
+    density_effect_fec = density_effect_fec, crop_effect_fec = crop_effect_fec, dg = dg)
   seedbank_next = seedbank_post_germ + new_seeds 
   
   #plotting stuff
@@ -65,6 +62,20 @@ single_iteration_plot <- function(seedbank_current, germination, mech_control, c
   
   #give the managment used on each turn 
   mtext(text = paste0('plowing: ', seed_movement, ' | herb: ', herb_rate, ' | mech: ', mech_control, ' | crop: ', crop_effect_sur, ' | density: ',  density_effect_fec), side = 3)
+  
+  #print out some numbers as we go along to get an idea of what is happening internally.
+  print('###################################################################')
+  print(paste0('###   iteration ', iteration, '   #####'))
+  print(paste0('intial number seeds: ', sum(seedbank_current) * dg))
+  print(paste0('num seeds after plow and seed sur: ', sum(new_seedbank) * dg))
+  print(paste0('num seeds in soil post-germ: ', sum(seedbank_post_germ) * dg))
+  print(paste0('num plants emerged post mech and crop sur: ', sum(new_plants) * dg))
+  print(paste0('number herb survivors: ', sum(survivors_herb) * dg))
+  print(paste0('number none herb surv: ', sum(survivors_noherb) * dg))
+  print(paste0('total number sur (parents): ', sum(survivors_joint) * dg))
+  print(paste0('num new seeds ', sum(new_seeds) * dg))
+  print(paste0('num seeds next year ', sum(seedbank_next) * dg))
+  
   return(seedbank_next)
 }
 
@@ -72,25 +83,27 @@ single_iteration_plot <- function(seedbank_current, germination, mech_control, c
 ##MULTI_ITERATION()
 ##plots multipule iterations for diagnostic purposes and to see what is happening 
 multi_iteration_plot <- function(seedbank_initial, germination, seed_survival, eval_object, pro_exposed, sur0, sur_cost_resist, herb_effect, survive_resist, max_sur, fec_max, 
-  fec0, fec_cost, offspring_sd, dense_depend_fec, density_cutoff, dg, num_iter, sub_action, action_seq, output_loc, output_name = 'multi_iteration_output.pdf'){
+  fec0, fec_cost, offspring_sd, dense_depend_fec, dg, num_iter, sub_action, action_seq, output_loc, output_name = 'multi_iteration_output.pdf'){
   
   results = matrix(NA, nrow = num_iter, ncol = length(eval_object$seed))
   i = 1
+  #create the function to do the offspring mixing 
+  fecundity <- fecundity_closure(eval_points_object = eval_object, offspring_sd = offspring_sd, fec0 = fec0, fec_cost = fec_cost)
   intial_file_location = getwd()
   setwd(output_loc)
   pdf(file = output_name, width = 14, height = 7)
     results[i, ] = single_iteration_plot(seedbank_current = seedbank_initial, germination = germination, mech_control = sub_action$mech_sur[action_seq[i, 'mech']], 
-      crop_effect_sur = sub_action$crop_sur[action_seq[i, 'crop']], seed_survival = seed_survival, seed_movement = sub_action$plow[action_seq[i, 'plow']], eval_object = eval_object, 
-      pro_exposed = pro_exposed, herb_rate = sub_action$herb[action_seq[i, 'herb']], sur0 = sur0, sur_cost_resist = sur_cost_resist, herb_effect = herb_effect, 
-      survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, offspring_sd = offspring_sd, dense_depend_fec = dense_depend_fec, 
-      density_cutoff = density_cutoff, crop_effect_fec = sub_action$crop_fec[action_seq[i, 'crop']], density_effect_fec = sub_action$dens_fec[action_seq[i, 'dens']], dg = dg)
+    crop_effect_sur = sub_action$crop_sur[action_seq[i, 'crop']], seed_survival = seed_survival, seed_movement = sub_action$plow[action_seq[i, 'plow']], eval_object = eval_object, 
+    pro_exposed = pro_exposed, herb_rate = sub_action$herb[action_seq[i, 'herb']], sur0 = sur0, sur_cost_resist = sur_cost_resist, herb_effect = herb_effect, 
+    survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, dense_depend_fec = dense_depend_fec, crop_effect_fec = sub_action$crop_fec[action_seq[i, 'crop']], 
+    density_effect_fec = sub_action$dens_fec[action_seq[i, 'dens']], fec_function = fecundity, iteration = i, dg = dg)
 
     for(i in 2:num_iter){
       results[i, ] = single_iteration_plot(seedbank_current = results[i - 1, ], germination = germination, mech_control = sub_action$mech_sur[action_seq[i, 'mech']], 
-	crop_effect_sur = sub_action$crop_sur[action_seq[i, 'crop']], seed_survival = seed_survival, seed_movement = sub_action$plow[action_seq[i, 'plow']], eval_object = eval_object, 
-	pro_exposed = pro_exposed, herb_rate = sub_action$herb[action_seq[i, 'herb']], sur0 = sur0, sur_cost_resist = sur_cost_resist, herb_effect = herb_effect, 
-	survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, offspring_sd = offspring_sd, dense_depend_fec = dense_depend_fec, 
-	density_cutoff = density_cutoff, crop_effect_fec = sub_action$crop_fec[action_seq[i, 'crop']], density_effect_fec = sub_action$dens_fec[action_seq[i, 'dens']], dg = dg)
+    crop_effect_sur = sub_action$crop_sur[action_seq[i, 'crop']], seed_survival = seed_survival, seed_movement = sub_action$plow[action_seq[i, 'plow']], eval_object = eval_object, 
+    pro_exposed = pro_exposed, herb_rate = sub_action$herb[action_seq[i, 'herb']], sur0 = sur0, sur_cost_resist = sur_cost_resist, herb_effect = herb_effect, 
+    survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, dense_depend_fec = dense_depend_fec, crop_effect_fec = sub_action$crop_fec[action_seq[i, 'crop']], 
+    density_effect_fec = sub_action$dens_fec[action_seq[i, 'dens']], fec_function = fecundity, iteration = i, dg = dg)
     }
   dev.off()
   
@@ -98,6 +111,173 @@ multi_iteration_plot <- function(seedbank_initial, germination, seed_survival, e
   
   results
 }
+
+#print version of the state update function
+state_reward_next_econ_plot <- function(current_state, eval_object, action, sub_action, seed_survival, germination, pro_exposed, max_sur, sur0, sur_cost_resist, 
+  herb_effect, survive_resist, fec_max, dense_depend_fec, income0, yeild_loss, cost_space_nomech, mech_cost0, mech_cost, fec_function, dg){
+  
+  seedbank_current = build_pops_1level(current_state, eval_object$seed) #construct a population from the state
+  #calculate the population progression 1 year given the current population and the actions taken.  
+  new_seedbank = (seedbank_current - seedbank_current *  sub_action$plow[action['plow']]) * seed_survival 
+  new_plants = new_seedbank * germination * sub_action$crop_sur[action['crop']]   
+  seedbank_post_germ = new_seedbank * (1 - germination)
+  survivors_herb = pro_exposed * new_plants[eval_object$above_ground_index] *  (max_sur / (1 + exp(-(sur0 - sur_cost_resist * eval_object$above_ground - 
+    sub_action$herb[action['herb']] * (herb_effect - pmin(herb_effect, survive_resist * eval_object$above_ground))))))
+  survivors_noherb = (1 - pro_exposed) * new_plants[eval_object$above_ground_index] *  (max_sur / (1 + exp(-(sur0 - sur_cost_resist * eval_object$above_ground))))
+  survivors_joint = survivors_herb + survivors_noherb #pre-mech population used to calculate cost of mech control
+  survivors_joint_mech = survivors_joint * sub_action$mech_sur[action['mech']] #post-mech pop used to caclulate the income from being in that state
+  new_seeds = fec_function(N_m = survivors_joint_mech, fec_max = fec_max, dense_depend_fec = dense_depend_fec, crop_effect_fec = sub_action$crop_fec[action['crop']], 
+    density_effect_fec = sub_action$dens_fec[action['dens']], dg = dg)
+  seedbank_next = seedbank_post_germ + new_seeds 
+  #take these populations and new seedbank and turn them into rewards and states for the value function calculations 
+  income = max(0, income0[action['crop']] - yeild_loss[action['crop']] * sum(survivors_joint_mech) * dg) #money made
+  cost_nomech = cost_space_nomech$herb[action['herb']] + cost_space_nomech$crop[action['crop']] + cost_space_nomech$plow[action['plow']] + cost_space_nomech$dens[action['dens']] #non mech cost
+  #mech cost
+  if(action['mech'] == 1){
+    cost_mech = 0
+  }else{
+    cost_mech = mech_cost0 + mech_cost * sum(survivors_joint) * dg
+  }
+  
+  print('### parameters to survival calculation ###')
+  print(c(max_sur = max_sur, sur0 = sur0, sur_cost_resist = sur_cost_resist))
+  print('eval_object$above_ground')
+  print(eval_object$above_ground)
+  print(c(herb = sub_action$herb[action['herb']], herb_effect = herb_effect, survive_resist = survive_resist))
+  print(paste0('intial established pop: ', sum(new_plants) * dg))
+  print(paste0('herbicide survivors: ', sum(survivors_herb) * dg))
+  print(paste0('none herbicide survivors: ', sum(survivors_noherb) * dg))
+  print(paste0('num_parents: ', sum(survivors_joint_mech) * dg))
+  print(paste0('number new seeds: ', sum(new_seeds) * dg))
+  print(paste0('num after none mech control: ', sum(survivors_joint) * dg))
+  print(paste0('total yeild loss: ', yeild_loss[action['crop']] * sum(survivors_joint_mech) * dg))
+  print(paste0('base income: ', income0[action['crop']]))
+  print(paste0('net income: ', income))
+  print(paste0('mech_cost0: ', mech_cost0))
+  print(paste0('mech cost potential: ', mech_cost0 + mech_cost * sum(survivors_joint) * dg))
+  print(paste0('mech cost spent: ', cost_mech))
+  print(paste0('reward: ', income - cost_nomech - cost_mech))
+  print('### parameter print END ###')
+  
+  #make a plot as a side effect
+  domain_g = range(eval_object$above_ground)
+  domain_pop = c(0, max(max(seedbank_current, seedbank_next)))
+  plot(x = eval_object$seed, y = eval_object$seed, type = 'n', xlim = domain_g, ylim = domain_pop, bty = 'n', ylab = 'number ind')
+  lines(eval_object$seed, seedbank_current, col = 'black')
+  lines(eval_object$seed, new_seedbank, col = 'red')
+  lines(eval_object$seed, seedbank_post_germ, col = 'blue')
+  lines(eval_object$above_ground, survivors_herb, col = 'orange')
+  lines(eval_object$above_ground, survivors_noherb, col = 'yellow')
+  if(length(new_seeds) > 1){
+    lines(eval_object$seed, new_seeds, col = 'green')
+  }else{
+    lines(eval_object$seed, rep(new_seeds, length(eval_object$seed)), col = 'green')
+  }
+  lines(eval_object$seed, seedbank_next, col = 'purple')
+  legend(x = 'topright', legend = c('seedbank_current', 'new_seedbank', 'seedbank_post_germ', 'new_seeds', 'seedbank_next', 'survivors_herb', 'survivors_noherb'), 
+    col = c('black', 'red', 'blue', 'green', 'purple', 'orange', 'yellow'), lwd = 2)
+  #put some lines at the mean to help see if dists have moved in expected direction
+  mean_seedbank_current = get_mean_sd(seedbank_current, eval_object$seed, dg)$approx_mean
+  lines(x = c(mean_seedbank_current, mean_seedbank_current), y = c(0, max(seedbank_current)), col = 'black')
+  mean_new_seedbank = get_mean_sd(new_seedbank, eval_object$seed, dg)$approx_mean
+  lines(x = c(mean_new_seedbank, mean_new_seedbank), y = c(0, max(new_seedbank)), col = 'red')
+  mean_seedbank_post_germ = get_mean_sd(seedbank_post_germ, eval_object$seed, dg)$approx_mean
+  lines(x = c(mean_seedbank_post_germ, mean_seedbank_post_germ), y = c(0, max(seedbank_post_germ)), col = 'blue')
+  mean_new_seeds = get_mean_sd(new_seeds, eval_object$seed, dg)$approx_mean
+  lines(x = c(mean_new_seeds, mean_new_seeds), y = c(0, max(new_seeds)), col = 'green')
+  mean_seedbank_next = get_mean_sd(seedbank_next, eval_object$seed, dg)$approx_mean
+  lines(x = c(mean_seedbank_next, mean_seedbank_next), y = c(0, max(seedbank_next)), col = 'purple')
+  mean_sur_herb = get_mean_sd(survivors_herb, eval_object$above_ground, dg)$approx_mean
+  lines(x = c(mean_sur_herb, mean_sur_herb), y = c(0, max(mean_sur_herb)), col = 'orange')
+  
+  #give the managment used on each turn 
+  mtext(text = paste0('plowing: ', sub_action$plow[action['plow']], ' | herb: ', sub_action$herb[action['herb']], ' | mech: ', sub_action$mech_sur[action['mech']],
+    ' | crop_sur: ', sub_action$crop_sur[action['crop']], ' | density: ',  sub_action$dens_fec[action['dens']]), side = 3)
+  
+  return(list(current_state = current_state, next_state = build_state_1level(dist_top = seedbank_next, eval_points = eval_object$seed, dg = dg), reward = income - cost_nomech - cost_mech))
+}
+
+#simulate a policy from a set of starting points, record the state every time step, test various parts set it up so there is a bit more control over what actions are taken 
+policy_simulator_test <- function(policy, model_pars, time_period, start_points, output_loc, output_name = 'policy_simulation_test.pdf'){
+  mean_g_range = range(policy$sample_points_df$mean_g)
+  pop_range = range(policy$sample_points_df$pop)
+  #set up the scales training points for knn interpilation of the policy over state space
+  mean_g_scaled = (policy$sample_points_df$mean_g - mean_g_range[1]) / (mean_g_range[2] - mean_g_range[1])
+  pop_scaled = (policy$sample_points_df$pop - pop_range[1]) / (pop_range[2] - pop_range[1])
+  #create fecundity function 
+  fecundity = fecundity_closure(eval_points_object = model_pars$eval_obj, offspring_sd = model_pars$params['offspring_sd'], fec0 = model_pars$params['fec0'], 
+    fec_cost = model_pars$params['fec_cost'])
+    
+  #print a vector of each parameter goint into state_reward_next_econ so can see if it is the expected one 
+  #build the action vector
+  new_point = data.frame(mean_g = (start_points[1, 'mean_g'] - mean_g_range[1]) / (mean_g_range[2] - mean_g_range[1]),
+    pop = (start_points[1, 'pop'] - pop_range[1]) / (pop_range[2] - pop_range[1]))
+  first_act = as.numeric(as.character(knn1(train = data.frame(mean_g = mean_g_scaled, pop = pop_scaled), test = new_point, cl = policy$sample_points_df$policy)))
+
+  print('### parameters to simulate population ###')
+  print(list(eval_object = model_pars$eval_obj, action = model_pars$action_space[first_act, ], sub_action = model_pars$sub_action, 
+    seed_survival = model_pars$params['seed_survival'], germination = model_pars$params['germination'], pro_exposed = model_pars$params['pro_exposed'], 
+    max_sur = model_pars$params['max_sur'], sur0 = model_pars$params['sur0'], sur_cost_resist = model_pars$params['sur_cost_resist'], herb_effect = model_pars$params['effect_herb'], 
+    survive_resist = model_pars$params['survive_resist'], fec_max = model_pars$params['fec_max'], dense_depend_fec = model_pars$params['dense_depend_fec'], 
+    income0 = model_pars$income0, yeild_loss = model_pars$yeild_loss, cost_space_nomech = model_pars$cost_space_nomech, mech_cost0 = model_pars$params['mech_cost0'], 
+    mech_cost = model_pars$params['mech_cost'], fec_function = fecundity, dg = model_pars$params['dg'])) 
+  print('##########################################')  
+  
+  #for every pointed sampled in the state space find the fate of the population at the time horizon for following that 
+  int_loc = getwd()
+  setwd(output_loc)
+  pdf(file = output_name)
+    results = apply(start_points, MARGIN = 1, FUN = function(s){
+    
+      #objects to fill and return
+      action_seq = matrix(NA, nrow = time_period, ncol = dim(model_pars$action_space)[2] + 1)
+      colnames(action_seq) <- c('act_num', colnames(model_pars$action_space))
+      state_over_time = list()
+    
+      #build the action vector
+      new_point = data.frame(mean_g = (s['mean_g'] - mean_g_range[1]) / (mean_g_range[2] - mean_g_range[1]),
+	pop = (s['pop'] - pop_range[1]) / (pop_range[2] - pop_range[1]))
+      action_seq[1, 'act_num'] = as.numeric(as.character(knn1(train = data.frame(mean_g = mean_g_scaled, pop = pop_scaled), test = new_point, cl = policy$sample_points_df$policy)))
+      action_seq[1, 2:(dim(model_pars$action_space)[2] + 1)] = model_pars$action_space[action_seq[1, 'act_num'], ]
+      #set the intial population USE THE PRINT VERSION OF THE 1 STEP SIMULATION TO SEE HOW THE POPS EVOLVE OVER TIME
+      state_over_time[[1]] = state_reward_next_econ_plot(current_state = list(mean_top = s['mean_g'], sd_top = model_pars$params['pop_sd'], pop_top = s['pop']), 
+	eval_object = model_pars$eval_obj, action = model_pars$action_space[action_seq[1, 'act_num'], ], sub_action = model_pars$sub_action, seed_survival = model_pars$params['seed_survival'], 
+	germination = model_pars$params['germination'], pro_exposed = model_pars$params['pro_exposed'], max_sur = model_pars$params['max_sur'], sur0 = model_pars$params['sur0'], 
+	sur_cost_resist = model_pars$params['sur_cost_resist'], herb_effect = model_pars$params['effect_herb'], survive_resist = model_pars$params['survive_resist'], 
+	fec_max = model_pars$params['fec_max'], dense_depend_fec = model_pars$params['dense_depend_fec'], income0 = model_pars$income0, yeild_loss = model_pars$yeild_loss, 
+	cost_space_nomech = model_pars$cost_space_nomech, mech_cost0 = model_pars$params['mech_cost0'], mech_cost = model_pars$params['mech_cost'], fec_function = fecundity, 
+	dg = model_pars$params['dg'])
+
+      #simulate over timesteps
+      for(ts in 2:time_period){
+	#test to make sure the new population stays in the state space, break the loop
+	if(state_over_time[[ts - 1]]$next_state$mean_top > mean_g_range[2] | state_over_time[[ts - 1]]$next_state$mean_top < mean_g_range[1] | 
+	  state_over_time[[ts - 1]]$next_state$pop_top > pop_range[2] | state_over_time[[ts - 1]]$next_state$pop_top < pop_range[1]) break
+	#scale the new state so that knn1 works
+	new_point = data.frame(mean_g = (state_over_time[[ts - 1]]$next_state$mean_top - mean_g_range[1]) / (mean_g_range[2] - mean_g_range[1]), 
+	  pop = (state_over_time[[ts - 1]]$next_state$pop_top - pop_range[1]) / (pop_range[2] - pop_range[1]))
+	#find the best action by interpolation of policy using knn1
+	action_seq[ts, 'act_num'] = as.numeric(as.character(knn1(train = data.frame(mean_g = mean_g_scaled, pop = pop_scaled), test = new_point, cl = policy$sample_points_df$policy)))
+	action_seq[ts, 2:(dim(model_pars$action_space)[2] + 1)] = model_pars$action_space[action_seq[ts, 'act_num'], ]
+	
+	state_over_time[[ts]] = state_reward_next_econ_plot(current_state = state_over_time[[ts - 1]]$next_state, eval_object = model_pars$eval_obj, 
+	  action = model_pars$action_space[action_seq[ts, 'act_num'], ], sub_action = model_pars$sub_action, seed_survival = model_pars$params['seed_survival'], 
+	  germination = model_pars$params['germination'], pro_exposed = model_pars$params['pro_exposed'], max_sur = model_pars$params['max_sur'], sur0 = model_pars$params['sur0'], 
+	  sur_cost_resist = model_pars$params['sur_cost_resist'], herb_effect = model_pars$params['effect_herb'], survive_resist = model_pars$params['survive_resist'], 
+	  fec_max = model_pars$params['fec_max'], dense_depend_fec = model_pars$params['dense_depend_fec'], income0 = model_pars$income0, yeild_loss = model_pars$yeild_loss, 
+	  cost_space_nomech = model_pars$cost_space_nomech, mech_cost0 = model_pars$params['mech_cost0'], mech_cost = model_pars$params['mech_cost'], fec_function = fecundity, 
+	  dg = model_pars$params['dg'])
+      }
+
+      return(list(start_point = s, action_seq = action_seq, state_over_time = state_over_time))
+    })  
+    
+  dev.off()  
+  setwd(int_loc)
+  return(results)
+}
+
+
 
 #Check the test results  
 test_functions_broken <- function(file_loc){

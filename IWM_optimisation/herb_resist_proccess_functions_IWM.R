@@ -29,30 +29,26 @@ eval_points_update <- function(eval_points_object, above_ground_dist, density_cu
   eval_points_object
 }
 
-## QUANT_GEN_OFFSPRING_DISTRIBUTION(N_f, eval_points, additive_variance, offspring_dist_res) 
-## produces a matrix where the rows are the distribution of offspring for each evaluated maternal breeding value based on paternal distributions on the breeeding vlaue (N_f) and 
-##a vector of evaluation points on breeding value (each row in returned matrix is the distribution of offspring breeding values returned by each maternal breeding value evaluated), 
-## along with parameter for the variance of breeding value for distribtuion of offspring breeding value (which we assume is normal).
-## and a resolution to evluate the conditional offspring distribution at
-#be careful this functions relies on N_f, being evaluated on eval_points before being passed to this function so that the indexes all match up
-quant_gen_offspring_distribution <- function(N_f, eval_points, offspring_sd, seed_eval_points, dg){
-  eval_grid = cbind(rep.int(eval_points, length(eval_points)), rep(eval_points, each = length(eval_points)))#make every combination of evaluation points
-  N_fathers = N_f / sum(N_f) #turns the distribution of fathers into a frequency distribution
-  vect_seed_eval_points = rep(seed_eval_points, times = length(eval_grid[,1]))
-  vect_breed_val_means = rep(eval_grid[,1] * 0.5 + eval_grid[,2] * 0.5, each = length(seed_eval_points))
-  cond_offspring_dist = matrix(dnorm(vect_seed_eval_points, vect_breed_val_means, offspring_sd), ncol = length(seed_eval_points), byrow = TRUE)
-  cond_offspring_dist = cond_offspring_dist * dg #scales the distribtuion so that it sums to one, the assumption being that all offspring produced by a parental combination have to have a breeding value
-  offspring_3D_kernel = cond_offspring_dist * N_fathers
-  summing_grid = matrix(1:(length(eval_points) * length(eval_points)), ncol = length(eval_points), byrow = TRUE)
-  t(apply(summing_grid, MARGIN = 1, FUN = function(x) colSums(offspring_3D_kernel[x, ])))
+## produces a function which when called produces the mixing kernel of offsping over g given the parenrtal distribution 
+##  offspring_sd is the sd of breeding value distribtuion of offspring (which we assume is normal).
+#makes the closure to produce the function for the mixing kernel so a bunch of heavy calculation is pre-calculated and stored
+quant_gen_closure <- function(eval_points_object, offspring_sd){
+  ii <- expand.grid(M = 1:length(eval_points_object$above_ground), P = 1:length(eval_points_object$above_ground)) # index for every combination of maternal and paternal eval point 
+  ep <- expand.grid(O = eval_points_object$seed, M = eval_points_object$above_ground, P = eval_points_object$above_ground)
+  ep <- transform(ep, MP = 0.5 * M + 0.5 * P)[,c("O", "MP")]
+  mix_kern <- dnorm(ep$O, mean = ep$MP, sd = offspring_sd)
+  dim(mix_kern) <- c(length(eval_points_object$seed), length(eval_points_object$above_ground) ^ 2) #colSums(mix_kern) * dg = [1, 1, 1, ..., 1]
+  rm(ep) 
+ 
+  function(N_m){
+    mix_kern %*% (N_m[ii$M] * N_m[ii$P])
+  }
 }
 
-##FECUNDITY(N_m, eval_points, fec_max, fec0, fec_cost, N_f, additive_variance, seed_eval_points)
-## produces a distribution of seeds on eval_points of g produced by population N_m (distribution of mothers on g evaluated at eval_points)
+##FECUNDITY_CLOSURE()
+## produces a function that when called returns the distribution of seeds on eval_points of g produced by population N_m (distribution of mothers on g evaluated at eval_points)
 ## N_m = maternal distrbution of indviduals over g
-## N_f = paternal distrbution of indviduals over g, in most cases N_m == N_f
 ## eval_points = the values of g on which above ground individuals are evaluated
-## seed_eval_points = the values of g on which seeds are evaluated
 ## fec_max = the maximum number of seeds per mothers
 ## fec0 = cost of resistance when g = 0, in logits
 ## fec_cost = reduction in fecundity each additional unit of g causes, in logits
@@ -62,17 +58,31 @@ quant_gen_offspring_distribution <- function(N_f, eval_points, offspring_sd, see
 ## dense_depend_fec = 1/number of plants at which indivduals start to interfer with each other.
 ## dg = integration constant, equal to  eval_points[2] - eval_points[1]
 #be careful this functions relies on N_m being evaluated on eval_points before being passed to this function so that the indexes all match up
-fecundity <- function(N_m, eval_points, fec_max, fec0, fec_cost, N_f, offspring_sd, seed_eval_points, dense_depend_fec, crop_effect_fec, density_effect_fec, dg){
-  num_survivors = sum(N_m) * dg
-  if(num_survivors > 0){
-    resist_effect_fec = exp(-(fec0 - eval_points * fec_cost))
-    seeds_each_g = N_m * ((density_effect_fec * crop_effect_fec * fec_max) / (1 + resist_effect_fec + dense_depend_fec * num_survivors + 
-      dense_depend_fec * num_survivors * resist_effect_fec))
-    return(colSums(seeds_each_g * quant_gen_offspring_distribution(N_f, eval_points, offspring_sd, seed_eval_points, dg)) * dg )
-  }else{
-    return(0)
+fecundity_closure <- function(eval_points_object, offspring_sd, fec0, fec_cost){
+  #constants for the mixing distribution
+  ii <- expand.grid(M = 1:length(eval_points_object$above_ground), P = 1:length(eval_points_object$above_ground)) # index for every combination of maternal and paternal eval point 
+  ep <- expand.grid(O = eval_points_object$seed, M = eval_points_object$above_ground, P = eval_points_object$above_ground)
+  ep <- transform(ep, MP = 0.5 * M + 0.5 * P)[,c("O", "MP")]
+  mix_kern <- dnorm(ep$O, mean = ep$MP, sd = offspring_sd)
+  dim(mix_kern) <- c(length(eval_points_object$seed), length(eval_points_object$above_ground) ^ 2) #colSums(mix_kern) * dg = [1, 1, 1, ..., 1]
+  rm(ep) 
+  #constants for the fecundity function 
+  resist_effect_fec = exp(-(fec0 - eval_points_object$above_ground * fec_cost))
+  
+  function(N_m, fec_max, dense_depend_fec, density_effect_fec , crop_effect_fec, dg){
+    num_survivors = sum(N_m) * dg
+    if(num_survivors > 0){
+      repo_happiness = (density_effect_fec * crop_effect_fec) / (1 + resist_effect_fec + dense_depend_fec * num_survivors + dense_depend_fec * num_survivors * resist_effect_fec)
+      post_select_parents = N_m * repo_happiness
+      post_select_parents_normz = post_select_parents / (sum(post_select_parents) * dg)
+      pd_seeds = (mix_kern %*% (post_select_parents_normz[ii$M] * post_select_parents_normz[ii$P])) * dg * dg #need to integrate 2 times across mix_kern cols so whole thing intergates to 1
+      return(sum(repo_happiness * post_select_parents) * fec_max * dg * pd_seeds) #some slight inaccuracy here, if the expected number of total seeds is 20,000 the actual total number is 20,0047 when dg = 0.5, can be made much more accurate if dg is smaller  
+    }else{
+      return(0)
+    }
   }
 }
+
 
 ## SEEDBANK_PLOWING_2LEVEL()
 ## produces a distribution of seeds in the seed bank over the eval_points on g. 
@@ -111,9 +121,6 @@ new_seeds <- function(seedbank, newseeds){
 ## seed_movement = movement of seed out of the seedbank in response to plowing
 ## eval_object = object from EVAL_POINTS_BUILDER() that defines the above ground and below ground evaluation points
 ## fec_max = the maximum number of seeds per mothers
-## fec0 = cost of resistance when g = 0, in logits
-## fec_cost = reduction in fecundity each additional unit of g causes, in logits
-## offspring_sd (passed to quant_gen_offspring_distribution()) = sd of conditional offspring distribution
 ## dense_depend_fec = density dependent effect on fecundity in units of 1/number individuals at which they start to affect each others fecundity
 ## crop_effect_fec = proprtion of normal fecundity in the crop choice choosen  
 ## density_effect_fec = proprtion of normal fecundity in the crop planting density choosen
@@ -123,24 +130,20 @@ new_seeds <- function(seedbank, newseeds){
 ## herb_effect = effect of herbicide on survival
 ## survive_resist = protective effect of a one unit increase in resistance score g
 ## max_sur = maximum survival possible
-## density_cutoff = density of emmerged plants at which are ignored in calculating the evaluation window, should be very small number
 ## dg = difference between evaluation points, should = eval_points[2] - eval_points[1]
 
 single_iteration_1level <- function(seedbank_current, germination, mech_control, crop_effect_sur, seed_survival, seed_movement, eval_object, pro_exposed, herb_rate, sur0, 
-    sur_cost_resist, herb_effect, survive_resist, max_sur, fec_max, fec0, fec_cost, offspring_sd, dense_depend_fec, density_cutoff, crop_effect_fec, 
-    density_effect_fec, dg){
+    sur_cost_resist, herb_effect, survive_resist, max_sur, fec_max, dense_depend_fec, crop_effect_fec, density_effect_fec, fec_function, dg){
   
   new_seedbank = (seedbank_current - seedbank_current *  seed_movement) * seed_survival 
   new_plants = new_seedbank * germination * mech_control * crop_effect_sur   
   seedbank_post_germ = new_seedbank * (1 - germination)
-  eval_object = eval_points_update(eval_points_object = eval_object, new_plants, density_cutoff = density_cutoff) #update evaluation window
   survivors_herb = pro_exposed * new_plants[eval_object$above_ground_index] *  (max_sur / (1 + exp(-(sur0 - sur_cost_resist * eval_object$above_ground - herb_rate * (herb_effect - 
     pmin(herb_effect, survive_resist * eval_object$above_ground))))))
   survivors_noherb = (1 - pro_exposed) * new_plants[eval_object$above_ground_index] *  (max_sur / (1 + exp(-(sur0 - sur_cost_resist * eval_object$above_ground))))
   survivors_joint = survivors_herb + survivors_noherb
-  seedbank_next = seedbank_post_germ + fecundity(N_m = survivors_joint, eval_points = eval_object$above_ground, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, 
-    N_f = survivors_joint, offspring_sd = offspring_sd, seed_eval_points = eval_object$seed, dense_depend_fec = dense_depend_fec, crop_effect_fec = crop_effect_fec, 
-    density_effect_fec = density_effect_fec, dg = dg) 
+  seedbank_next = seedbank_post_germ + fec_function(N_m = survivors_joint, fec_max = fec_max, dense_depend_fec = dense_depend_fec, 
+    density_effect_fec = density_effect_fec, crop_effect_fec = crop_effect_fec, dg = dg) 
   
   return(seedbank_next)
 }
@@ -168,29 +171,29 @@ single_iteration_1level <- function(seedbank_current, germination, mech_control,
 ## herb_effect = effect of herbicide on survival
 ## survive_resist = protective effect of a one unit increase in resistance score g
 ## max_sur = maximum survival possible
-## density_cutoff = density of emmerged plants at which are ignored in calculating the evaluation window, should be very small number
 ## dg = difference between evaluation points, should = eval_points[2] - eval_points[1]
-## density_cutoff = population density (on distrbution over g) above which seed evaluation points are retained in the above ground evaluation points
 ## num_iter = number of interations to run the model for
 ## sub_action = an object the encodes all the actions into parameter values
 ## action_seq = matrix 5 x num_iter matrix that gives the sub-action taken in every iteration, used to reference action_space
 multi_iteration <- function(seedbank_initial, germination, seed_survival, eval_object, pro_exposed, sur0, sur_cost_resist, herb_effect, survive_resist, max_sur, fec_max, 
-  fec0, fec_cost, offspring_sd, dense_depend_fec, density_cutoff, dg, num_iter, sub_action, action_seq){
+  fec0, fec_cost, offspring_sd, dense_depend_fec, dg, num_iter, sub_action, action_seq){
     
   results = matrix(NA, nrow = num_iter, ncol = length(eval_object$seed))
+  #create the function to do the offspring mixing 
+  fecundity <- fecundity_closure(eval_points_object = eval_object, offspring_sd = offspring_sd, fec0 = fec0, fec_cost = fec_cost)
   i = 1
   results[i, ] = single_iteration_1level(seedbank_current = seedbank_initial, germination = germination, mech_control = sub_action$mech_sur[action_seq[i, 'mech']], 
     crop_effect_sur = sub_action$crop_sur[action_seq[i, 'crop']], seed_survival = seed_survival, seed_movement = sub_action$plow[action_seq[i, 'plow']], eval_object = eval_object, 
     pro_exposed = pro_exposed, herb_rate = sub_action$herb[action_seq[i, 'herb']], sur0 = sur0, sur_cost_resist = sur_cost_resist, herb_effect = herb_effect, 
-    survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, offspring_sd = offspring_sd, dense_depend_fec = dense_depend_fec, 
-    density_cutoff = density_cutoff, crop_effect_fec = sub_action$crop_fec[action_seq[i, 'crop']], density_effect_fec = sub_action$dens_fec[action_seq[i, 'dens']], dg = dg)
+    survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, dense_depend_fec = dense_depend_fec, crop_effect_fec = sub_action$crop_fec[action_seq[i, 'crop']], 
+    density_effect_fec = sub_action$dens_fec[action_seq[i, 'dens']], fec_function = fecundity, dg = dg)
 
   for(i in 2:num_iter){
     results[i, ] = single_iteration_1level(seedbank_current = results[i - 1, ], germination = germination, mech_control = sub_action$mech_sur[action_seq[i, 'mech']], 
-      crop_effect_sur = sub_action$crop_sur[action_seq[i, 'crop']], seed_survival = seed_survival, seed_movement = sub_action$plow[action_seq[i, 'plow']], eval_object = eval_object, 
-      pro_exposed = pro_exposed, herb_rate = sub_action$herb[action_seq[i, 'herb']], sur0 = sur0, sur_cost_resist = sur_cost_resist, herb_effect = herb_effect, 
-      survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, offspring_sd = offspring_sd, dense_depend_fec = dense_depend_fec, 
-      density_cutoff = density_cutoff, crop_effect_fec = sub_action$crop_fec[action_seq[i, 'crop']], density_effect_fec = sub_action$dens_fec[action_seq[i, 'dens']], dg = dg)
+    crop_effect_sur = sub_action$crop_sur[action_seq[i, 'crop']], seed_survival = seed_survival, seed_movement = sub_action$plow[action_seq[i, 'plow']], eval_object = eval_object, 
+    pro_exposed = pro_exposed, herb_rate = sub_action$herb[action_seq[i, 'herb']], sur0 = sur0, sur_cost_resist = sur_cost_resist, herb_effect = herb_effect, 
+    survive_resist = survive_resist, max_sur = max_sur, fec_max = fec_max, dense_depend_fec = dense_depend_fec, crop_effect_fec = sub_action$crop_fec[action_seq[i, 'crop']], 
+    density_effect_fec = sub_action$dens_fec[action_seq[i, 'dens']], fec_function = fecundity, dg = dg)
   }
   
   results
@@ -257,14 +260,86 @@ multi_iteration <- function(seedbank_initial, germination, seed_survival, eval_o
 #out2 = quant_gen_offspring_distribution_vect(N_f = N_f, eval_points = eval_all$above_ground, additive_variance = additive_variance, seed_eval_points = eval_all$seed)
 #all.equal(out1, out2)
 
+#makes the closure to produce the function for the mixing kernel so a bunch of heavy calculation is pre-calculated and stored
+# quant_gen_closure <- function(eval_points_object, offspring_sd){
+#   ii <- expand.grid(M = 1:length(eval_points_object$above_ground), P = 1:length(eval_points_object$above_ground)) # index for every combination of maternal and paternal eval point 
+#   ep <- expand.grid(O = eval_points_object$seed, M = eval_points_object$above_ground, P = eval_points_object$above_ground)
+#   ep <- transform(ep, MP = 0.5 * M + 0.5 * P)[,c("O", "MP")]
+#   mix_kern <- dnorm(ep$O, mean = ep$MP, sd = offspring_sd)
+#   dim(mix_kern) <- c(length(eval_points_object$seed), length(eval_points_object$above_ground) ^ 2) #colSums(mix_kern) * dg = [1, 1, 1, ..., 1]
+#   rm(ep) 
+#  
+#   function(N_m){
+#     mix_kern %*% (N_m[ii$M] * N_m[ii$P])
+#   }
+# }
+# 
+# ##FECUNDITY_CLOSURE()
+#be careful this functions relies on N_m being evaluated on eval_points before being passed to this function so that the indexes all match up
 
 
 
-
-
-
-
-
+# fecundity_closure <- function(eval_points_object, offspring_sd, fec0, fec_cost){
+#   #constants for the mixing distribution
+#   ii <- expand.grid(M = 1:length(eval_points_object$above_ground), P = 1:length(eval_points_object$above_ground)) # index for every combination of maternal and paternal eval point 
+#   ep <- expand.grid(O = eval_points_object$seed, M = eval_points_object$above_ground, P = eval_points_object$above_ground)
+#   ep <- transform(ep, MP = 0.5 * M + 0.5 * P)[,c("O", "MP")]
+#   mix_kern <- dnorm(ep$O, mean = ep$MP, sd = offspring_sd)
+#   dim(mix_kern) <- c(length(eval_points_object$seed), length(eval_points_object$above_ground) ^ 2) #colSums(mix_kern) * dg = [1, 1, 1, ..., 1]
+#   rm(ep) 
+#   #constants for the fecundity function 
+#   resist_effect_fec = exp(-(fec0 - eval_points_object$above_ground * fec_cost))
+#   
+#   cat('len repo_happiness: ', length(resist_effect_fec), '\n')
+#   
+#   function(N_m, fec_max, dense_depend_fec, density_effect_fec , crop_effect_fec, dg){
+#     num_survivors = sum(N_m) * dg
+#     if(num_survivors > 0){
+#       repo_happiness = (density_effect_fec * crop_effect_fec) / (1 + resist_effect_fec + dense_depend_fec * num_survivors + dense_depend_fec * num_survivors * resist_effect_fec)
+#       cat('len repo_happiness: ', length(repo_happiness), '\n')
+#       post_select_parents = N_m * repo_happiness
+#       post_select_parents_normz = post_select_parents / (sum(post_select_parents) * dg)
+#       pd_seeds = (mix_kern %*% (post_select_parents_normz[ii$M] * post_select_parents_normz[ii$P])) * dg * dg #need to integrate 2 times across mix_kern cols so whole thing intergates to 1
+#       return(sum(repo_happiness * post_select_parents) * fec_max * dg * pd_seeds) #some slight inaccuracy here, if the expected number of total seeds is 20,000 the actual total number is 20,0047 when dg = 0.5, can be made much more accurate if dg is smaller  
+#     }else{
+#       return(0)
+#     }
+#   }
+# }
+# 
+# #test this  function out make sure expected number of seeds are ruturned and all the summs are as expected 
+# dg = 0.2
+# eval_points_object = eval_points_builder(lower_eval_point = -10, upper_eval_point = 10, resolution = dg, seed_expantion = 3)
+# N_m = 200 * dnorm(eval_points_object$above_ground, 0, 0.98)
+# offspring_sd = 0.7
+# fec0 = 20
+# fec_cost = 0
+# crop_effect_fec = 1
+# density_effect_fec = 1
+# fec_max = 100
+# dense_depend_fec = 0.000000001
+# 
+# 
+# 
+# fecundity_c <- fecundity_closure(eval_points_object = eval_points_object, offspring_sd = offspring_sd, fec0 = fec0, fec_cost = fec_cost)
+# 
+# sum(fecundity_c(N_m = N_m, fec_max = 100, dense_depend_fec = dense_depend_fec, dg = dg, crop_effect_fec = crop_effect_fec, 
+#   density_effect_fec = density_effect_fec))*dg #expected number seeds 20,000
+#   
+# apply(cbind(1:10, 1:10, 1:10), MARGIN = 1, FUN = function(x){
+#   sum(fecundity_c(N_m = N_m, fec_max = 100, dense_depend_fec = dense_depend_fec, dg = dg, crop_effect_fec = crop_effect_fec, 
+#     density_effect_fec = density_effect_fec))*dg
+# })
+# 
+#   
+# microbenchmark(fun1 = fecundity_c(N_m = N_m, fec_max = fec_max, dense_depend_fec = dense_depend_fec, dg = dg),
+#   fun2 = fecundity(N_m = N_m, eval_points = eval_points_obj$above_ground, fec_max = fec_max, fec0 = fec0, fec_cost = fec_cost, dense_depend_fec = dense_depend_fec, 
+#     crop_effect_fec = crop_effect_fec, density_effect_fec = density_effect_fec, dg = dg), times = 200)
+# 
+# 
+# 
+# closure version works better.
+# 
 
 
 
