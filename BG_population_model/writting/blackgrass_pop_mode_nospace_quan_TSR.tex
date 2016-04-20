@@ -1,0 +1,167 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{setspace, graphicx, lineno, caption, color, float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amstext} %to enter text in mathematical formulae
+\usepackage{algpseudocode}%psuedo code and 
+\usepackage{algorithm}%puts the psuedo code in a float box
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage{natbib}
+%\usepackage{url, hyperref, makeidx, fancyhdr, booktabs, palatino}
+%\usepackage{euscript} %EuScript, command: \EuScript, for letters in Euler script
+%\usepackage{paralist} %listing (i), (ii), etc.
+\usepackage{rotating} %rotating text
+\usepackage{multirow} %connecting columns in tables
+\usepackage{multicol}
+\usepackage{longtable}
+\usepackage{array}
+%image stuff
+%\usepackage{epstopdf}
+%\usepackage{cancel}
+%\usepackage[ngerman, english]{babel} %for different languages in one document
+%\usepackage[utf8]{inputenc}
+%\hypersetup{colorlinks=true, linkcolor=blue}
+%page set up
+
+\usepackage[left=2.5cm,top=2.5cm,right=2.5cm, bottom=2.5cm,nohead]{geometry}
+\doublespacing
+%paragraph formatting
+\setlength{\parskip}{12pt}
+\setlength{\parindent}{0cm}
+
+\newcolumntype{x}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+
+\begin{document}
+%Make a title page
+\title{}
+\author{Shaun R. Coutts$^\ddag$, Rob Freckleton$^\dag$, Helen Hick$^\dag$, Dylan Childs$^\dag$, }
+\maketitle
+\section{Introduction}
+We develop a simple spatially implicit, density dependent population model for the economically important weed, black grass (\textit{Alopecurus myosuroides} Huds.). Often control of weed populations assumes the population will not adapt or respond to control actions, and the efficacy of any control remains constant over time. In reality any effective control method will impose selective pressure on a population, making that method less effective over time. Herbicide use is a common tool for black grass control, and as a result there is wide spread herbicide resistance. We model herbicide resistance in black grass as a quantitative trait, controlled by multiple genes, all with small effects. We look at the effect of repeated herbicide application on population dynamics and the way changing efficacy interacts with density dependent population regulation.     
+
+\subsection{System model}
+We model the black grass population using a yearly time step, starting at the beginning of the growing season before any seeds have emerged. We track the number of seeds in the seed bank with resistance $g$. The seed bank at time $t$ is the seeds already in the seed bank that don't germinate and survive one time step (first term in Eq. \ref{eq:seedbank_simp}), plus the number of seeds added to the seed bank $f(g, t)$. Both $b(g, t)$ and $f(g, t)$ are distributions over resistance score $g$.     
+\begin{equation}\label{eq:seedbank_simp}
+	b(g, t + 1) = b(g, t)(1 - \phi_e)\phi_b + f(g, t, h) 
+\end{equation}
+where $\phi_e$ is the probability that a seed will establish and survive the seedling stage, and $\phi_b$ is the probability that a seed will survive one year in the soil. The distribution of new seeds over resistance $g$, $f(g, t, h)$, is modelled as the offspring produced by the joint distribution of maternal and paternal survivors given herbicide application $h \in \{0, 1\}$. Survival given herbicide is conferred by two type of resistance traits, quantitative and target site. Quantitative traits are controlled by multiple genes, each having a small effect on and individuals resistance to herbicide. This leads to normally distributed resistance scores ($g$ in Eq. \ref{eq:fecund}) within the population. This quantitative resistance trait is always present in the population. That is all individuals have some value for $g$, but that value may be very small, and so phenotypically individuals are susceptible. Target site resistance is conferred by a single gene that affects the herbicides binding site. This can give almost perfect resistance to a herbicide, with little to no demographic cost. We assume target site resistance is controlled by a single loci, with inheritance following simple two allele gene and random mating. We denote the resistant allele $R$ and the susceptible allele $r$. We also assume that target site resistance gives perfect resistance at no demographic cost. With these two types of resistance operating the distribution of new seeds over quantitative resistance score $g$ is      
+\begin{align}
+\label{eq:fecund}
+\begin{split}
+	f(g, t, h) =  \displaystyle\int_{g_m}\int_{g_p} \text{N}(0.5 g_m + 0.5 g_p, \sigma_f)n(g_m, t)\psi(g_m)\times\\ 
+	\left[s(g_m, h) \varsigma\frac{n(g_p, t)s(g_p, h)}{\int_{g_p} n(g_p, t)s(g_p, h)\text{d}g_p} + s(g_m, 0)(1 - \varsigma)\frac{n(g_p, t)s(g_p, 0)}{\int_{g_p} n(g_p, t)s(g_p,0)\text{d}g_p}\right] \text{d}g_m\text{d}g_p 
+\end{split}
+\end{align}
+We assume that the maternal and paternal distributions are the same (i.e. $n(g_m, t) = n(g_f, t) = n(g, t)$), since individuals produce both seeds and pollen. The offspring produced by every pair of $g_m$:$g_p$ values are assumed to be normally distributed over $g$ with a mean of $0.5g_m + 0.5g_p$ and a standard deviation of $\sigma_f$ (first term in Eq. \ref{eq:fecund}). The number of individuals that emerge from the seed bank is
+\begin{equation}\label{eq:above_ground}
+	n(g, t) = b(g, t)\phi_e\phi_b
+\end{equation}
+$\varsigma$ is the proportion of individuals affected by the herbicide. The portion not affected is thus $(1 - \varsigma)$. This may occur because not all seeds emerge at the same time so only some individuals are exposed to the herbicide, or this may be the result of target site resistance. Thus
+\begin{equation}\label{eq:pro_exp}
+	\varsigma = (1 - \varsigma_0) + \varsigma_0 p(G^*)_t
+\end{equation}
+where $\varsigma_0$ is the proportion of individuals exposed to the herbicide and $p(G)_t$ is the proportion of seeds in the seedbank with target site resistance genotype $G$ at time $t$. We model each target site resistance genotype as tuple of two alleles, $G = \langle a_1, a_2\rangle$, where each allele $a_i$ is either resistant ($R$) or susceptible ($r$). Thus, the full set of genotypes are $G \in \{RR, Rr, rr\}$ at time $t$. $G^*$ are the sub-set of genotypes in $G$ that give target site resistance. If $G^* \in \{RR, Rr\}$ then target site resistance is a dominant trait and if $G^* = RR$ then target site resistance is recessive.  We assume that target site resistance is independent of metabolic resistance so we can track the frequency of each $G$ through time separately to the change in metabolic resistance over time. 
+\begin{equation}\label{eq:TSR_track}
+	p(G)_{t+1} = \frac{O(G, t)p(G)_t + (1 - O(G, t))Q(G, t)}{\sum_{\forall G} O(G, t)p(G)_t + (1 - O(G, t))Q(G, t)}
+\end{equation}      
+The frequency of seeds with target site resistance genotype $G$ in the seed bank at time $t + 1$ (Eq. \ref{eq:TSR_track}) is the frequency of seeds in the seed bank with genotype $G$ at time $t$, plus the proportion of new seeds produced with genotype $G$  
+\begin{equation}\label{eq:G_freq}
+	Q(G, t) = \begin{cases}
+		q\big(G\langle a_1 \rangle, t \big)^2 &\text{if } G\langle a_1 \rangle = G\langle a_2 \rangle\\
+		2q\big(G\langle a_1 \rangle, t \big)q\big(G\langle a_2 \rangle, t\big) &\text{otherwise}
+	\end{cases}
+\end{equation}
+where the frequency of each allele in the population of individuals that survive herbicide application is       
+\begin{equation}\label{eq:allele_freq}
+	q(a, t) = \frac{2p(aa)_t s(aa, h) + p(Rr)_t s(Rr, h)}{2\sum_{\forall G}p(G)_ts(G, h)}
+\end{equation}
+We assume target site resistance is independent of metabolic resistance and that matings are random. Thus, the frequency of allele $a$ in the population is affected by the relative frequency of each genotype, $p(aa)$, and the survival of each genotype, $s(G, h)$, since pollen and seeds are assumed to be produced after herbicide application. 
+\begin{equation}\label{eq:sur_G}
+	s(G, h) = \begin{cases} 
+		\frac{1}{1 + e^{-s_0}} &\text{~if~} G \in G^* \\
+		\frac{(1 - \varsigma_0)}{1 + e^{-s_0}} + \varsigma_0 \frac{\int_g \text{d}g~s(g, h) n(g, t)}{\int_g \text{d}g~n(g, t)} &\text{~otherwise~} 		
+	\end{cases} 
+\end{equation}
+where $s_0$ is the survival probability (in logits) when there is no herbicide for individuals with resistance score $g = 0$. The survival function for quantitative trait resistance ($s(g, h)$; Eq. \ref{eq:survival_herb}) appears in Eq. \ref{eq:sur_G} because target site and metabolic resistance will interact. Individuals with no target site resistance will have some level of metabolic herbicide resistance (although that level may be very low). When metabolic resistance is low the difference in survival between target site resistant and non-resistant individuals (and thus the selection pressure), will be large. However, for individuals with high levels of metabolic resistance the difference in survival between target site resistant and non-resistant individuals will be small. The level of metabolic resistance is measured on the arbitrary scale $g$, and the level of protection for a given value of $g$ under herbicide application $h \in \{0, 1\}$ is modelled as 
+\begin{align}\label{eq:survival_herb}
+	s(g, h) =& \frac{1}{1 + e^{-\Phi(h)}}\\
+	\Phi(h) =& s_0 - h\left(\xi_h - \textbf{min}(\xi_h, \rho g) \right)\\
+\end{align}
+We assume that seeds which germinate but die of non-management causes is subsumed into the seed survival term, $\phi_b$. We also assume that any reduction in survival due to increased density are subsumed into the affect of density on fecundity (Eq. \ref{eq:seed_production}). $\xi$ is the reduction in survival (in logits) caused by herbicide for individuals with a resistance score $g = 0$ and $\rho$ is the protective effect of a one unit increase in resistance score $g$. Because $\rho$ is only meaningful in relation to $\xi$, and $xi$ is only meaningful relative to $s_0$, we can fix $s_0$, and still produce the full range of possible behaviours by choosing different values for $\rho$ and $\xi$. For individuals not exposed to the herbicide we assume $h = 0$.
+
+The number of seeds produced per individual, $\psi(g)$, is a function of resistance, with greater resistance reducing the number of seeds produced, and the density of surviving plants. 
+\begin{equation}\label{eq:seed_production}
+	\psi(g) = \frac{\psi_\text{max}}{1 + e^{-(f_0 - f_rg)} + f_d M(h, t) + f_dM(h, t) e^{-(f_0 - f_rg)}}
+\end{equation}  
+where $\psi_\text{max}$ is the maximum possible number of seeds per individual, $f_0$ controls the number of seeds produced when $g = 0$, $f_r$ is the cost of resistance in terms of reduction in seed production, $1/f_d$ is the population level where individuals start to interfere with each other and 
+\begin{equation}\label{eq:num_sur}
+   M(h, t) = \int \text{d}g~n(g, t)\left[\varsigma s(g,t,h) + (1 - \varsigma)s(g, t, 0)\right]
+\end{equation}
+is the number of above ground individuals that survive until seed set.
+
+Seedbank seeds and new seeds in Eq. \ref{eq:TSR_track} are weighted by the proportion of surviving seedbank seeds of genotype $G$ over the total number of seeds available (survived from the previous time step or newly produced) of genotype $G$, calculated as     
+\begin{subequations}\label{eq:old_v_new_seed}
+\begin{equation}
+	O(G, t) = \frac{p(G)_t\int_g b(g, t)\phi_b(1 - \phi_e)\text{d}g}{Q(G, t)\Psi(h, t) + p(G)_t\int_g b(g, t)\phi_b(1 - \phi_e)\text{d}g} \\
+\end{equation}
+\begin{equation}\label{eq:num_seed}
+   \Psi(h, t) = \int \text{d}g~n(g, t)\psi(g)\big(\varsigma s(g, h) + (1 - \varsigma)s(g, 0)\big)
+\end{equation}
+\end{subequations}
+The integral in the numerator of Eq. \ref{eq:old_v_new_seed} over the seed bank gives the total number of seeds that don't germinate and do survive, times $p(G)_t$, gives the number of those seeds which are genotype $G$. This same term also appears in the denominator, along with the number of new seeds of genotype $G$. The total number of new seeds produced in time $t$, $\Psi(h, t)$ is the number above ground individuals, $n(g, t)$, that survive due to metabolic herbicide resistance $s(g, h)$, with each individual producing $\psi(g)$ seeds (Eq. \ref{eq:seed_production}). The proportion of those new seeds which are genotype $G$ is given by the function $Q(G, t)$. 
+
+\section{Parametrization}
+Several of the population model parameters, particularly those relating to the quantitative genetic selection model, are unknown for our study system. However, we do have field observations with estimates of above ground plant densities and susceptibility to herbicide. While we cannot directly parametrize the model with this data, we can use it to constrain the parameter space to regions that produce sensible results (i.e. those that match up with the observed densities). To do this we run the system model over 50 time steps under different parameter combinations both without and with herbicide application. We can then see which parameter combinations resulted in above ground populations like those we observe in the field.  
+
+For this approach to work well we need to constrain the parameter space as much as possible \textit{a prior}. Estimates and sources for each parameter are given in Table \ref{tab:parameters}.          
+
+\begin{longtable}[h]{x{1.5cm} x{2.1cm} x{2cm} x{1.5cm} p{3.5cm} p{3cm}} \label{tab:parameters}\\
+\caption{System model parameters}\\
+	\hline
+	\textbf{parameter} & \textbf{units} & \textbf{range} & \textbf{estimate} & \textbf{description} & \textbf{source}\\
+	\hline
+	\multicolumn{6}{l}{\underline{Population model}}\\
+	$\phi_b$ & prob. & 0.22 -- 0.79 & 0.45 & seed survival & \cite{Thom1997}\\
+	$\phi_e$ & prob. & 0.45 -- 0.6 & 0.52 & germination probability & \cite{Colb2006}\\	
+	$\psi_\text{max}$ & seeds/plant & 30 -- 300$^\blacklozenge$ & 45 & seed production of highly susceptible individuals at low densities & \cite{Doyl1986}\\
+	$f_d$ & 1 / pop. & 0.001 -- 0.01$^\dag$ & 0.004 & reciprocal of population at which individuals interfere with each other & \cite{Doyl1986}\\ 
+	$f_0$ & logits & 5 -- 10$^\dag$ & no est$^\ddag$  & fecundity in a naive population is logit($f_0$)$\psi_\text{max}$ & simulation\\
+	$f_r$ & logits & $0.1f_0$ -- $2f_0 ^\dag$ & no est$^\ddag$ & reduction in fecundity due to a one unit increase in resistance. Only meaningful in relation to $f_0$ & simulation\\
+	$\sigma_f$ & arbitrary & fixed & 1 & standard deviation of offspring distribution & fixed without loss of generality\\
+	$s_0$ & logits & fixed & 10 & survival in a naive population is logit($s_0$) & fixed without loss of generality\\
+	\multicolumn{6}{l}{\underline{Management effects}}\\
+	$\varsigma$ & prop. & 0.5 -- 1$^\dag$ & 0.8$^\blacklozenge$ & proportion of above ground individuals exposed to herbicide & HGCA\\   		
+	$\xi$ & logits & $2s_0$ -- $3s_0^\dag$ & no est$^\ddag$ & reduction in survival due to herbicide (only meaningful in relation to $s_0$ & simulation\\	
+	$\rho$ & logits & $0.1\xi$ -- $2\xi$ & no est$^\ddag$ & protection against herbicide conferred by a one unit increase in $g$, only meaningful in relation to $\xi$ & simulation\\
+	\hline
+	\multicolumn{6}{l}{$\blacklozenge$ sourced from grey literature, unpublished data and expert opinion}\\
+	\multicolumn{6}{l}{$\dag$ range not available from literature, simulation used to find plausible range}\\
+	\multicolumn{6}{l}{$\ddag$ no estimate not available from literature, simulation used to find plausible
+	 range}
+\end{longtable}
+
+We use Latin hypercube sampling to evenly sample 10,000 parameter combinations across the parameter space. We run each set of parameters for 50 time steps with both constant herbicide use and no herbicide use, starting with an initial population of 100 seeds. For each run we record the population at each time step. This process resulted in a data set of 10,000 rows, each with a set of parameter values, and the population over time under herbicide and without herbicide.  
+
+From this data set we filter out those parameter combinations that resulted in unrealistic population dynamics. We use data from 140 fields across England to define what realistic populations look like. These fields were visually inspected in ??? - ???, and every 20 m $\times$ 20 m grid square was assessed as being in one of four density classes; 'absent' (0 plants/20m$^2$), 'low' (1 -- 160 plants/20m$^2$), 'medium' (160 -- 450 plants/20m$^2$), 'high'(450 -- 1450 plants/20m$^2$) and very high (>1450 plants/20m$^2$). The resistance status of each field to the three most common herbicide active ingredients was determined in a glass house trial where seeds from 100 seed heads from 10 different locations in each field were taken post herbicide application (July -- August). These seeds were raised in a glass house and divided into three groups of 12 -- 19 plants (median 18) for each field. Each group had ??? of the herbicide 'Atlantis', 'Fenoxaprop' or 'Cycloxydim' applied, mortality and any damage were recorded after ??? days. 
+
+Because our model is spatially implicit, while the data are given in plants/m$^2$, we must assume an area for our population. We assume the modelled population occurs in a 1 ha field. Our goal is to define an upper and lower bound, above and below which predicted population sizes are assumed to be unrealistic under herbicide application and no herbicide application. Defining an upper bound on the population if there were no management is problematic since there are no known black grass populations which are not managed in some way (and the vast majority are exposed to herbicide every year.    
+
+We use this field data to define two criteria for unrealistic populations. Firstly we expect that in the absence of any control black grass will dominate a field within 50 years, thus we filter out any parameter combinations where the model run without herbicide resulted in an above ground population less than ???? plants. This corresponds to a every 20 m $\times$ 20 m in our hypothetical field being in the high density class.          
+
+can also get field estimates from \cite{Cava1999}
+
+max density cited in \cite{Doyl1986} as 500 plants$.m^2$ in a crop of winter cereals, \cite{Colb2007} estimates max density of adult plants on bare ground of 2000 plants$.m^2$  
+
+\subsection{Sensitivity analysis}
+
+
+
+
+
+\bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
+\bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
+
+\end{document}
