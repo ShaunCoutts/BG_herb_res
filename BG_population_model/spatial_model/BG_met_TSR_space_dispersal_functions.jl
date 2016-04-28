@@ -172,7 +172,7 @@ function pollen_disp_mat_builder_1D!(disp_mat::Array{Float64, 2}; res = 1, a = 3
     disp_mat[i, (i + 1):end] = disp_mat[1, 2:(end - i + 1)] # fill upper triangle row wise 
     disp_mat[(i + 1):end, i] = disp_mat[1, 2:(end - i + 1)] # fill lower triangle col wise
   end
- disp_mat[end, end] = disp_mat[1, 1]
+  disp_mat[end, end] = disp_mat[1, 1]
   
   return nothing
 end
