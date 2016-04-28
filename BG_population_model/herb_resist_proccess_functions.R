@@ -84,6 +84,10 @@ fecundity_closure <- function(eval_points_object, offspring_sd, fec0, fec_cost){
 }
 
 
+#test a different fecundity function that also penalises values of g below 0
+ resist_effect_fec = min(exp(-(fec0 - eval_points_object$above_ground * fec_cost)), exp(-(fec0 + eval_points_object$above_ground * fec_cost)))
+
+
 ## SEEDBANK_PLOWING_2LEVEL()
 ## produces a distribution of seeds in the seed bank over the eval_points on g. 
 ## seedbank0 = distrbution of seeds in the seedbank in the last timestep
