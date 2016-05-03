@@ -40,8 +40,8 @@ end
 # uses in place mutation. Note herb_application should be the same length as size(pop_at_t)[2] 
 # and and g_vals should be the same length as size(pop_at_t)[1]
 function survival_at_t!(pop_at_t::Array{Float64, 2}, base_sur::Float64, g_vals::Array{Float64, 1},
-  resist_G::Array{ASCIIString, 1}, G::ASCIIString, herb_application::Array{Float64, 1}, herb_effect::Float64, g_prot::Float64, 
-  pro_exposed::Float64)
+  resist_G::Array{ASCIIString, 1}, G::ASCIIString, herb_application::Array{Float64, 1}, herb_effect::Float64, 
+  g_prot::Float64, pro_exposed::Float64)
   
   for x in 1:size(pop_at_t)[2]
     survival_at_x(pop_at_t[:, x], base_sur, g_vals, resist_G, G, herb_application[x],
@@ -68,20 +68,20 @@ function single_iter(current_pop::Array{Float64, 2}, next_pop::Array{Float64, 2}
 end
 
 # the first three positional arguments (int_pop_RR, int_pop_Rr, int_pop_rr) are tuples of
-# (intial_pop_size::Float32, intial_pop_g::Float32, int_pop_x::Array{Int8, 1})
+# (intial_pop_size::Float64, intial_pop_g::Float64, int_pop_x::Array{Int8, 1})
 function multi_iter(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]),
   int_pop_Rr::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]),
   int_pop_rr::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]); 
   int_sd::Float64 = 1.41, num_iter = 10, landscape_size = 10, space_res = 1, g_res = 1, lower_g = -10, 
-  upper_g = 10, seed_expand = 3, germ_prob = 0.7)
+  upper_g = 10, seed_expand = 2, germ_prob = 0.7)
 
   seed_disp_mat_2D = zeros(convert(Int32, ((landscape_size / space_res) + 1) ^ 2), 
     convert(Int32, ((landscape_size / space_res) + 1) ^ 2))
     
   seed_disp_mat_1D = zeros((landscape_size / space_res) + 1, (landscape_size / space_res) + 1)
     
-  #build the above ground and seedbank evaluation points 
-  g_ag_sb = g_points_builder(lower_g, upper_g, g_res, seed_expand)
+  # build the metabolic resistance evaluation points 
+  g_vals = (lower_g : g_res : upper_g)
  
   #set aside a chunck of memory for the landscapes for each genotype 
   RR_landscape = Array{Array{Float64, 2}}(num_iter)
@@ -90,9 +90,9 @@ function multi_iter(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0
   # build a landscape for each genotype, for each time step 
   # these are 2D arrays of landscape_size x (upper_g - lower_g) * seed_expand 
   for t in 1:num_iter
-    RR_landscape[t] = zeros(length(g_ag_sb[2]), landscape_size)
-    Rr_landscape[t] = zeros(length(g_ag_sb[2]), landscape_size)
-    rr_landscape[t] = zeros(length(g_ag_sb[2]), landscape_size)
+    RR_landscape[t] = zeros(length(g_vals), landscape_size)
+    Rr_landscape[t] = zeros(length(g_vals), landscape_size)
+    rr_landscape[t] = zeros(length(g_vals), landscape_size)
   end
     
   #set the intial populations
@@ -100,26 +100,52 @@ function multi_iter(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0
   int_Rr_dist = Normal(int_pop_Rr[2], int_sd)
   int_rr_dist = Normal(int_pop_rr[2], int_sd)
   #sets the intial population for each G at the locations specified in int_pop_x_G. 
-  for x in int_pop_RR[3]
-    RR_landscape[1][:, x] = pdf(int_RR_dist, g_ag_sb[2]) * int_pop_RR[1]
+  for x in int_pop_RR[2]
+    RR_landscape[1][:, x] = pdf(int_RR_dist, g_vals) * int_pop_RR[1]
   end
-  for x in int_pop_Rr[3]
-    Rr_landscape[1][:, x] = pdf(int_Rr_dist, g_ag_sb[2]) * int_pop_Rr[1]
+  for x in int_pop_Rr[2]
+    Rr_landscape[1][:, x] = pdf(int_Rr_dist, g_vals) * int_pop_Rr[1]
   end
-  for x in int_pop_rr[3]
-    rr_landscape[1][:, x] = pdf(int_rr_dist, g_ag_sb[2]) * int_pop_rr[1]
+  for x in int_pop_rr[2]
+    rr_landscape[1][:, x] = pdf(int_rr_dist, g_vals) * int_pop_rr[1]
   end
   
-  #a set of matrices to hold the above ground populations
-  RR_ab_pop = zeros(length(g_ag_sb[1]), landscape_size)
-  Rr_ab_pop = zeros(length(g_ag_sb[1]), landscape_size)
-  rr_ab_pop = zeros(length(g_ag_sb[1]), landscape_size)
- 
+  # a set of matrices to hold the above ground populations
+  RR_ab_pop = zeros(length(g_vals), landscape_size)
+  Rr_ab_pop = zeros(length(g_vals), landscape_size)
+  rr_ab_pop = zeros(length(g_vals), landscape_size)
+
+  # a set of matrices to hold the total amount of pollen that arrives are each location for each metabolic 
+  # resitance score for each genotype
+  pollen_RR = zeros(length(g_vals), landscape_size)
+  pollen_Rr = zeros(length(g_vals), landscape_size)
+  pollen_rr = zeros(length(g_vals), landscape_size)
+  total_pollen = zeros(landscape_size)
+  
   # iterate through the timesteps
   for t in 2:num_iter
     
-    new_plants!(RR_ab_pop, RR_landscape[g_ag_sb[3], :], germ_prob)
-  
+    new_plants!(RR_ab_pop, RR_landscape[t][g_vals, :], germ_prob)
+    new_plants!(Rr_ab_pop, Rr_landscape[t][g_vals, :], germ_prob)
+    new_plants!(rr_ab_pop, rr_landscape[t][g_vals, :], germ_prob)
+    
+    ## pollen at arrived each location for each g from all other locations  
+    pollen_RR[:, :] = RR_ab_pop * pollen_disp_mat
+    pollen_Rr[:, :] = Rr_ab_pop * pollen_disp_mat
+    pollen_rr[:, :] = rr_ab_pop * pollen_disp_mat
+    total_pollen[:] = sum(pollen_RR, 1) + sum(pollen_Rr, 1) + sum(pollen_rr, 1)
+    #normalise the pollen counts
+    pollen_RR[:, :] = pollen_RR ./ total_pollen
+    pollen_Rr[:, :] = pollen_Rr ./ total_pollen
+    pollen_rr[:, :] = pollen_rr ./ total_pollen
+    
+    
+    ## TODO implement the g mixing kernel : will be hard
+    
+    
+    
+    
+    
   end
   
  
