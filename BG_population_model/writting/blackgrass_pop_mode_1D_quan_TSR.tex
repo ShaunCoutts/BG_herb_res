@@ -120,13 +120,13 @@ is the number of above ground individuals that survive until seed set at locatio
 
 The third mixing kernel mixes both target site and metabolic resistance genes spatially. Spatial mixing also requires double integration over the location of the mother, $x_m$, and father, $x_p$. This double integration over spatial locations takes every pair of locations $x_m:x_p$ and generates a distribution of seeds over metabolic resistance score $g$ for every genotype $G$ at maternal location $x_m$ based on the paternal parent distribution of survivors at paternal location $x_p$. The paternal parental distribution of survivors is weighted by the distance between the maternal and paternal locations $x_m$ and $x_p$ according to the pollen dispersal kernel 
 \begin{equation}\label{eq:pollen_disp}
-	d_p(i, j) = l\mu_{1,p}\omega_{1,p}\delta_{ij}^{\omega_{1,p} - 2}e^{-\mu_{1,p}\delta_{ij}^{\omega_{1,p}}} + (1 - l) \mu_{2,p}\omega_{2,p}\delta_{ij}^{\omega_{2,p} - 2}e^{-\mu_{2,p}\delta_{ij}^{\omega_{2,p}}}
+	d_p(i, j) = \frac{c}{a^{2/c}\Gamma\left(\dfrac{2}{c} \right)\Gamma\left(1 - \dfrac{2}{c} \right)}\left( 1 + \dfrac{\delta_{i,j}^c}{a} \right)^{-1} 
 \end{equation} 
-This is a Weibull dispersal kernel developed by \cite{Colb2001} to model seed dispersal of black grass (I will source a better pollen dispersal kernel at some point). This number is divided by all to the pollen from every target site resistance genotype, from every location for every metabolic resistance score $g$ that arrives at the maternal location $x_m$ (double integration in denominator of Eq. \ref{eq:fecund}). The probability that a seed produced at maternal location $x_m$ is dispersed to location $x'$ is 
+This is a logistic kernel, which was found to be the one of the best fitting pollen dispersal kernels for oil seed rape \citep{Klei2006}. This is a two parameter kernel with a scale, $a$, and shape, $c$, parameter, where $\delta_{i,j}$ is the distance between locations $i$ and $j$. For each maternal location $x_m$ the amount of each pollen type (i.e. a unique value of $g$ and $G$) arriving is divided by the total amount of pollen from every target site resistance genotype, from every location for every metabolic resistance score $g$ that arrives at the maternal location $x_m$ (double integration in denominator of Eq. \ref{eq:fecund}). The probability that a seed produced at maternal location $x_m$ is dispersed to location $x'$ is 
 \begin{equation}\label{eq:seed_disp}
-	d_m(i, j) = l\mu_{1,m}\omega_{1,m}\delta_{ij}^{\omega_{1,m} - 2}e^{-\mu_{1,m}\delta_{ij}^{\omega_{1,m}}} + (1 - l) \mu_{2,m}\omega_{2,m}\delta_{ij}^{\omega_{2,m} - 2}e^{-\mu_{2,m}\delta_{ij}^{\omega_{2,m}}}
+	d_m(i, j) = l \mu_1 \omega_1 \delta_{ij}^{\omega_1 - 2}e^{-\mu_1 \delta_{ij}^{\omega_1}} + (1 - l) \mu_2 \omega_2 \delta_{ij}^{\omega_2 - 2}e^{-\mu_2\delta_{ij}^{\omega_2}}
 \end{equation} 
-This is a Weibull dispersal kernel developed by \cite{Colb2001} to model seed dispersal of black grass where $\delta_{ij}$ is the distance between locations $i$ and $j$, $l$ is the proportion of seeds in the long dispersal kernel rather than the short dispersal kernel, $\mu_{1, m}$ and $\mu_{2, m}$ control scale of the dispersal kernel for the long and short parts of the kernel, $\omega_{1, m}$ and $\omega_{2, m}$ are shape parameters for the short and long dispersal kernels.    
+Weibull dispersal kernel developed by \cite{Colb2001} to model seed dispersal of black grass where $\delta_{ij}$ is the distance between locations $i$ and $j$, $l$ is the proportion of seeds in the long dispersal kernel rather than the short dispersal kernel, $\mu_{1, m}$ and $\mu_{2, m}$ control scale of the dispersal kernel for the long and short parts of the kernel, $\omega_{1, m}$ and $\omega_{2, m}$ are shape parameters for the short and long dispersal kernels.    
 
 \section{Parametrization}
 Several of the population model parameters, particularly those relating to the quantitative genetic selection model, are unknown for our study system. However, we do have field observations with estimates of above ground plant densities and susceptibility to herbicide. While we cannot directly parametrize the model with this data, we can use it to constrain the parameter space to regions that produce sensible results (i.e. those that match up with the observed densities). To do this we run the system model over 50 time steps under different parameter combinations both without and with herbicide application. We can then see which parameter combinations resulted in above ground populations like those we observe in the field.  
@@ -174,9 +174,12 @@ max density cited in \cite{Doyl1986} as 500 plants$.m^2$ in a crop of winter cer
 
 
 
-
-
 \bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
 \bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
+
+\begin{figure}[htbp] \label{fig:schematic}
+	\includegraphics[height=200mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/writting/spatial_model_fig/BG_pop_spatial_mod_schematic.pdf}
+\caption{Schematic of the spatial population model. At each location $x_i$ seeds in the the seed bank have one of three target site resistance genotypes $G \in \{RR, Rr, rr\}$ and are distributed over metabolic resistance score $g$. The emergence and survival functions, $n(g, G, x, t)s(g, G, x, h_x)$ are applied to the seed bank distributions to get the above ground parent distributions. Those above ground distributions of survivors are the parent distributions that mix across genotypes and locations (via the pollen dispersal kernel) to create the offspring distributions. Seeds are then dispersed between locations using the seed dispersal kernel.}
+\end{figure}
 
 \end{document}
