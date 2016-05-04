@@ -17,6 +17,18 @@ function g_points_builder(low_point, upper_point, res, seed_expand)
   return (above_ground_eval, seed_eval, above_ground_ind)
 end
 
+# fills the g_mixing kernel with a normal offspring dist for each coloumn
+# witha mean of g_m * g_p for every combination
+function fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
+
+  m_p_comb = 1
+  for g_m in g_vals
+    for g_p in g_vals
+      g_mixing_kernel[:, m_p_comb] = pdf(Normal(0.5 * g_m + 0.5 * g_p, offspring_sd), g_vals)
+    end
+  end
+
+end
 # Survival function that takes an element of population array and reduces it in place
 # be aware that pop_at_x and g_vals need to match up, that s one element in pop_at_x
 # should corospond to a element of g_vals 
@@ -73,7 +85,7 @@ function multi_iter(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0
   int_pop_Rr::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]),
   int_pop_rr::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]); 
   int_sd::Float64 = 1.41, num_iter = 10, landscape_size = 10, space_res = 1, g_res = 1, lower_g = -10, 
-  upper_g = 10, seed_expand = 2, germ_prob = 0.7)
+  upper_g = 10, seed_expand = 2, germ_prob = 0.7, offspring_sd = 1.0)
 
   seed_disp_mat_2D = zeros(convert(Int32, ((landscape_size / space_res) + 1) ^ 2), 
     convert(Int32, ((landscape_size / space_res) + 1) ^ 2))
@@ -94,7 +106,13 @@ function multi_iter(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0
     Rr_landscape[t] = zeros(length(g_vals), landscape_size)
     rr_landscape[t] = zeros(length(g_vals), landscape_size)
   end
-    
+  
+  # build the mixing kernel for metabolic resistance score every row is a offspring score
+  # every coloum is a g_m x g_p combination, so every coloumn is a normal dist with
+  # a mean of g_m*g_p and sd of offspring sd
+  g_mixing_kernel = zeros(length(g_vals), length(gvals) ^ 2)
+  fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
+  
   #set the intial populations
   int_RR_dist = Normal(int_pop_RR[2], int_sd)
   int_Rr_dist = Normal(int_pop_Rr[2], int_sd)
