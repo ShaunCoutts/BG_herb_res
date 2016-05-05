@@ -116,7 +116,7 @@ where $\psi_\text{max}$ is the maximum possible number of seeds per individual, 
 \begin{equation}\label{eq:num_sur}
    M(h_x, x, t) = \sum_{\forall G} \int_g n(g, x, t)s(g, G, x, h_x)\text{d}g
 \end{equation}
-is the number of above ground individuals that survive until seed set at location $x$.
+is the number of above ground individuals that survive until seed set at location $x$. Note that we implicitly assume that pollen production is not affected by either density or metabolic resistance score $g$. This may have a marginal effect in the spatial model because pollen is more dispersive than seeds. Thus, this assumption means that high metabolic resistance genes can spread more easily across the landscape.   
 
 The third mixing kernel mixes both target site and metabolic resistance genes spatially. Spatial mixing also requires double integration over the location of the mother, $x_m$, and father, $x_p$. This double integration over spatial locations takes every pair of locations $x_m:x_p$ and generates a distribution of seeds over metabolic resistance score $g$ for every genotype $G$ at maternal location $x_m$ based on the paternal parent distribution of survivors at paternal location $x_p$. The paternal parental distribution of survivors is weighted by the distance between the maternal and paternal locations $x_m$ and $x_p$ according to the pollen dispersal kernel 
 \begin{equation}\label{eq:pollen_disp}
