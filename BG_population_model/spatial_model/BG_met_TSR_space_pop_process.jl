@@ -2,8 +2,6 @@
 # the conditions required for both metabolic and target site resistance to 
 # develope in a populaiton similtaniously.
 
-using Distributions
-
 # fills the g_mixing kernel with a normal offspring dist for each coloumn
 # witha mean of g_m * g_p for every combination
 function fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
@@ -44,7 +42,7 @@ function new_seeds_at_t!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float6
   RR_mat::Array{Float64, 2}, Rr_mat::Array{Float64, 2}, rr_mat::Array{Float64, 2},
   RR_pollen::Array{Float64, 2}, Rr_pollen::Array{Float64, 2}, rr_pollen::Array{Float64, 2},
   g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, g_effect_fec::Array{Float64, 1},
-  fec_max = 100.0, dd_fec = 0.004, dg)
+  fec_max = 100.0, dd_fec = 0.004, dg = 1.0)
   
   #holding array for density of new seeds new seeds before division
   RR_seeds = zeros(length(g_effect_fec))
@@ -116,7 +114,7 @@ function new_seeds_at_t_mm!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Flo
   RR_mat::Array{Float64, 2}, Rr_mat::Array{Float64, 2}, rr_mat::Array{Float64, 2},
   RR_pollen::Array{Float64, 2}, Rr_pollen::Array{Float64, 2}, rr_pollen::Array{Float64, 2},
   g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, g_effect_fec::Array{Float64, 1},
-  fec_max = 100.0, dd_fec = 0.004, dg)
+  fec_max = 100.0, dd_fec = 0.004, dg = 1.0)
   
   #holding array for density of new seeds new seeds before division
   RR_seeds = zeros(size(RR_newseed)[1], size(RR_newseed)[2])
@@ -231,6 +229,6 @@ function new_plants!(ag_plants::Array{Float64, 2}, seed_bank::Array{Float64, 2},
   
   return nothing
 end
-s
+
 
 

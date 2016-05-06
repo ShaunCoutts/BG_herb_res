@@ -10,14 +10,14 @@ function multi_iter_1D(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0
   int_pop_Rr::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]),
   int_pop_rr::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]); 
   int_sd = 1.41, num_iter = 10, landscape_size = 10, dx = 1, lower_g = -10, 
-  upper_g = 10, seed_expand = 2, germ_prob = 0.7, offspring_sd = 1.0, fec0 = 10, fec_cost = 2,
+  upper_g = 10, germ_prob = 0.7, offspring_sd = 1.0, fec0 = 10, fec_cost = 2,
   fec_max = 100.0, dd_fec = 0.004, dg = 0.5, base_sur = 10.0, resist_G = ["RR", "Rr"], 
   herb_application = zeros(10), herb_effect = 20.0,  g_prot = 1.0, pro_exposed = 0.8)
 
     
   seed_disp_mat_1D = zeros(convert(Int32, (landscape_size / dx) + 1), 
     convert(Int32, (landscape_size / dx) + 1))
-  seed_disp_mat_builder_1D!(seed_disp_mat, res = dx)
+  seed_disp_mat_builder_1D!(seed_disp_mat_1D, res = dx)
   
   pollen_disp_mat = zeros(convert(Int32, (landscape_size / space_res) + 1), 
     convert(Int32, (landscape_size / space_res) + 1))
