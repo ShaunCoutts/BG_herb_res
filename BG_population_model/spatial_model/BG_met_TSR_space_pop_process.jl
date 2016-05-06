@@ -231,5 +231,6 @@ function new_plants!(ag_plants::Array{Float64, 2}, seed_bank::Array{Float64, 2},
   
   return nothing
 end
+s
 
 

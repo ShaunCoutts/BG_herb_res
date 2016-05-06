@@ -137,5 +137,11 @@ function main_calling_function()
 #   seed_disp_mat_2D = zeros(convert(Int32, ((landscape_size / space_res) + 1) ^ 2), 
 #     convert(Int32, ((landscape_size / space_res) + 1) ^ 2))
 #   
+# make a burning population 
+
+#run under no herbicide
+
+#run with herbicide
+
 
 end 
