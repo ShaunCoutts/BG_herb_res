@@ -53,6 +53,13 @@ pro_exposed = 0.8;
   #test to check the edge rows and cols sum to 0.5
   seed_disp_colsum = sum(seed_disp_mat_1D, 1);
   seed_disp_rowsum = sum(seed_disp_mat_1D, 2);
+  
+  pollen_disp_mat_1D = zeros(convert(Int32, (landscape_size / dx) + 1), 
+    convert(Int32, (landscape_size / dx) + 1));
+  pollen_disp_mat_builder_1D!(pollen_disp_mat_1D, res = dx);
+  #test to check the edge rows and cols sum to 0.5
+  pollen_disp_colsum = sum(pollen_disp_mat_1D, 1);
+  pollen_disp_rowsum = sum(pollen_disp_mat_1D, 2);
 
 #test the number of seeds dispersed to each location is the expected amount 
 
@@ -63,9 +70,19 @@ pro_exposed = 0.8;
 #test matrix mult gene mixing produces same result as the for loop version, 
 
 Test.with_handler(cust_hand) do
-
-  @test all(abs(seed_disp_colsum[[1 end]] - [0.5 0.5])) .<= 0.0000001)
+  #test the disperal matrix is as expected 
+  @test all(abs(seed_disp_colsum[[1 end]] - [0.5 0.5]) .<= 0.0000001)
   @test seed_disp_colsum[convert(Int32, floor(length(seed_disp_colsum) / 2))] >= 0.999
+  @test all(abs(seed_disp_rowsum[[1 end]] - [0.5 0.5]) .<= 0.0000001)
+  @test seed_disp_rowsum[convert(Int32, floor(length(seed_disp_colsum) / 2))] >= 0.999
+  @test seed_disp_mat_1D[1, :] == transpose(seed_disp_mat_1D[:, 1])
+  @test all(abs(pollen_disp_colsum[[1 end]] - [0.5 0.5]) .<= 0.0001)
+  @test pollen_disp_colsum[convert(Int32, floor(length(pollen_disp_colsum) / 2))] >= 0.999
+  @test all(abs(pollen_disp_rowsum[[1 end]] - [0.5 0.5]) .<= 0.0001)
+  @test pollen_disp_rowsum[convert(Int32, floor(length(pollen_disp_colsum) / 2))] >= 0.999
+  @test pollen_disp_mat_1D[1, :] == transpose(pollen_disp_mat_1D[:, 1])
+  
+  #same set of tests for the pollen kernel
 
 end
 
