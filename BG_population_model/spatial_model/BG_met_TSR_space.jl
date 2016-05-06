@@ -52,12 +52,12 @@ end
 # mext three are the maternal distirbution i.e. survivours at x, for each G
 # next three is the pollen dist that arrived at x
 # followed by the mixing kernel for g, and the indicies to apply to the parent dists for that mixing 
-function new_seeds_at_x!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float64, 2}
+function new_seeds_at_t!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float64, 2},
   rr_newseed::Array{Float64, 2},
   RR_mat::Array{Float64, 2}, Rr_mat::Array{Float64, 2}, rr_mat::Array{Float64, 2},
   RR_pollen::Array{Float64, 2}, Rr_pollen::Array{Float64, 2}, rr_pollen::Array{Float64, 2},
-  g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, g_effect_fec::Array{Float64, 1};
-  fec_max = 100.0, dd_fec = 0.004, dg = 0.5)
+  g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, g_effect_fec::Array{Float64, 1},
+  fec_max = 100.0, dd_fec = 0.004, dg)
   
   #holding array for density of new seeds new seeds before division
   RR_seeds = zeros(length(g_effect_fec))
@@ -70,7 +70,7 @@ function new_seeds_at_x!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float6
   # hard code the G corsses, there is only 9 and and they will have fixed proportions: 
   for x in 1:size(RR_newseed)[2]
     
-    num_at_x = (sum(RR_mat) + sum(Rr_mat) + sum(rr_mat)) * dg
+    num_at_x = (sum(RR_mat[:, x]) + sum(Rr_mat[:, x]) + sum(rr_mat[:, x])) * dg
     
     seeds_at_x = fec_corrected ./ (1 + g_effect_fec + dd_fec * num_at_x + dd_fec * num_at_x * g_effect_fec)
     #calcu numner of seeds for each G
@@ -123,6 +123,78 @@ function new_seeds_at_x!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float6
   
 end
 
+#TODO: test a matrix multiplication version of this 
+function new_seeds_at_t_mm!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float64, 2},
+  rr_newseed::Array{Float64, 2},
+  RR_mat::Array{Float64, 2}, Rr_mat::Array{Float64, 2}, rr_mat::Array{Float64, 2},
+  RR_pollen::Array{Float64, 2}, Rr_pollen::Array{Float64, 2}, rr_pollen::Array{Float64, 2},
+  g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, g_effect_fec::Array{Float64, 1},
+  fec_max = 100.0, dd_fec = 0.004, dg)
+  
+  #holding array for density of new seeds new seeds before division
+  RR_seeds = zeros(size(RR_newseed)[1], size(RR_newseed)[2])
+  Rr_seeds = zeros(size(Rr_newseed)[1], size(Rr_newseed)[2])
+  rr_seeds = zeros(size(rr_newseed)[1], size(rr_newseed)[2])
+  new_seeds = zeros(size(RR_newseed)[1], size(RR_newseed)[2]) #generic holder vector to hold total seeds when they get split between G
+  
+  #divid fec_max by 3 since each maternal type will produce 3 seeds for each one that should exist, see why draw out all the combinations
+  fec_corrected = fec_max / 3
+  # hard code the G corsses, there is only 9 and and they will have fixed proportions: 
+    
+  num_at_x = (sum(RR_mat, 1) + sum(Rr_mat, 1) + sum(rr_mat, 1)) * dg
+    
+  seeds_at_x = fec_corrected ./ (1 + g_effect_fec .+ dd_fec * num_at_x .+ dd_fec * (g_effect_fec * num_at_x))	
+  
+  #calcu numner of seeds for each G
+  rr_seeds[:, :] = rr_mat .* seeds_at_x
+  Rr_seeds[:, :] = Rr_mat .* seeds_at_x
+  RR_seeds[:, :] = RR_mat .* seeds_at_x
+    
+  # RR x RR seeds only produce RR seeds    
+  RR_newseed[:, :] = g_mixing_kernel * 
+    (RR_seeds[g_mixing_index[:, 1], :] .* RR_pollen[g_mixing_index[:, 2], :]) * dg * dg 
+    
+  # RR x Rr seeds produce half RR seeds and half Rr seeds, number of seeds depends on maternal distrbution 
+  new_seeds[:, :] = g_mixing_kernel * (RR_seeds[g_mixing_index[:, 1], :] .* Rr_pollen[g_mixing_index[:, 2], :]) * dg * dg
+  RR_newseed[:, :] = RR_newseed + new_seeds * 0.5 #half the seeds produced are RR
+  Rr_newseed[:, :] = new_seeds * 0.5 #other half go to Rr
+    
+  #Rr x RR
+  new_seeds[:, :] = g_mixing_kernel * (Rr_seeds[g_mixing_index[:, 1], :] .* RR_pollen[g_mixing_index[:, 2], :]) * dg * dg
+  RR_newseed[:, :] = RR_newseed + new_seeds * 0.5 #half the seeds produced are RR
+  Rr_newseed[:, :] = Rr_newseed + new_seeds * 0.5 #other half go to Rr
+    
+  #RR x rr produces only seeds of Rr
+  Rr_newseed[:, :] = Rr_newseed + g_mixing_kernel * 
+    (RR_seeds[g_mixing_index[:, 1], :] .* rr_pollen[g_mixing_index[:, 2], :]) * dg * dg
+  #rr x RR
+  Rr_newseed[:, :] = Rr_newseed + g_mixing_kernel * 
+    (rr_seeds[g_mixing_index[:, 1], :] .* RR_pollen[g_mixing_index[:, 2], :]) * dg * dg
+    
+  #Rr x Rr produces all three genotypes  
+  new_seeds[:, :] = g_mixing_kernel * (Rr_seeds[g_mixing_index[:, 1], :] .* Rr_pollen[g_mixing_index[:, 2], :]) * dg * dg
+  RR_newseed[:, :] = RR_newseed + new_seeds * 0.25
+  Rr_newseed[:, :] = Rr_newseed + new_seeds * 0.5
+  rr_newseed[:, :] = new_seeds * 0.25
+  
+  #Rr x rr produces Rr and rr seeds
+  new_seeds[:, :] = g_mixing_kernel * (Rr_seeds[g_mixing_index[:, 1], :] .* rr_pollen[g_mixing_index[:, 2], :]) * dg * dg
+  rr_newseed[:, :] = rr_newseed + new_seeds * 0.5
+  Rr_newseed[:, :] = Rr_newseed + new_seeds * 0.5
+  #rr x Rr
+  new_seeds[:, :] = g_mixing_kernel * (rr_seeds[g_mixing_index[:, 1], :] .* Rr_pollen[g_mixing_index[:, 2], :]) * dg * dg
+  rr_newseed[:, :] = rr_newseed + new_seeds * 0.5
+  Rr_newseed[:, :] = Rr_newseed + new_seeds * 0.5
+  
+  #rr x rr produces only rr
+  rr_newseed[:, :] = rr_newseed + g_mixing_kernel * 
+    (rr_seeds[g_mixing_index[:, 1], :] .* rr_pollen[g_mixing_index[:, 2], :]) * dg * dg
+
+  return nothing
+  
+end
+
+
 # disperse the seeds produced at each location to every other location, suming the number of seeds of 
 # each G that arrive at each location 
 
@@ -134,7 +206,7 @@ end
 # Survival function that takes an element of population array and reduces it in place
 # be aware that pop_at_x and g_vals need to match up, that s one element in pop_at_x
 # should corospond to a element of g_vals 
-function survival_at_x!(pop_at_x::Array{Float64, 1}, base_sur::Float64, g_vals::Array{Float64, 1} 
+function survival_at_x!(pop_at_x::Array{Float64, 1}, base_sur::Float64, g_vals::Array{Float64, 1}, 
   resist_G::Array{ASCIIString, 1}, G::ASCIIString, herb_application::Float64, herb_effect::Float64, g_prot::Float64, 
   pro_exposed::Float64)
   
@@ -166,9 +238,18 @@ function survival_at_t!(pop_at_t::Array{Float64, 2}, base_sur::Float64, g_vals::
   
 end
 
-function new_plants!(ag_plants::Array{Float64, 2}, seed_bank::Array{Float64, 2}, germ_prob)
+# moves seeds to the next time step, kills the seeds in the process 
+function seedbank_update!(seedbank_next::Array{Float64, 2}, seedbank_now::Array{Float64, 2}, seed_sur::Float64)
+
+  seedbank_next[:, :] = seedbank_now * seed_sur
   
-  ag_plants[:, :] = seed_bank[:, :] * germ_prob
+end
+
+# Creates new plant and removes the germinated seeds from the seed bank
+function new_plants!(ag_plants::Array{Float64, 2}, seed_bank::Array{Float64, 2}, germ_prob::Float64)
+  
+  ag_plants[:, :] = seed_bank * germ_prob
+  seed_bank[:, :] = seed_bank * (1 - germ_prob)
   
   return nothing
 end
@@ -186,14 +267,21 @@ end
 function multi_iter_1D(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]),
   int_pop_Rr::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]),
   int_pop_rr::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]); 
-  int_sd::Float64 = 1.41, num_iter = 10, landscape_size = 10, space_res = 1, g_res = 1, lower_g = -10, 
-  upper_g = 10, seed_expand = 2, germ_prob = 0.7, offspring_sd = 1.0, fec0 = 10, fec_cost = 2)
+  int_sd::Float64 = 1.41, num_iter = 10, landscape_size = 10, dx = 1, lower_g = -10, 
+  upper_g = 10, seed_expand = 2, germ_prob = 0.7, offspring_sd = 1.0, fec0 = 10, fec_cost = 2,
+  fec_max = 100.0, dd_fec = 0.004, dg = 0.5)
 
     
-  seed_disp_mat_1D = zeros((landscape_size / space_res) + 1, (landscape_size / space_res) + 1)
-    
+  seed_disp_mat_1D = zeros(convert(Int32, (landscape_size / dx) + 1), 
+    convert(Int32, (landscape_size / dx) + 1))
+  seed_disp_mat_builder_1D!(seed_disp_mat, res = dx)
+  
+  pollen_disp_mat = zeros(convert(Int32, (landscape_size / space_res) + 1), 
+    convert(Int32, (landscape_size / space_res) + 1))
+  pollen_disp_mat_builder_1D!(pollen_disp_mat, res = dx)
+   
   # build the metabolic resistance evaluation points 
-  g_vals = (lower_g : g_res : upper_g)
+  g_vals = (lower_g : dg : upper_g)
  
   #set aside a chunck of memory for the landscapes for each genotype 
   RR_landscape = Array{Array{Float64, 2}}(num_iter)
@@ -249,9 +337,15 @@ function multi_iter_1D(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0
   # iterate through the timesteps
   for t in 2:num_iter
     
-    new_plants!(RR_ab_pop, RR_landscape[t][g_vals, :], germ_prob)
-    new_plants!(Rr_ab_pop, Rr_landscape[t][g_vals, :], germ_prob)
-    new_plants!(rr_ab_pop, rr_landscape[t][g_vals, :], germ_prob)
+    #move seeds to the next timestep, killing as we do so
+    seedbank_update!(RR_landscape[t], RR_landscape[t - 1], seed_sur)
+    seedbank_update!(Rr_landscape[t], Rr_landscape[t - 1], seed_sur)
+    seedbank_update!(rr_landscape[t], rr_landscape[t - 1], seed_sur)
+    
+    #germination   
+    new_plants!(RR_ab_pop, RR_landscape[t], germ_prob)
+    new_plants!(Rr_ab_pop, Rr_landscape[t], germ_prob)
+    new_plants!(rr_ab_pop, rr_landscape[t], germ_prob)
     
     ## pollen at arrived each location for each g from all other locations  
     pollen_RR[:, :] = RR_ab_pop * pollen_disp_mat
@@ -259,16 +353,19 @@ function multi_iter_1D(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0
     pollen_rr[:, :] = rr_ab_pop * pollen_disp_mat
     total_pollen[:] = sum(pollen_RR, 1) + sum(pollen_Rr, 1) + sum(pollen_rr, 1)
     #normalise the pollen counts, double intergration across g and and all x as pollen comes from all x
-    pollen_RR[:, :] = pollen_RR ./ (total_pollen * g_res * space_res)
-    pollen_Rr[:, :] = pollen_Rr ./ (total_pollen * g_res * space_res)
-    pollen_rr[:, :] = pollen_rr ./ (total_pollen * g_res * space_res)
+    pollen_RR[:, :] = pollen_RR ./ (total_pollen * dg * dx)
+    pollen_Rr[:, :] = pollen_Rr ./ (total_pollen * dg * dx)
+    pollen_rr[:, :] = pollen_rr ./ (total_pollen * dg * dx)
     
     
     #create new seeds
+    new_seeds_at_t!(RR_newseed, Rr_newseed, rr_newseed, RR_landscape[t], Rr_landscape[t],
+      rr_landscape[t], pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index,   
+      g_effect_fec, fec_max, dd_fec, dg)
     
     
     # disperse the seeds
-    RR_landscape[t][:, :] = RR_landscape  + (RR_newseed * seed_disp_mat_1D) * space_res 
+    RR_landscape[t][:, :] = RR_landscape  + (RR_newseed * seed_disp_mat_1D) * dx 
     
     
     ## TODO test I need the double intergration in the pollen counts I think I do
@@ -281,13 +378,7 @@ function multi_iter_1D(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0
   
  
   
-  @time seed_disp_mat_builder_1D!(seed_disp_mat, res = space_res)
-  
-  pollen_disp_mat = zeros(convert(Int32, (landscape_size / space_res) + 1), 
-    convert(Int32, (landscape_size / space_res) + 1))
-  
-  @time pollen_disp_mat_builder_1D!(pollen_disp_mat, res = space_res)
-  
+  @time 
   
   @time seed_disp_mat_builder_2D!(seed_disp_mat_2D, res = space_res, pro_short = 0.48, mean_dist_short = 0.58, 
     pro_seeds_to_mean_short = 0.44, mean_dist_long = 1.65, pro_seeds_to_mean_long = 0.39)
