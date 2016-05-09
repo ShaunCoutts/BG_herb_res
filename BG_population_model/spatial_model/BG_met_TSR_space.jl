@@ -103,10 +103,10 @@ function multi_iter_1D(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0
     pollen_Rr[:, :] = Rr_ab_pop * pollen_disp_mat
     pollen_rr[:, :] = rr_ab_pop * pollen_disp_mat
     total_pollen[:] = sum(pollen_RR, 1) + sum(pollen_Rr, 1) + sum(pollen_rr, 1)
-    #normalise the pollen counts, double intergration across g and and all x as pollen comes from all x
-    pollen_RR[:, :] = pollen_RR / (total_pollen * dg * dx)
-    pollen_Rr[:, :] = pollen_Rr / (total_pollen * dg * dx)
-    pollen_rr[:, :] = pollen_rr / (total_pollen * dg * dx)
+    #normalise the pollen counts, double intergration across g, intergration across x already done is building dispersal matrix
+    pollen_RR[:, :] = pollen_RR ./ transpose(total_pollen * dg)
+    pollen_Rr[:, :] = pollen_Rr ./ transpose(total_pollen * dg)
+    pollen_rr[:, :] = pollen_rr ./ transpose(total_pollen * dg)
     
     #create new seeds
     new_seeds_at_t!(RR_newseed, Rr_newseed, rr_newseed, RR_ab_pop, Rr_ab_pop,
