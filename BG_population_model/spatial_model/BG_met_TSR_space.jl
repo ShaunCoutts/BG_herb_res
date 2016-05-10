@@ -44,7 +44,7 @@ function multi_iter_1D(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0
   g_mixing_kernel = zeros(length(g_vals), length(g_vals) ^ 2)
   fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
   g_mixing_index = generate_index_pairs(g_vals)
-  g_effect_fec = exp(-(fec0 - g_vals * fec_cost))
+  g_effect_fec = ifelse(g_vals .< 0, exp(-fec0), exp(-(fec0 - g_vals * fec_cost)))
   #set the intial populations
   int_RR_dist = Normal(int_pop_RR[2], int_sd)
   int_Rr_dist = Normal(int_pop_Rr[2], int_sd)
