@@ -33,7 +33,7 @@ dd_fec = 0.004;
 dg = 0.5;
 base_sur = 10.0;
 resist_G = ["RR", "Rr"];
-herb_effect = 20.0;
+herb_effect = 10.0;
 g_prot = 1.0;
 pro_exposed = 0.8;
 seed_sur = 0.5
@@ -124,18 +124,17 @@ new_seeds_at_t_mm!(RR_newseed_mm, Rr_newseed_mm, rr_newseed_mm, ag_plants * 0.1,
 # test number of survivours is as expected for a given worked example 
 
 #test the survival pre_calc works as expected 
-
+sur_tup = survival_pre_calc(base_sur, convert(Array{Float64, 1}, g_vals), herb_effect, 
+  g_prot, pro_exposed)
+# sur_tup[1] == sur_tup[2] when (herb_effect - (g * g_prot)) == base_sur, which happen when g = 10 (g_vals[end])   
+# also sur_tup[2][1] should be pretty close (but not exactly) pro_exposed
+  
 # expected number of survivours at each location  
 ag_surs = deepcopy(ag_plants);
 herb_application = zeros(size(ag_plants)[2]);
 herb_application[[5, 7]] = 1;
 
-survival_at_x!(ag_surs[:, 5], base_sur, convert(Array{Float64, 1}, g_vals), ["RR", "Rr"], "rr", herb_application[5], herb_effect, g_prot, 
-  pro_exposed)
-
-
-survival_at_t!(ag_surs, base_sur, convert(Array{Float64, 1}, g_vals), ["RR", "Rr"], "rr", herb_application, herb_effect, 
-  g_prot, pro_exposed)
+survival_at_t!(ag_surs, convert(Array{Float64, 1}, herb_application, herb_effect, g_prot, pro_exposed)
  
 
 Test.with_handler(cust_hand) do
@@ -173,6 +172,9 @@ Test.with_handler(cust_hand) do
   @test isapprox(RR_newseed, RR_newseed_mm, rtol = 0.0000000000001)
   @test isapprox(Rr_newseed, Rr_newseed_mm, rtol = 0.00000000000001)
   @test isapprox(rr_newseed, rr_newseed_mm, rtol = 0.00000000000001)
+  #test survival
+  @test isapprox(sur_tup[1], sur_tup[2][end], atol = 0.0000000001)
+  @test isapprox(sur_tup[2][1], (1 - pro_exposed), atol = 0.0001)
 
 end
 

@@ -194,7 +194,6 @@ function survival_pre_calc(base_sur::Float64, g_vals::Array{Float64, 1}, herb_ef
    
 end
 
-
 # Survival function for the whole landscape at a given time step t
 # uses in place mutation. Note herb_application should be the same length as size(pop_at_t)[2] 
 # and and g_vals should be the same length as size(pop_at_t)[1]
