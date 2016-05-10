@@ -26,14 +26,13 @@ lower_g = -10;
 upper_g = 10;
 germ_prob = 0.7;
 offspring_sd = 1.0;
-fec0 = 10;
+fec0 = 10.0;
 fec_cost = 2;
 fec_max = 100.0;
 dd_fec = 0.004;
 dg = 0.5;
 base_sur = 10.0;
 resist_G = ["RR", "Rr"];
-herb_application = zeros(10);
 herb_effect = 20.0;
 g_prot = 1.0;
 pro_exposed = 0.8;
@@ -94,8 +93,6 @@ pollen_RR[:, :] = pollen_RR ./ transpose(total_pollen * dg);
 pollen_Rr[:, :] = pollen_Rr ./ transpose(total_pollen * dg);
 pollen_rr[:, :] = pollen_rr ./ transpose(total_pollen * dg);
 
-
-
 #test number of seeds produced at each location is expected
 #se up new seed landscapes 
 RR_newseed = zeros(length(g_vals), convert(Int32, (landscape_size / dx) + 1));
@@ -113,12 +110,33 @@ new_seeds_at_t!(RR_newseed, Rr_newseed, rr_newseed, ag_plants * 0.1, ag_plants *
   pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index, g_effect_fec,
   fec_max, 0.0, dg)
 
+#check the matrix-mult version produces the same answer
+RR_newseed_mm = zeros(length(g_vals), convert(Int32, (landscape_size / dx) + 1));
+Rr_newseed_mm = zeros(length(g_vals), convert(Int32, (landscape_size / dx) + 1));
+rr_newseed_mm = zeros(length(g_vals), convert(Int32, (landscape_size / dx) + 1));
+new_seeds_at_t_mm!(RR_newseed_mm, Rr_newseed_mm, rr_newseed_mm, ag_plants * 0.1, ag_plants * 0.2, ag_plants,
+  pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index, g_effect_fec,
+  fec_max, 0.0, dg)
+
 #test the number of seeds dispersed to each location is the expected amount 
 
 
-#test number of survivours is as expected for a given worked example 
+# test number of survivours is as expected for a given worked example 
 
-#test matrix mult gene mixing produces same result as the for loop version, 
+#test the survival pre_calc works as expected 
+
+# expected number of survivours at each location  
+ag_surs = deepcopy(ag_plants);
+herb_application = zeros(size(ag_plants)[2]);
+herb_application[[5, 7]] = 1;
+
+survival_at_x!(ag_surs[:, 5], base_sur, convert(Array{Float64, 1}, g_vals), ["RR", "Rr"], "rr", herb_application[5], herb_effect, g_prot, 
+  pro_exposed)
+
+
+survival_at_t!(ag_surs, base_sur, convert(Array{Float64, 1}, g_vals), ["RR", "Rr"], "rr", herb_application, herb_effect, 
+  g_prot, pro_exposed)
+ 
 
 Test.with_handler(cust_hand) do
   #test the seedbank_update intergrates to 50 seeds
@@ -152,6 +170,9 @@ Test.with_handler(cust_hand) do
   #test that the function produces the expected number of total seeds after mixing 
   @test isapprox((sum(rr_newseed, 1) + sum(RR_newseed, 1) + sum(Rr_newseed, 1))*dg, 
     sum(expect_rr_seeds, 1) + sum(expect_Rr_seeds, 1) + sum(expect_RR_seeds, 1), atol = 0.000001)
+  @test isapprox(RR_newseed, RR_newseed_mm, rtol = 0.0000000000001)
+  @test isapprox(Rr_newseed, Rr_newseed_mm, rtol = 0.00000000000001)
+  @test isapprox(rr_newseed, rr_newseed_mm, rtol = 0.00000000000001)
 
 end
 
@@ -160,4 +181,20 @@ end
 
 #test the speed of matrix mult vs loop version of gene mixing
 
-@time 
+@time  new_seeds_at_t!(RR_newseed, Rr_newseed, rr_newseed, ag_plants * 0.1, ag_plants * 0.2, ag_plants,
+  pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index, g_effect_fec,
+  fec_max, 0.0, dg)
+
+ @time  new_seeds_at_t!(RR_newseed, Rr_newseed, rr_newseed, ag_plants * 0.1, ag_plants * 0.2, ag_plants,
+  pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index, g_effect_fec,
+  fec_max, 0.0, dg)
+  
+ @time  new_seeds_at_t_mm!(RR_newseed, Rr_newseed, rr_newseed, ag_plants * 0.1, ag_plants * 0.2, ag_plants,
+  pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index, g_effect_fec,
+  fec_max, 0.0, dg)
+
+ @time  new_seeds_at_t_mm!(RR_newseed, Rr_newseed, rr_newseed, ag_plants * 0.1, ag_plants * 0.2, ag_plants,
+  pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index, g_effect_fec,
+  fec_max, 0.0, dg)
+ 
+ # Matrix-mult version about 1/3 faster and there are many few memory allocation 

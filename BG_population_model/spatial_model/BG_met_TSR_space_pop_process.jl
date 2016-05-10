@@ -179,35 +179,38 @@ function new_seeds_at_t_mm!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Flo
   
 end
 
-# Survival function that takes an element of population array and reduces it in place
+# calculate the two survival rates used, one a scalar for none exposed plants and 
+# one for exposed plants
 # be aware that pop_at_x and g_vals need to match up, that s one element in pop_at_x
 # should corospond to a element of g_vals 
-function survival_at_x!(pop_at_x::Array{Float64, 1}, base_sur::Float64, g_vals::Array{Float64, 1}, 
-  resist_G::Array{ASCIIString, 1}, G::ASCIIString, herb_application::Float64, herb_effect::Float64, g_prot::Float64, 
-  pro_exposed::Float64)
+function survival_pre_calc(base_sur::Float64, g_vals::Array{Float64, 1}, herb_effect::Float64, 
+  g_prot::Float64, pro_exposed::Float64)
   
-  if G in resist_G
-    pop_at_x[:] = pop_at_x * (1 / (1 + exp(-base_sur)))
-  else
-    pop_at_x[:] = pop_at_x .* ((1 - pro_exposed) / (1 + exp(-base_sur))) + 
-      (pro_exposed ./ (1 + exp(-base_sur - herb_application * 
-      (herb_effect - min(herb_effect, g_vals * g_prot)))))
-  end
-  
-  return nothing
-  
+  sur_non_exposed = 1 / (1 + exp(-base_sur))
+  sur_exposed = ((1 - pro_exposed) / (1 + exp(-base_sur))) + 
+      (pro_exposed ./ (1 + exp(-(base_sur - (herb_effect - min(herb_effect, g_vals * g_prot))))))
+      
+  return (sur_non_exposed, sur_exposed)
+   
 end
+
 
 # Survival function for the whole landscape at a given time step t
 # uses in place mutation. Note herb_application should be the same length as size(pop_at_t)[2] 
 # and and g_vals should be the same length as size(pop_at_t)[1]
-function survival_at_t!(pop_at_t::Array{Float64, 2}, base_sur::Float64, g_vals::Array{Float64, 1},
-  resist_G::Array{ASCIIString, 1}, G::ASCIIString, herb_application::Array{Float64, 1}, herb_effect::Float64, 
-  g_prot::Float64, pro_exposed::Float64)
+function survival_at_t!(pop_at_t::Array{Float64, 2}, resist_G::Array{ASCIIString, 1}, G::ASCIIString, 
+  herb_application::Array{Int8, 1}, sur_tup::Tuple{Float64, Array{Float64, 1}})
   
-  for x in 1:size(pop_at_t)[2]
-    survival_at_x!(pop_at_t[:, x], base_sur, g_vals, resist_G, G, herb_application[x],
-      herb_effect, g_prot, pro_exposed)
+  if G in resist_G
+      
+    pop_at_t[:, :], = pop_at_t * sur_tup[1] 
+    
+  else
+    
+    for x in 1:size(pop_at_t)[2]
+      pop_at_t[:, x], = pop_at_t[:, x] .* sur_tup[herb_application[x] + 1] 
+    end 
+    
   end
   
   return nothing

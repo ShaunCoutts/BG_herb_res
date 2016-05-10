@@ -77,6 +77,12 @@ function multi_iter_1D(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0
   Rr_newseed = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
   rr_newseed = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
   
+  
+  #set up the survival vectors 
+  sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, 
+    g_prot, pro_exposed)
+  
+  
   # iterate through the timesteps
   for t in 2:num_iter
     
@@ -91,12 +97,9 @@ function multi_iter_1D(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0
     new_plants!(rr_ab_pop, rr_landscape[t], germ_prob)
     
     #above ground survival
-    survival_at_t!(RR_ab_pop, base_sur, g_vals, resist_G, "RR", herb_application, 
-      herb_effect, g_prot, pro_exposed)
-    survival_at_t!(Rr_ab_pop, base_sur, g_vals, resist_G, "Rr", herb_application, 
-      herb_effect, g_prot, pro_exposed)
-    survival_at_t!(rr_ab_pop, base_sur, g_vals, resist_G, "rr", herb_application, 
-      herb_effect, g_prot, pro_exposed)
+    survival_at_t!(RR_ab_pop, resist_G, "RR", herb_application, sur_tup)
+    survival_at_t!(Rr_ab_pop, resist_G, "Rr", herb_application, sur_tup)
+    survival_at_t!(rr_ab_pop, resist_G, "rr", herb_application, sur_tup)
     
     ## pollen at arrived each location for each g from all other locations  
     pollen_RR[:, :] = RR_ab_pop * pollen_disp_mat
