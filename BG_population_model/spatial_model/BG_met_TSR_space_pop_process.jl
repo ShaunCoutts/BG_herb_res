@@ -198,16 +198,16 @@ end
 # uses in place mutation. Note herb_application should be the same length as size(pop_at_t)[2] 
 # and and g_vals should be the same length as size(pop_at_t)[1]
 function survival_at_t!(pop_at_t::Array{Float64, 2}, resist_G::Array{ASCIIString, 1}, G::ASCIIString, 
-  herb_application::Array{Int8, 1}, sur_tup::Tuple{Float64, Array{Float64, 1}})
+  herb_application::Array{Int16, 1}, sur_tup::Tuple{Float64, Array{Float64, 1}})
   
   if G in resist_G
       
-    pop_at_t[:, :], = pop_at_t * sur_tup[1] 
+    pop_at_t[:, :] = pop_at_t * sur_tup[1] 
     
   else
     
     for x in 1:size(pop_at_t)[2]
-      pop_at_t[:, x], = pop_at_t[:, x] .* sur_tup[herb_application[x] + 1] 
+      pop_at_t[:, x] = pop_at_t[:, x] .* sur_tup[herb_application[x] + 1] 
     end 
     
   end

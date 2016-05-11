@@ -121,8 +121,6 @@ new_seeds_at_t_mm!(RR_newseed_mm, Rr_newseed_mm, rr_newseed_mm, ag_plants * 0.1,
 #test the number of seeds dispersed to each location is the expected amount 
 
 
-# test number of survivours is as expected for a given worked example 
-
 #test the survival pre_calc works as expected 
 sur_tup = survival_pre_calc(base_sur, convert(Array{Float64, 1}, g_vals), herb_effect, 
   g_prot, pro_exposed)
@@ -130,12 +128,19 @@ sur_tup = survival_pre_calc(base_sur, convert(Array{Float64, 1}, g_vals), herb_e
 # also sur_tup[2][1] should be pretty close (but not exactly) pro_exposed
   
 # expected number of survivours at each location  
-ag_surs = deepcopy(ag_plants);
 herb_application = zeros(size(ag_plants)[2]);
 herb_application[[5, 7]] = 1;
 
-survival_at_t!(ag_surs, convert(Array{Float64, 1}, herb_application, herb_effect, g_prot, pro_exposed)
- 
+ag_surs = deepcopy(ag_plants);
+survival_at_t!(ag_surs, resist_G, "Rr", convert(Array{Int16, 1}, herb_application), sur_tup)
+sur_resist = deepcopy(ag_surs[:, [5, 6, 7]]);
+
+
+ag_surs = deepcopy(ag_plants);
+survival_at_t!(ag_surs, resist_G, "rr", convert(Array{Int16, 1}, herb_application), sur_tup)
+sur_sucep = deepcopy(ag_surs[:, [5, 6, 7]]);
+#reference number so changes are picked up 
+sur_herb_ref = 41.9993644298266; 
 
 Test.with_handler(cust_hand) do
   #test the seedbank_update intergrates to 50 seeds
@@ -170,11 +175,14 @@ Test.with_handler(cust_hand) do
   @test isapprox((sum(rr_newseed, 1) + sum(RR_newseed, 1) + sum(Rr_newseed, 1))*dg, 
     sum(expect_rr_seeds, 1) + sum(expect_Rr_seeds, 1) + sum(expect_RR_seeds, 1), atol = 0.000001)
   @test isapprox(RR_newseed, RR_newseed_mm, rtol = 0.0000000000001)
-  @test isapprox(Rr_newseed, Rr_newseed_mm, rtol = 0.00000000000001)
-  @test isapprox(rr_newseed, rr_newseed_mm, rtol = 0.00000000000001)
+  @test isapprox(Rr_newseed, Rr_newseed_mm, rtol = 0.0000000000001)
+  @test isapprox(rr_newseed, rr_newseed_mm, rtol = 0.0000000000001)
   #test survival
   @test isapprox(sur_tup[1], sur_tup[2][end], atol = 0.0000000001)
   @test isapprox(sur_tup[2][1], (1 - pro_exposed), atol = 0.0001)
+  @test isapprox(sum(sur_resist, 1)[1], sum(ag_plants, 1)[5] * (1 / (1 + exp(-base_sur))), atol = 0.000000001)
+  @test isapprox(sum(sur_sucep, 1)[2], sum(sur_resist, 1)[1], atol = 0.0000000001)
+  @test isapprox(sum(sur_sucep, 1)[1], sur_herb_ref, atol = 0.0000000001)
 
 end
 
@@ -199,4 +207,4 @@ end
   pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index, g_effect_fec,
   fec_max, 0.0, dg)
  
- # Matrix-mult version about 1/3 faster and there are many few memory allocation 
+ # Matrix-mult version about 1/3 faster and there are many fewer memory allocation 
