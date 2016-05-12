@@ -118,8 +118,13 @@ new_seeds_at_t_mm!(RR_newseed_mm, Rr_newseed_mm, rr_newseed_mm, ag_plants * 0.1,
   pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index, g_effect_fec,
   fec_max, 0.0, dg)
 
-#test the number of seeds dispersed to each location is the expected amount 
-
+# test the number of seeds dispersed to each location is the expected amount 
+# the  number of expected seeds is the the number of seeds at each locaiton by the sum of the disp mat row for each of those locations
+#num_exp = sum((sum(RR_newseed, 1) * dg) .* sum(seed_disp_mat_1D, 1))
+tot_seed_fixed = 105.5967972459612;
+tot_sb = sum(sb_next2) * dg;
+sb_next3 = deepcopy(sb_next2);
+sb_next3[:, :] = sb_next3  + (RR_newseed * seed_disp_mat_1D); 
 
 #test the survival pre_calc works as expected 
 sur_tup = survival_pre_calc(base_sur, convert(Array{Float64, 1}, g_vals), herb_effect, 
@@ -146,21 +151,25 @@ Test.with_handler(cust_hand) do
   #test the seedbank_update intergrates to 50 seeds
   a = sum(sb_next, 1) * dg
   @test isapprox(a[[5 6 7]], [50 50 50], atol = 0.000001)
+  
   #test above and beloe groung germination
   ag = sum(ag_plants, 1) * dg
   @test isapprox(ag[[5 6 7]], [35 35 35], atol = 0.000001)
   sb = sum(sb_next2, 1) * dg
   @test isapprox(sb[[5 6 7]], [15 15 15], atol = 0.00001)
+  
   #test the g mixing kernel intergrates to the expected values 
   @test isapprox(sum(g_mixing_kernel[:, [100, 101]], 1) * dg, [1.0 1.0], atol = 0.000001)
   edge_dist = pdf(Normal(lower_g, offspring_sd), g_vals)
   @test isapprox(sum(g_mixing_kernel[:, [1, end]], 1) * dg, [(sum(edge_dist) * dg) (sum(edge_dist) * dg)], atol = 0.00001)
+  
   #test the disperal matrix is as expected 
   @test isapprox(seed_disp_colsum[[1 end]], [0.5 0.5], atol = 0.000001)
   @test seed_disp_colsum[convert(Int32, floor(length(seed_disp_colsum) / 2))] >= 0.999
   @test isapprox(seed_disp_rowsum[[1 end]], [0.5 0.5], atol = 0.000001)
   @test seed_disp_rowsum[convert(Int32, floor(length(seed_disp_colsum) / 2))] >= 0.999
   @test seed_disp_mat_1D[1, :] == transpose(seed_disp_mat_1D[:, 1])
+  
   #pollen dispersal, more pollen lost off the edge of the landscape becasue the kernel is more spread
   @test isapprox(pollen_disp_colsum[[1 end]], [0.5 0.5], atol = 0.003)
   @test pollen_disp_colsum[convert(Int32, floor(length(pollen_disp_colsum) / 2))] >= 0.98
@@ -168,21 +177,27 @@ Test.with_handler(cust_hand) do
   @test pollen_disp_rowsum[convert(Int32, floor(length(pollen_disp_colsum) / 2))] >= 0.98
   @test pollen_disp_mat_1D[1, :] == transpose(pollen_disp_mat_1D[:, 1])
   @test isapprox(sum(total_pollen) * dx, tot_pollen_fixed * 1.3, atol = 0.000001) #1.3 casue 0.1 + 0.2 + 1 = 1.3, which are realtive sizes of ag_plants used to produce pollen 
+  
   #should intergrate to 1 across g and G at each location
   @test isapprox((sum(pollen_RR, 1) + sum(pollen_Rr, 1) + sum(pollen_rr, 1)) * dg, 
     ones(1, size(total_pollen)[1]), atol = 0.000001)
+  
   #test that the function produces the expected number of total seeds after mixing 
   @test isapprox((sum(rr_newseed, 1) + sum(RR_newseed, 1) + sum(Rr_newseed, 1))*dg, 
     sum(expect_rr_seeds, 1) + sum(expect_Rr_seeds, 1) + sum(expect_RR_seeds, 1), atol = 0.000001)
   @test isapprox(RR_newseed, RR_newseed_mm, rtol = 0.0000000000001)
   @test isapprox(Rr_newseed, Rr_newseed_mm, rtol = 0.0000000000001)
   @test isapprox(rr_newseed, rr_newseed_mm, rtol = 0.0000000000001)
+  
   #test survival
   @test isapprox(sur_tup[1], sur_tup[2][end], atol = 0.0000000001)
   @test isapprox(sur_tup[2][1], (1 - pro_exposed), atol = 0.0001)
   @test isapprox(sum(sur_resist, 1)[1], sum(ag_plants, 1)[5] * (1 / (1 + exp(-base_sur))), atol = 0.000000001)
   @test isapprox(sum(sur_sucep, 1)[2], sum(sur_resist, 1)[1], atol = 0.0000000001)
   @test isapprox(sum(sur_sucep, 1)[1], sur_herb_ref, atol = 0.0000000001)
+  
+  #test seed dispersal 
+  @test isapprox(sum(sb_next3) * dg * dx, (tot_sb + tot_seed_fixed) * dx, atol = 0.0000001)
 
 end
 

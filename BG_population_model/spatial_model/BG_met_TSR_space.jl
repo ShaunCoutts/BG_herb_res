@@ -117,9 +117,9 @@ function multi_iter_1D(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0
       g_effect_fec, fec_max, dd_fec, dg)
     
     # disperse the seeds
-    RR_landscape[t][:, :] = RR_landscape  + (RR_newseed * seed_disp_mat_1D) * dx 
-    Rr_landscape[t][:, :] = Rr_landscape  + (Rr_newseed * seed_disp_mat_1D) * dx 
-    rr_landscape[t][:, :] = rr_landscape  + (rr_newseed * seed_disp_mat_1D) * dx 
+    RR_landscape[t][:, :] = RR_landscape  + (RR_newseed * seed_disp_mat_1D)
+    Rr_landscape[t][:, :] = Rr_landscape  + (Rr_newseed * seed_disp_mat_1D)
+    rr_landscape[t][:, :] = rr_landscape  + (rr_newseed * seed_disp_mat_1D)
     
     
     ## TODO test I need the double intergration in the pollen counts I think I do
