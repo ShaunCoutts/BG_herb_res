@@ -128,6 +128,16 @@ function multi_iter_1D(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0
   return (RR_landscape, Rr_landscape, rr_landscape)
 end
 
+# function to run the model experiment where a single parameter set is tested under both herbicide 
+# and no-herbicide
+function model_run(int_pop_RR::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]),
+  int_pop_Rr::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]),
+  int_pop_rr::Tuple{Float64, Float64, Array{Int64}, 1} = (0, 0, [4, 5, 6]); int_sd_guess::Float64 = 1.41, 
+  burnin_time::Int32 = 20, )
+
+  
+  
+end
 
 # function to run and call the the other functions and scripts, will eventually run the whole thing
 function main_calling_function()
@@ -146,5 +156,16 @@ function main_calling_function()
 
 #run with herbicide
 
-
+  # set up the parallel run of the function
+  intput_array = SharedArray(Float64, num_pars)
+  output_array = SharedArray(Array{Array{}, A}, num_pars)
+  @sync @parallel for var = range
+    body
+  end
+  # or
+  # where svd is a function that takes and element of M as an argument, so M could 
+  # be an array of lists holding a set of parameters, SVD will be the function 
+  # that produces 9 3D array (g by x by t) -burnin, herb, noherb for each G 
+  pmap(svd, M)
+  
 end 
