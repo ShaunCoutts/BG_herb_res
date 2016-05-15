@@ -3,6 +3,7 @@
 # develope in a populaiton similtaniously.
 
 using Distributions
+using BlackBoxOptim
 
 # the first three positional arguments (int_pop_RR, int_pop_Rr, int_pop_rr) are tuples of
 # (intial_pop_size::Float64, intial_pop_g::Float64, int_pop_x::Array{Int8, 1})
@@ -166,6 +167,26 @@ function main_calling_function()
   # where svd is a function that takes and element of M as an argument, so M could 
   # be an array of lists holding a set of parameters, SVD will be the function 
   # that produces 9 3D array (g by x by t) -burnin, herb, noherb for each G 
-  pmap(svd, M)
   
+  # parallel test, start julia with 3 threads that pmap will use
+  # julia -p 3
+  #lain latin_hypercube_sampling to make parameter ranges
+  M0 = round(Int64, BlackBoxOptim.Utils.latin_hypercube_sampling([1.0, 1.0, 1.0], [1000.0, 5000.0, 7000.0], 1000));
+  #turns each coloumn into a seperate array, which is the way the function takes the arguments
+  M = [M0[:, i] for i in 1:size(M0)[2]]
+  
+  #this does not work I have to share the function with process 2 and 2
+  pmap(fun1, M)
+  
+  
+  
+end
+
+#the @everywhere macro sends the function to all threads
+@everywhere function fun1(m::Array{Int64, 1})
+  mat1 = ones(m[1], m[1])
+  mat2 = zeros(m[2], m[2])
+  mat3 = rand(m[3], m[3])
+  
+  return (m, mat1, mat2, mat3)
 end 
