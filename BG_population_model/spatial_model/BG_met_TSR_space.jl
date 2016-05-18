@@ -105,8 +105,26 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
     rr_landscape[t][:, :] = rr_landscape  + (rr_newseed * seed_disp_mat_1D)
     
   end
-
-  return (RR_landscape, Rr_landscape, rr_landscape)
+  
+  #for each one return a summary, mean g, sd, and totalnumber at each location
+  #do summary here so such big arrays are not passed around
+  num_loc = size(RR_landscape[1])[2]
+  RR_summary = Array{Array{Float64, 2}, 1}(num_iter)
+  Rr_summary = Array{Array{Float64, 2}, 1}(num_iter)
+  rr_summary = Array{Array{Float64, 2}, 1}(num_iter)
+  
+  for t in 1:num_iter
+    RR_summary[t] = zeros(3, num_loc)
+    Rr_summary[t] = zeros(3, num_loc)
+    rr_summary[t] = zeros(3, num_loc)
+    for x in 1:num_loc
+      RR_summary[t][:, x] = dist_summary(RR_landscape[t][:, x], g_vals, dg) 
+      Rr_summary[t][:, x] = dist_summary(Rr_landscape[t][:, x], g_vals, dg) 
+      rr_summary[t][:, x] = dist_summary(rr_landscape[t][:, x], g_vals, dg) 
+    end
+  end
+  
+  return (RR_summary, Rr_summary, rr_summary)
 end
 
 # function to run the model experiment where a single parameter set is tested under both herbicide 
@@ -118,12 +136,21 @@ end
 # the time we start the model run, and that it has been under weak selection so pop sd is 2 * offspring variance
 # = 2 * 1 = sqrt(2) = 1.4142...
 
-function model_run(int_num_RR::Float64, int_num_Rr::Float64, int_num_rr::Float64, 
-  int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}; 
-  int_g = 0.0, int_sd = 1.4142, num_iter = 10, landscape_size = 10, dx = 1.0, lower_g = -10.0, 
-  upper_g = 10.0, germ_prob = 0.7, offspring_sd = 1.0, fec0 = 10.0, fec_cost = 2.0, 
-  fec_max = 100.0, dd_fec = 0.004, dg = 0.5, base_sur = 10.0, resist_G = ["RR", "Rr"], 
-  herb_effect = 20.0, herb_app_loc::Array{Int64, 1} = collect(1:10), g_prot = 1.0, pro_exposed = 0.8)
+function model_run(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}; 
+  int_g = 0.0, int_sd = 1.4142, num_iter = 10, landscape_size = 10.0, dx = 1.0, lower_g = -10.0, upper_g = 10.0, offspring_sd = 1.0, 
+  fec0 = 10.0, dg = 0.5, base_sur = 10.0, resist_G = ["RR", "Rr"], herb_app_loc::Array{Int64, 1} = collect(1:10))
+ 
+  # unpack the parameter vector for readability
+  int_num_RR = param[1]
+  int_num_Rr = param[2]
+  int_num_rr = param[3]
+  germ_prob = param[4]
+  fec_cost = param[5]
+  fec_max = param[6]
+  dd_fec = param[7]
+  herb_effect = param[8]
+  g_prot = param[9]
+  pro_exposed = param[10]
   
   # set up evaluation points on g
   g_vals = collect(lower_g : dg : upper_g)
@@ -154,9 +181,14 @@ function model_run(int_num_RR::Float64, int_num_Rr::Float64, int_num_rr::Float64
   #run without herbicide
   no_herb_run = multi_iter_1D(int_pop_RR, int_pop_Rr, int_pop_rr, int_loc_RR, int_loc_Rr
     int_loc_rr, g_mixing_kernel, g_mixing_index, g_effect_fec, sur_tup, g_vals, 
-    resist_G, num_iter, landscape_size, dx, germ_prob, fec_max, dd_fec, dg, herb_application)
-
+    resist_G, num_iter, landscape_size, dx, germ_prob, fec_max, dd_fec, dg, herb_app_0)
+  #run with herbicide
+  herb_run = multi_iter_1D(int_pop_RR, int_pop_Rr, int_pop_rr, int_loc_RR, int_loc_Rr
+    int_loc_rr, g_mixing_kernel, g_mixing_index, g_effect_fec, sur_tup, g_vals, 
+    resist_G, num_iter, landscape_size, dx, germ_prob, fec_max, dd_fec, dg, herb_app)
   
+  # return a dictonary so the output is a bit easier to keep track of
+  return (param, no_herb_run, herb_run)
 end
 
 # function to run and call the the other functions and scripts, will eventually run the whole thing

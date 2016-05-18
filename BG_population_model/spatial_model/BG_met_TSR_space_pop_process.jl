@@ -232,5 +232,16 @@ function new_plants!(ag_plants::Array{Float64, 2}, seed_bank::Array{Float64, 2},
   return nothing
 end
 
+#get the mean and sd of a location
+function dist_summary(dist::Array{Float64, 1}, g_vals::Array{Float64, 1}, dg::Float64)
+  
+  total_sum = sum(dist) * dg
+  approx_mean = sum((dist / total_sum) .* g_vals) * dg
+  approx_sd = sqrt(sum(((g_vals - approx_mean) .^ 2) .* (dist / total_sum)) * dg)
+  
+  return [approx_mean, approx_sd, total_sum]
+
+end
+
 
 

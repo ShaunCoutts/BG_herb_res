@@ -133,19 +133,23 @@ sur_tup = survival_pre_calc(base_sur, convert(Array{Float64, 1}, g_vals), herb_e
 # also sur_tup[2][1] should be pretty close (but not exactly) pro_exposed
   
 # expected number of survivours at each location  
-herb_application = zeros(size(ag_plants)[2]);
-herb_application[[5, 7]] = 1;
+herb_application = ones(size(ag_plants)[2]);
+herb_application[[5, 7]] = 2;
 
 ag_surs = deepcopy(ag_plants);
-survival_at_t!(ag_surs, resist_G, "Rr", convert(Array{Int16, 1}, herb_application), sur_tup)
+survival_at_t!(ag_surs, resist_G, "Rr", convert(Array{Int64, 1}, herb_application), sur_tup)
 sur_resist = deepcopy(ag_surs[:, [5, 6, 7]]);
 
 
 ag_surs = deepcopy(ag_plants);
-survival_at_t!(ag_surs, resist_G, "rr", convert(Array{Int16, 1}, herb_application), sur_tup)
+survival_at_t!(ag_surs, resist_G, "rr", convert(Array{Int64, 1}, herb_application), sur_tup)
 sur_sucep = deepcopy(ag_surs[:, [5, 6, 7]]);
 #reference number so changes are picked up 
 sur_herb_ref = 41.9993644298266; 
+
+# test for the dist summary function that gets the mean, sd and total BG_population_model
+test_dist = pdf(Normal(5, 1), g_vals) * 101
+test_summary = dist_summary(test_dist, g_vals, dg);
 
 Test.with_handler(cust_hand) do
   #test the seedbank_update intergrates to 50 seeds
@@ -198,6 +202,9 @@ Test.with_handler(cust_hand) do
   
   #test seed dispersal 
   @test isapprox(sum(sb_next3) * dg * dx, (tot_sb + tot_seed_fixed) * dx, atol = 0.0000001)
+  
+  #test the dist summary function 
+  @test isapprox(test_summary, [5.0, 1.0, 101.0], atol = 0.0001)
 
 end
 
