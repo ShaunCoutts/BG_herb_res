@@ -4,8 +4,9 @@
 # produces a matrix of seed dispersal probabilites from every location evaluated to
 # every other location in a 1D landscape. Based on a fitted kenel from Colbach and Sache (2001)
 # using inplace modificaiton of an exiting matrix disp_mat
-function seed_disp_mat_builder_1D!(disp_mat::Array{Float64, 2}; res = 1, pro_short = 0.48, mean_dist_short = 0.58, 
-  pro_seeds_to_mean_short = 0.44, mean_dist_long = 1.65, pro_seeds_to_mean_long = 0.39)
+function seed_disp_mat_builder_1D!(disp_mat::Array{Float64, 2}, res::Float64, pro_short = 0.48, 
+  mean_dist_short = 0.58, pro_seeds_to_mean_short = 0.44, mean_dist_long = 1.65, 
+  pro_seeds_to_mean_long = 0.39)
   
     
   shape_short = 1 / (log(1 - pro_seeds_to_mean_short) + 1)

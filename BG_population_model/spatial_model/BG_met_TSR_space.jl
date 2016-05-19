@@ -11,19 +11,22 @@ using BlackBoxOptim
 function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64, 1}, 
   int_pop_rr::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}
   int_loc_rr::Array{Int64, 1}, g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2},
-  g_effect_fec::Array{Float64, 1}, sur_tup::Tuple{Float64, Array{Float64, 1}}, 
+  g_effect_fec::Array{Float64, 1}, sur_tup::Tuple{Float64, Array{Float64, 1}}, seed_sur::Float64, 
   g_vals::Array{Float64, 1} = collect(-10: 0.5 : 10), resist_G::Array{ASCIIString, 1} = ["RR", "Rr"], 
   num_iter::Int64, landscape_size::Int64, dx::Float64, germ_prob::Float64, fec_max::Float64, 
-  dd_fec::Float64, dg::Float64, herb_application::Array{Int64, 1})
+  dd_fec::Float64, dg::Float64, herb_application::Array{Int64, 1}, scale_pollen::Float64, 
+  shape_pollen::Float64, seed_pro_short::Float64, seed_mean_dist_short::Float64, 
+  pro_seeds_to_mean_short::Float64, seed_mean_dist_long::Float64, pro_seeds_to_mean_long::Float64)
 
     
   seed_disp_mat_1D = zeros(convert(Int32, (landscape_size / dx) + 1), 
     convert(Int32, (landscape_size / dx) + 1))
-  seed_disp_mat_builder_1D!(seed_disp_mat_1D, res = dx)
+  seed_disp_mat_builder_1D!(seed_disp_mat_1D, dx, seed_pro_short, seed_mean_dist_short, 
+    pro_seeds_to_mean_short, seed_mean_dist_long, pro_seeds_to_mean_long)
   
   pollen_disp_mat = zeros(convert(Int32, (landscape_size / space_res) + 1), 
     convert(Int32, (landscape_size / space_res) + 1))
-  pollen_disp_mat_builder_1D!(pollen_disp_mat, res = dx)
+  pollen_disp_mat_builder_1D!(pollen_disp_mat, res = dx, a = scale_pollen, c = shape_pollen)
    
   #set aside a chunck of memory for the landscapes for each genotype 
   RR_landscape = Array{Array{Float64, 2}, 1}(num_iter)
@@ -109,14 +112,13 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
   #for each one return a summary, mean g, sd, and totalnumber at each location
   #do summary here so such big arrays are not passed around
   num_loc = size(RR_landscape[1])[2]
-  out_summary = Array{Array{Float64, 2}, 1}(num_iter)
+  out_summary = zeros(9, num_loc, num_iter) #intilize the 3D array to hold the results
   
   for t in 1:num_iter
-    out_summary[t] = zeros(9, num_loc)
     for x in 1:num_loc
-      out_summary[t][1:3, x] = dist_summary(RR_landscape[t][:, x], g_vals, dg) 
-      out_summary[t][4:5, x] = dist_summary(Rr_landscape[t][:, x], g_vals, dg) 
-      out_summary[t][6:9, x] = dist_summary(rr_landscape[t][:, x], g_vals, dg) 
+      out_summary[1:3, x, t] = dist_summary(RR_landscape[t][:, x], g_vals, dg) 
+      out_summary[4:5, x, t] = dist_summary(Rr_landscape[t][:, x], g_vals, dg) 
+      out_summary[6:9, x, t] = dist_summary(rr_landscape[t][:, x], g_vals, dg) 
     end
   end
   
@@ -134,19 +136,28 @@ end
 
 function model_run(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}; 
   int_g = 0.0, int_sd = 1.4142, num_iter = 10, landscape_size = 10.0, dx = 1.0, lower_g = -10.0, upper_g = 10.0, offspring_sd = 1.0, 
-  fec0 = 10.0, dg = 0.5, base_sur = 10.0, resist_G = ["RR", "Rr"], herb_app_loc::Array{Int64, 1} = collect(1:10))
+  dg = 0.5, base_sur = 10.0, resist_G = ["RR", "Rr"], herb_app_loc::Array{Int64, 1} = collect(1:10))
  
   # unpack the parameter vector for readability
   int_num_RR = param[1]
   int_num_Rr = param[2]
   int_num_rr = param[3]
   germ_prob = param[4]
-  fec_cost = param[5]
-  fec_max = param[6]
-  dd_fec = param[7]
-  herb_effect = param[8]
-  g_prot = param[9]
-  pro_exposed = param[10]
+  fec0 = param[5]
+  fec_cost = param[6]
+  fec_max = param[7]
+  dd_fec = param[8]
+  herb_effect = param[9]
+  g_prot = param[10]
+  seed_sur = param[11]
+  pro_exposed = param[12]
+  scale_pollen = param[13] 
+  shape_pollen = param[14] 
+  seed_pro_short = param[15] 
+  seed_mean_dist_short = param[16] 
+  pro_seeds_to_mean_short = param[17] 
+  seed_mean_dist_long = param[18] 
+  pro_seeds_to_mean_long = param[19]
   
   # set up evaluation points on g
   g_vals = collect(lower_g : dg : upper_g)
@@ -171,28 +182,91 @@ function model_run(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_lo
   g_effect_fec = ifelse(g_vals .< 0, exp(-fec0), exp(-(fec0 - g_vals * fec_cost)))
   
   #set up the survival vectors 
-  sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, 
-    g_prot, pro_exposed)
+  sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
    
   #run without herbicide
   no_herb_run = multi_iter_1D(int_pop_RR, int_pop_Rr, int_pop_rr, int_loc_RR, int_loc_Rr
-    int_loc_rr, g_mixing_kernel, g_mixing_index, g_effect_fec, sur_tup, g_vals, 
-    resist_G, num_iter, landscape_size, dx, germ_prob, fec_max, dd_fec, dg, herb_app_0)
+    int_loc_rr, g_mixing_kernel, g_mixing_index, g_effect_fec, sur_tup, seed_sur, g_vals, 
+    resist_G, num_iter, landscape_size, dx, germ_prob, fec_max, dd_fec, dg, herb_app_0, 
+    scale_pollen, shape_pollen, seed_pro_short, seed_mean_dist_short,pro_seeds_to_mean_short,
+    seed_mean_dist_long, pro_seeds_to_mean_long)
   #run with herbicide
   herb_run = multi_iter_1D(int_pop_RR, int_pop_Rr, int_pop_rr, int_loc_RR, int_loc_Rr
-    int_loc_rr, g_mixing_kernel, g_mixing_index, g_effect_fec, sur_tup, g_vals, 
-    resist_G, num_iter, landscape_size, dx, germ_prob, fec_max, dd_fec, dg, herb_app)
+    int_loc_rr, g_mixing_kernel, g_mixing_index, g_effect_fec, sur_tup, seed_sur, g_vals, 
+    resist_G, num_iter, landscape_size, dx, germ_prob, fec_max, dd_fec, dg, herb_app, 
+    scale_pollen, shape_pollen, seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, 
+    seed_mean_dist_long, pro_seeds_to_mean_long)
   
-  # return a dictonary so the output is a bit easier to keep track of
-  return (param, no_herb_run, herb_run)
+  return (param, no_herb_run, herb_run) 
 end
 
 # function to run and call the the other functions and scripts, will eventually run the whole thing
-function main_calling_function()
+function main_calling_function(num_par_comb::Int64)
   cd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model")
   include("BG_met_TSR_space_pop_process.jl")
   include("BG_met_TSR_space_dispersal_functions.jl")
   srand(321) #set random seed
+  
+  #fixed parameters This is an empty field scenario, could also have a full field scenario 
+  # by making the intial lcoatins of rr at all locations
+  int_pop_tot = 1.0
+  landscape_size = 100.0
+  dx = 1.0
+  int_loc_RR = [49, 50, 51]
+  int_loc_Rr = [49, 50, 51]
+  int_loc_rr = [49, 50, 51]
+  dg = 0.5
+  int_g = 0.0 
+  int_sd = 1.4142 
+  lower_g = -10.0
+  upper_g = 10.0
+  offspring_sd = 1.0 
+  num_iter = 10
+  base_sur = 10.0 
+  resist_G = ["RR", "Rr"] 
+  herb_app_loc = collect(1:101)
+  
+  # upper and lower limits for each parameter that is varied 
+  l_int_num_RR, u_int_num_RR = 0, 0
+  l_int_num_Rr, u_int_num_Rr = 0.0001 * int_pop_tot, 0.2 * int_pop_tot 
+  l_int_num_rr, u_int_num_rr = 0, 0 
+  l_germ_prob, u_germ_prob = 0.45, 0.6
+  l_fec0, u_fec0 = 5.0, 10.0
+  l_fec_cost, u_fec_cost = 0.1, 2.0
+  l_fec_max, u_fec_max = 30.0, 300.0 
+  l_dd_fec, u_dd_fec = 0.001, 0.1
+  l_herb_effect, u_herb_effect = 2.0, 3.0 
+  l_g_prot, u_g_prot = 0.1, 2.0
+  l_seed_sur, u_seed_sur = 0.22, 0.79
+  l_pro_exposed, u_pro_exposed = 0.5, 1
+  l_scale_pollen, u_scale_pollen = 25.6, 38.4 
+  l_shape_pollen, u_shape_pollen = 2.656, 3.984 
+  l_seed_pro_short, u_seed_pro_short = 0.384, 0.576
+  l_seed_mean_dist_short, u_seed_mean_dist_short = 0.464, 0.696 
+  l_pro_seeds_to_mean_short, u_pro_seeds_to_mean_short = 0.352, 0.528 
+  l_seed_mean_dist_long, u_seed_mean_dist_long = 1.32, 1.98 
+  l_pro_seeds_to_mean_long, u_pro_seeds_to_mean_long = 0.312, 0.468 
+  
+  #LHS of the parameter space 
+  pars0 = BlackBoxOptim.Utils.latin_hypercube_sampling(
+    [l_int_num_RR, l_int_num_Rr, l_int_num_rr, l_germ_prob, l_fec0, l_fec_cost, l_fec_max, 
+      l_dd_fec, l_herb_effect, l_g_prot, l_seed_sur, l_pro_exposed, l_scale_pollen, l_shape_pollen, 
+      l_seed_pro_short, l_seed_mean_dist_short, l_pro_seeds_to_mean_short, l_seed_mean_dist_long,
+      l_pro_seeds_to_mean_long], 
+    [u_int_num_RR, u_int_num_Rr, u_int_num_rr, u_germ_prob, u_fec0, u_fec_cost, u_fec_max, 
+      u_dd_fec, u_herb_effect, u_g_prot, u_seed_sur, u_pro_exposed, u_scale_pollen, u_shape_pollen, 
+      u_seed_pro_short, u_seed_mean_dist_short, u_pro_seeds_to_mean_short, u_seed_mean_dist_long,
+      u_pro_seeds_to_mean_long],
+    num_par_comb)
+  #rescal a few of these as they are dependent on other parameters
+  pars0[3, :] = int_pop_tot - pars0[2, :] #make the intial rr population every thing that is not Rr 
+  pars0[9, :] *= base_sur # scale herb effect to s0
+  pars0[10, :] = pars0[10, :] .* pars0[9, :] # scale the protective efect of g to herb_effect 
+  pars0[6, :] = pars0[6, :] .* pars0[5, :] #scale demographic costs of resistance to fec0
+  
+  #turns each coloumn into a seperate array, which is the way the function takes the arguments
+  M = [M0[:, i] for i in 1:size(M0)[2]]
+  pars = [pars0[:, i] for i in 1:size(pars0)[2]]
   
   
 #   seed_disp_mat_2D = zeros(convert(Int32, ((landscape_size / space_res) + 1) ^ 2), 
@@ -235,20 +309,20 @@ function main_calling_function()
   # parallel test, start julia with 3 threads that pmap will use
   # julia -p 3
   #lain latin_hypercube_sampling to make parameter ranges
-  M0 = round(Int64, BlackBoxOptim.Utils.latin_hypercube_sampling([1.0, 1.0, 1.0], [100.0, 500.0, 700.0], 3));
+  M0 = round(Int64, BlackBoxOptim.Utils.latin_hypercube_sampling([1.0, 1.0, 1.0, 1.0], [10.0, 5.0, 7.0, 5], 10));
   #turns each coloumn into a seperate array, which is the way the function takes the arguments
   M = [M0[:, i] for i in 1:size(M0)[2]]
   
   #this does not work I have to share the function with process 2 and 2
-  pmap(fun1, M);
+  test = pmap(fun1, M, 5.0);
   
   
   
 end
 
 #the @everywhere macro sends the function to all threads
-@everywhere function fun1(m::Array{Int64, 1})
-  mat1 = ones(m[1], m[1])
+@everywhere function fun1(m::Array{Int64, 1}, b::Float64)
+  mat1 = ones(m[1], m[1]) * b
   mat2 = zeros(m[2], m[2])
   mat3 = rand(m[3], m[3])
   
