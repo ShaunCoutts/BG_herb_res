@@ -109,22 +109,18 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
   #for each one return a summary, mean g, sd, and totalnumber at each location
   #do summary here so such big arrays are not passed around
   num_loc = size(RR_landscape[1])[2]
-  RR_summary = Array{Array{Float64, 2}, 1}(num_iter)
-  Rr_summary = Array{Array{Float64, 2}, 1}(num_iter)
-  rr_summary = Array{Array{Float64, 2}, 1}(num_iter)
+  out_summary = Array{Array{Float64, 2}, 1}(num_iter)
   
   for t in 1:num_iter
-    RR_summary[t] = zeros(3, num_loc)
-    Rr_summary[t] = zeros(3, num_loc)
-    rr_summary[t] = zeros(3, num_loc)
+    out_summary[t] = zeros(9, num_loc)
     for x in 1:num_loc
-      RR_summary[t][:, x] = dist_summary(RR_landscape[t][:, x], g_vals, dg) 
-      Rr_summary[t][:, x] = dist_summary(Rr_landscape[t][:, x], g_vals, dg) 
-      rr_summary[t][:, x] = dist_summary(rr_landscape[t][:, x], g_vals, dg) 
+      out_summary[t][1:3, x] = dist_summary(RR_landscape[t][:, x], g_vals, dg) 
+      out_summary[t][4:5, x] = dist_summary(Rr_landscape[t][:, x], g_vals, dg) 
+      out_summary[t][6:9, x] = dist_summary(rr_landscape[t][:, x], g_vals, dg) 
     end
   end
   
-  return (RR_summary, Rr_summary, rr_summary)
+  return out_summary
 end
 
 # function to run the model experiment where a single parameter set is tested under both herbicide 
