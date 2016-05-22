@@ -134,9 +134,10 @@ end
 # the time we start the model run, and that it has been under weak selection so pop sd is 2 * offspring variance
 # = 2 * 1 = sqrt(2) = 1.4142...
 
-function model_run(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}; 
-  int_g = 0.0, int_sd = 1.4142, num_iter = 10, landscape_size = 10.0, dx = 1.0, lower_g = -10.0, upper_g = 10.0, offspring_sd = 1.0, 
-  dg = 0.5, base_sur = 10.0, resist_G = ["RR", "Rr"], herb_app_loc::Array{Int64, 1} = collect(1:10))
+function model_run(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}, 
+  int_g::Float64 = 0.0, int_sd::Float64 = 1.4142, num_iter::Int64 = 10, landscape_size::Float64 = 10.0, dx::Float64 = 1.0, 
+  lower_g::Float64 = -10.0, upper_g::Float64 = 10.0, offspring_sd::Float64 = 1.0, dg::Float64 = 0.5, base_sur::Float64 = 10.0, 
+  resist_G::Array{ASCIIString, 1} = ["RR", "Rr"], herb_app_loc::Array{Int64, 1} = collect(1:10))
  
   # unpack the parameter vector for readability
   int_num_RR = param[1]
@@ -250,7 +251,7 @@ function main_calling_function(num_par_comb::Int64)
   #LHS of the parameter space 
   pars0 = BlackBoxOptim.Utils.latin_hypercube_sampling(
     [l_int_num_RR, l_int_num_Rr, l_int_num_rr, l_germ_prob, l_fec0, l_fec_cost, l_fec_max, 
-      l_dd_fec, l_herb_effect, l_g_prot, l_seed_sur, l_pro_exposed, l_scale_pollen, l_shape_pollen, 
+      l_dd_fec, `l_herb_effect, l_g_prot, l_seed_sur, l_pro_exposed, l_scale_pollen, l_shape_pollen, 
       l_seed_pro_short, l_seed_mean_dist_short, l_pro_seeds_to_mean_short, l_seed_mean_dist_long,
       l_pro_seeds_to_mean_long], 
     [u_int_num_RR, u_int_num_Rr, u_int_num_rr, u_germ_prob, u_fec0, u_fec_cost, u_fec_max, 
@@ -265,9 +266,11 @@ function main_calling_function(num_par_comb::Int64)
   pars0[6, :] = pars0[6, :] .* pars0[5, :] #scale demographic costs of resistance to fec0
   
   #turns each coloumn into a seperate array, which is the way the function takes the arguments
-  M = [M0[:, i] for i in 1:size(M0)[2]]
   pars = [pars0[:, i] for i in 1:size(pars0)[2]]
-  
+    
+  #run the model run function in parallel
+  output = pmap(model_run, pars, int_loc_RR, int_loc_Rr, int_loc_rr, int_g, int_sd, num_iter, landscape_size, dx, 
+    lower_g, upper_g, offspring_sd, dg, base_sur, resist_G, herb_app_loc)
   
 #   seed_disp_mat_2D = zeros(convert(Int32, ((landscape_size / space_res) + 1) ^ 2), 
 #     convert(Int32, ((landscape_size / space_res) + 1) ^ 2))
@@ -314,16 +317,16 @@ function main_calling_function(num_par_comb::Int64)
   M = [M0[:, i] for i in 1:size(M0)[2]]
   
   #this does not work I have to share the function with process 2 and 2
-  test = pmap(fun1, M, 5.0);
+  test = pmap(fun1, M, 5.0, 11.0);
   
   
   
 end
 
 #the @everywhere macro sends the function to all threads
-@everywhere function fun1(m::Array{Int64, 1}, b::Float64)
+@everywhere function fun1(m::Array{Int64, 1}, b::Float64, c::Float64)
   mat1 = ones(m[1], m[1]) * b
-  mat2 = zeros(m[2], m[2])
+  mat2 = zeros(m[2], m[2]) + c
   mat3 = rand(m[3], m[3])
   
   return (m, mat1, mat2, mat3)
