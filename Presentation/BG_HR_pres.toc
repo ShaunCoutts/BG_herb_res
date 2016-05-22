@@ -1,0 +1,6 @@
+\beamer@endinputifotherversion {3.24pt}
+\beamer@sectionintoc {1}{Herbicide is great}{2}{0}{1}
+\beamer@sectionintoc {2}{modelling herbicide resistance}{5}{0}{2}
+\beamer@sectionintoc {3}{what to do about it}{7}{0}{3}
+\beamer@sectionintoc {4}{IWM as combinatorial optimisation}{8}{0}{4}
+\beamer@sectionintoc {5}{Results}{12}{0}{5}
