@@ -117,8 +117,8 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
   for t in 1:num_iter
     for x in 1:num_loc
       out_summary[1:3, x, t] = dist_summary(RR_landscape[t][:, x], g_vals, dg) 
-      out_summary[4:5, x, t] = dist_summary(Rr_landscape[t][:, x], g_vals, dg) 
-      out_summary[6:9, x, t] = dist_summary(rr_landscape[t][:, x], g_vals, dg) 
+      out_summary[4:6, x, t] = dist_summary(Rr_landscape[t][:, x], g_vals, dg) 
+      out_summary[7:9, x, t] = dist_summary(rr_landscape[t][:, x], g_vals, dg) 
     end
   end
   
