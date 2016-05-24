@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.9.24)  24 MAY 2016 14:33
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.9.24)  24 MAY 2016 17:28
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -892,7 +892,7 @@ Overfull \vbox (5.21861pt too high) detected at line 65
 [5
 
  <./BG_pop_spatial_mod_schematic.pdf>]
-<space_time_blank.png, id=184, 682.2288pt x 715.473pt>
+<space_time_blank.png, id=185, 682.2288pt x 715.473pt>
 File: space_time_blank.png Graphic file (type png)
 
 <use space_time_blank.png>
@@ -901,7 +901,7 @@ Package pdftex.def Info: space_time_blank.png used on input line 72.
  [6
 
  <./space_time_blank.png>]
-<inv_full_ls.png, id=210, 711.1368pt x 715.473pt>
+<inv_full_ls.png, id=212, 711.1368pt x 715.473pt>
 File: inv_full_ls.png Graphic file (type png)
  <use inv_full_ls.png>
 Package pdftex.def Info: inv_full_ls.png used on input line 79.
@@ -909,7 +909,7 @@ Package pdftex.def Info: inv_full_ls.png used on input line 79.
 
 [7
 
- <./inv_full_ls.png>] <inv_empty_ls.png, id=238, 719.0865pt x 715.473pt>
+ <./inv_full_ls.png>] <inv_empty_ls.png, id=239, 719.0865pt x 715.473pt>
 File: inv_empty_ls.png Graphic file (type png)
 
 <use inv_empty_ls.png>
@@ -918,57 +918,58 @@ Package pdftex.def Info: inv_empty_ls.png used on input line 86.
  [8
 
  <./inv_empty_ls.png>]
-<Plowing_ecomat.jpg, id=268, 1707.37875pt x 1052.93375pt>
+<Plowing_ecomat.jpg, id=266, 1707.37875pt x 1052.93375pt>
 File: Plowing_ecomat.jpg Graphic file (type jpg)
 
 <use Plowing_ecomat.jpg>
-Package pdftex.def Info: Plowing_ecomat.jpg used on input line 100.
+Package pdftex.def Info: Plowing_ecomat.jpg used on input line 99.
 (pdftex.def)             Requested size: 108.405pt x 66.85251pt.
 
-<weeds-manual-hand.jpg, id=269, 642.4pt x 426.59375pt>
+<weeds-manual-hand.jpg, id=267, 642.4pt x 426.59375pt>
 File: weeds-manual-hand.jpg Graphic file (type jpg)
 
 <use weeds-manual-hand.jpg>
-Package pdftex.def Info: weeds-manual-hand.jpg used on input line 100.
+Package pdftex.def Info: weeds-manual-hand.jpg used on input line 99.
 (pdftex.def)             Requested size: 108.405pt x 71.9862pt.
 
-<crop-rotation.jpg, id=270, 213.79875pt x 236.885pt>
+<crop-rotation.jpg, id=268, 213.79875pt x 236.885pt>
 File: crop-rotation.jpg Graphic file (type jpg)
  <use crop-rotation.jpg>
-Package pdftex.def Info: crop-rotation.jpg used on input line 100.
+Package pdftex.def Info: crop-rotation.jpg used on input line 99.
 (pdftex.def)             Requested size: 108.405pt x 120.10852pt.
 
 [9
 
  <./Plowing_ecomat.jpg> <./weeds-manual-hand.jpg> <./crop-rotation.jpg>]
-LaTeX Font Info:    Try loading font information for OMS+cmss on input line 114
-.
-LaTeX Font Info:    No file OMScmss.fd. on input line 114.
+<action_scheme.pdf, id=294, 361.35pt x 216.81pt>
+File: action_scheme.pdf Graphic file (type pdf)
+ <use action_scheme.pdf>
+Package pdftex.def Info: action_scheme.pdf used on input line 105.
+(pdftex.def)             Requested size: 325.21199pt x 195.12718pt.
 
-
-LaTeX Font Warning: Font shape `OMS/cmss/m/n' undefined
-(Font)              using `OMS/cmsy/m/n' instead
-(Font)              for symbol `textbraceleft' on input line 114.
+Overfull \hbox (17.92212pt too wide) in paragraph at lines 105--105
+[][]  
+ []
 
 [10
 
-] [11
+ <./action_scheme.pdf>] [11
 
 ] [12
 
 ]
 </home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/writting/DP
-_bellman_figure.pdf, id=375, 361.35pt x 216.81pt>
+_bellman_figure.pdf, id=397, 361.35pt x 216.81pt>
 File: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/writti
 ng/DP_bellman_figure.pdf Graphic file (type pdf)
 
 <use /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/writtin
 g/DP_bellman_figure.pdf>
 Package pdftex.def Info: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_
-optimisation/writting/DP_bellman_figure.pdf used on input line 136.
+optimisation/writting/DP_bellman_figure.pdf used on input line 127.
 (pdftex.def)             Requested size: 325.215pt x 195.1305pt.
 
-Overfull \hbox (54.06012pt too wide) in paragraph at lines 136--136
+Overfull \hbox (54.06012pt too wide) in paragraph at lines 127--127
 [][]  
  []
 
@@ -977,25 +978,25 @@ Overfull \hbox (54.06012pt too wide) in paragraph at lines 136--136
  </home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/writting/D
 P_bellman_figure.pdf>]
 </home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/val
-ue_surface_T1.pdf, id=440, 867.24pt x 722.7pt>
+ue_surface_T1.pdf, id=461, 867.24pt x 722.7pt>
 File: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/output
 s/value_surface_T1.pdf Graphic file (type pdf)
 
 <use /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs
 /value_surface_T1.pdf>
 Package pdftex.def Info: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_
-optimisation/outputs/value_surface_T1.pdf used on input line 146.
+optimisation/outputs/value_surface_T1.pdf used on input line 137.
 (pdftex.def)             Requested size: 180.67499pt x 150.55844pt.
 
 </home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/val
-ue_surface_T20.pdf, id=441, 867.24pt x 722.7pt>
+ue_surface_T20.pdf, id=462, 867.24pt x 722.7pt>
 File: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/output
 s/value_surface_T20.pdf Graphic file (type pdf)
 
 <use /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs
 /value_surface_T20.pdf>
 Package pdftex.def Info: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_
-optimisation/outputs/value_surface_T20.pdf used on input line 146.
+optimisation/outputs/value_surface_T20.pdf used on input line 137.
 (pdftex.def)             Requested size: 180.67499pt x 150.55844pt.
  [14
 
@@ -1003,26 +1004,26 @@ optimisation/outputs/value_surface_T20.pdf used on input line 146.
 lue_surface_T1.pdf> </home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_opti
 misation/outputs/value_surface_T20.pdf>]
 </home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/pol
-icy_breakdown_output_myopic.pdf, id=479, 729.72626pt x 1084.05pt>
+icy_breakdown_output_myopic.pdf, id=501, 729.72626pt x 1084.05pt>
 File: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/output
 s/policy_breakdown_output_myopic.pdf Graphic file (type pdf)
 
 <use /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs
 /policy_breakdown_output_myopic.pdf>
 Package pdftex.def Info: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_
-optimisation/outputs/policy_breakdown_output_myopic.pdf used on input line 159.
+optimisation/outputs/policy_breakdown_output_myopic.pdf used on input line 150.
 
 (pdftex.def)             Requested size: 151.76744pt x 225.45723pt.
 
 </home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/pol
-icy_breakdown_output_T20.pdf, id=480, 729.72626pt x 1084.05pt>
+icy_breakdown_output_T20.pdf, id=502, 729.72626pt x 1084.05pt>
 File: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/output
 s/policy_breakdown_output_T20.pdf Graphic file (type pdf)
 
 <use /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs
 /policy_breakdown_output_T20.pdf>
 Package pdftex.def Info: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_
-optimisation/outputs/policy_breakdown_output_T20.pdf used on input line 159.
+optimisation/outputs/policy_breakdown_output_T20.pdf used on input line 150.
 (pdftex.def)             Requested size: 151.76744pt x 225.45723pt.
  [15
 
@@ -1030,17 +1031,17 @@ optimisation/outputs/policy_breakdown_output_T20.pdf used on input line 159.
 licy_breakdown_output_myopic.pdf> </home/shauncoutts/Dropbox/projects/MHR_black
 grass/IWM_optimisation/outputs/policy_breakdown_output_T20.pdf>]
 </home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/pol
-icy_trace_plot_T1_badSP.pdf, id=526, 1156.32pt x 729.72626pt>
+icy_trace_plot_T1_badSP.pdf, id=548, 1156.32pt x 729.72626pt>
 File: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/output
 s/policy_trace_plot_T1_badSP.pdf Graphic file (type pdf)
 
 <use /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs
 /policy_trace_plot_T1_badSP.pdf>
 Package pdftex.def Info: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_
-optimisation/outputs/policy_trace_plot_T1_badSP.pdf used on input line 164.
+optimisation/outputs/policy_trace_plot_T1_badSP.pdf used on input line 155.
 (pdftex.def)             Requested size: 325.215pt x 205.235pt.
 
-Overfull \hbox (54.06012pt too wide) in paragraph at lines 164--164
+Overfull \hbox (54.06012pt too wide) in paragraph at lines 155--155
 [][]  
  []
 
@@ -1049,17 +1050,17 @@ Overfull \hbox (54.06012pt too wide) in paragraph at lines 164--164
  </home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/po
 licy_trace_plot_T1_badSP.pdf>]
 </home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/pol
-icy_trace_plot_T20_badSP.pdf, id=557, 1156.32pt x 729.72626pt>
+icy_trace_plot_T20_badSP.pdf, id=580, 1156.32pt x 729.72626pt>
 File: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/output
 s/policy_trace_plot_T20_badSP.pdf Graphic file (type pdf)
 
 <use /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs
 /policy_trace_plot_T20_badSP.pdf>
 Package pdftex.def Info: /home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_
-optimisation/outputs/policy_trace_plot_T20_badSP.pdf used on input line 169.
+optimisation/outputs/policy_trace_plot_T20_badSP.pdf used on input line 160.
 (pdftex.def)             Requested size: 325.215pt x 205.235pt.
 
-Overfull \hbox (54.06012pt too wide) in paragraph at lines 169--169
+Overfull \hbox (54.06012pt too wide) in paragraph at lines 160--160
 [][]  
  []
 
@@ -1078,11 +1079,11 @@ licy_trace_plot_T20_badSP.pdf>] [18
 \tf@snm=\write8
 \openout8 = `BG_HR_pres.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 283.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 283.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 274.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 274.
  (./BG_HR_pres.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 283.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 283.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 274.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 274.
 Package rerunfilecheck Info: File `BG_HR_pres.out' has not changed.
 (rerunfilecheck)             Checksum: 8F2D8F8243D874E8422111ADCBFD6BB6;282.
 
@@ -1090,33 +1091,28 @@ Package rerunfilecheck Info: File `BG_HR_pres.out' has not changed.
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 1.0pt have occurred.
 
-
-LaTeX Font Warning: Some font shapes were not available, defaults substituted.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 283.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 274.
  ) 
 Here is how much of TeX's memory you used:
- 15668 strings out of 493304
- 291405 string characters out of 6139871
+ 15632 strings out of 493304
+ 290497 string characters out of 6139871
  364306 words of memory out of 5000000
- 18690 multiletter control sequences out of 15000+600000
- 11907 words of font info for 44 fonts, out of 8000000 for 9000
+ 18658 multiletter control sequences out of 15000+600000
+ 10617 words of font info for 39 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
  49i,14n,53p,399b,545s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss12.pfb></usr/share/texl
 ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/share/texlive/tex
-mf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/share/texlive/texmf-d
-ist/fonts/type1/public/amsfonts/cm/cmssi10.pfb></usr/share/texlive/texmf-dist/f
-onts/type1/public/amsfonts/cm/cmssi12.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/public/amsfonts/cm/cmssi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/
-public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
-/amsfonts/symbols/msam10.pfb>
-Output written on BG_HR_pres.pdf (18 pages, 12806713 bytes).
+mf-dist/fonts/type1/public/amsfonts/cm/cmssi10.pfb></usr/share/texlive/texmf-di
+st/fonts/type1/public/amsfonts/cm/cmssi12.pfb></usr/share/texlive/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmssi8.pfb></usr/share/texlive/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmsy10.pfb>
+Output written on BG_HR_pres.pdf (18 pages, 12801086 bytes).
 PDF statistics:
- 660 PDF objects out of 1000 (max. 8388607)
- 573 compressed objects within 6 object streams
+ 675 PDF objects out of 1000 (max. 8388607)
+ 581 compressed objects within 6 object streams
  42 named destinations out of 1000 (max. 500000)
- 173 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 178 words of extra memory for PDF output out of 10000 (max. 10000000)
 
