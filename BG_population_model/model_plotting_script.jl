@@ -38,7 +38,7 @@ end
 
 # function to take the data object and produce a plot of three matricies and a legend
 function spatial_plot(data_block::Tuple{Array{Float64, 1}, Array{Float64, 3}, Array{Float64, 3}}; 
-  plot_herb::Bool = true)
+  plot_herb::Bool = true, )
   
   if plot_herb
     plot_mat = data_block[3]
@@ -53,6 +53,7 @@ function spatial_plot(data_block::Tuple{Array{Float64, 1}, Array{Float64, 3}, Ar
   min_g = minimum(plot_mat[[1, 4, 7], :, :])
   max_g = maximum(plot_mat[[1, 4, 7], :, :])
   max_pop = maximum(plot_mat[[3, 6, 9], :, :])
+  
   # set some figure margin constants
   mar_left = 0.1
   mar_width = 0.8
@@ -68,7 +69,6 @@ function spatial_plot(data_block::Tuple{Array{Float64, 1}, Array{Float64, 3}, Ar
   
   # set up the RR subplot
   ax_RR = fig_ob[:add_subplot](4, 1, 1)
-  new_pos = [0.06, 0.7, 0.70, 0.9]
   new_pos = [mar_left, mar_bots[1], mar_width, mar_height]
   ax_RR[:set_position](new_pos)
   setp(ax_RR[:get_xticklabels](),visible=false) # Disable x tick labels
@@ -81,7 +81,16 @@ function spatial_plot(data_block::Tuple{Array{Float64, 1}, Array{Float64, 3}, Ar
   plot_col_mat!(ax_RR, g_tup[1], scaled_pop; min_val_1 = min_g, max_val_1 = max_g, 
     min_val_2 = 0.0, max_val_2 = 1.0, min_x = 0.0, max_x = convert(Float64, max_time), 
     min_y = 0.0, max_y = convert(Float64, max_loc))
- 
+  #plot the total population of RR at each t on a right axis
+  ax_RR_pop = ax_RR[:twinx]() #pair new axis with ax_RR
+  pop_RR = sum(pop_tup[1], 1)
+  max_pop_RR = maximum(pop_RR)
+  ylim(0.0, max_pop_RR)
+  xlim(0.0, max_time)
+  yticks(0.0 : (max_pop_RR / 4) : max_pop_RR)
+  plot(collect(time_vals)[1:(end - 1)], transpose(pop_RR), color = "black", linewidth = 3.0)
+  ax_RR_pop[:set_position](new_pos)
+  
   # set up the Rr subplot
   ax_Rr = fig_ob[:add_subplot](4, 1, 2)
   new_pos = [mar_left, mar_bots[2], mar_width, mar_height]
@@ -96,6 +105,16 @@ function spatial_plot(data_block::Tuple{Array{Float64, 1}, Array{Float64, 3}, Ar
   plot_col_mat!(ax_Rr, g_tup[2], scaled_pop; min_val_1 = min_g, max_val_1 = max_g, 
     min_val_2 = 0.0, max_val_2 = 1.0, min_x = 0.0, max_x = convert(Float64, max_time), 
     min_y = 0.0, max_y = convert(Float64, max_loc))
+  #plot the total population of RR at each t on a right axis
+  ax_Rr_pop = ax_Rr[:twinx]() #pair new axis with ax_RR
+  ylabel("population")
+  pop_Rr = sum(pop_tup[2], 1)
+  max_pop_Rr = maximum(pop_Rr)
+  ylim(0.0, max_pop_Rr)
+  xlim(0.0, max_time)
+  yticks(0.0 : (max_pop_Rr / 4) : max_pop_Rr)
+  plot(collect(time_vals)[1:(end - 1)], transpose(pop_Rr), color = "black", linewidth = 3.0)
+  ax_Rr_pop[:set_position](new_pos)
  
   #set up the rr subplot
   ax_rr = fig_ob[:add_subplot](4, 1, 3)
@@ -111,6 +130,14 @@ function spatial_plot(data_block::Tuple{Array{Float64, 1}, Array{Float64, 3}, Ar
   plot_col_mat!(ax_rr, g_tup[3], scaled_pop; min_val_1 = min_g, max_val_1 = max_g, 
     min_val_2 = 0.0, max_val_2 = 1.0, min_x = 0.0, max_x = convert(Float64, max_time), 
     min_y = 0.0, max_y = convert(Float64, max_loc))
+  #plot the total population of RR at each t on a right axis
+  ax_rr_pop = ax_rr[:twinx]() #pair new axis with ax_RR
+  max_pop_rr = maximum(pop_rr)
+  ylim(0.0, max_pop_rr)
+  xlim(0.0, max_time)
+  yticks(0.0 : (max_pop_rr / 4) : max_pop_rr)
+  plot(collect(time_vals)[1:(end - 1)], transpose(pop_rr), color = "black", linewidth = 3.0)
+  ax_rr_pop[:set_position](new_pos)
  
   #set up the axis, ideally a square 
   ax_leg = fig_ob[:add_subplot](4, 1, 4)
@@ -126,6 +153,14 @@ function spatial_plot(data_block::Tuple{Array{Float64, 1}, Array{Float64, 3}, Ar
   dummy_pop_mat = transpose(hcat([collect(linspace(0, max_pop, 100)) for i in 1:100]...))
   plot_col_mat!(ax_leg, dummy_g_mat, dummy_pop_mat; min_val_1 = min_g, max_val_1 = max_g, 
     min_val_2 = 0.0, max_val_2 = max_pop, min_x = 0.0, max_x = 1.0, min_y = min_g, max_y = max_g)
+  
+  #save the figure
+  current_dir = pwd()
+  cd(file_loc)
+  savefig(file_out_name, bbox_inches = "tight")
+  cd(current_dir)
+  
+  return nothing
   
 end
 
