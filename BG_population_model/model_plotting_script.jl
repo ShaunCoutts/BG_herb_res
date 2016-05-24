@@ -38,7 +38,8 @@ end
 
 # function to take the data object and produce a plot of three matricies and a legend
 function spatial_plot(data_block::Tuple{Array{Float64, 1}, Array{Float64, 3}, Array{Float64, 3}}; 
-  plot_herb::Bool = true, )
+  plot_herb::Bool = true, file_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/",
+  file_out_name = "space_time_res_plot.pdf")
   
   if plot_herb
     plot_mat = data_block[3]
