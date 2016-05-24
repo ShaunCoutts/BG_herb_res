@@ -6,8 +6,10 @@ using PyCall
 @pyimport matplotlib.patches as patch
 
 using Cairo
-using HDF5 JDL #for reading data objects from the disk
 
+# using Cairo
+# using HDF5 JDL #for reading data objects from the disk
+# 
 # the model output will be complex and large, having to be accesed from disk, so I define a 
 # set of handler functions to extract the data 
 
@@ -133,6 +135,7 @@ function spatial_plot(data_block::Tuple{Array{Float64, 1}, Array{Float64, 3}, Ar
     min_y = 0.0, max_y = convert(Float64, max_loc))
   #plot the total population of RR at each t on a right axis
   ax_rr_pop = ax_rr[:twinx]() #pair new axis with ax_RR
+  pop_rr = sum(pop_tup[3], 1)
   max_pop_rr = maximum(pop_rr)
   ylim(0.0, max_pop_rr)
   xlim(0.0, max_time)
@@ -160,6 +163,8 @@ function spatial_plot(data_block::Tuple{Array{Float64, 1}, Array{Float64, 3}, Ar
   cd(file_loc)
   savefig(file_out_name, bbox_inches = "tight")
   cd(current_dir)
+  
+  PyPlot.close()
   
   return nothing
   

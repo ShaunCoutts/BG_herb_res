@@ -3,7 +3,6 @@
 # develope in a populaiton similtaniously.
 
 using Distributions
-using BlackBoxOptim
 
 # the first three positional arguments (int_pop_RR, int_pop_Rr, int_pop_rr) are 
 # arrays of a populaiton at each location in the next three positional args, which
@@ -103,9 +102,9 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
       g_effect_fec, fec_max, dd_fec, dg)
     
     # disperse the seeds
-    RR_landscape[t][:, :] = RR_landscape  + (RR_newseed * seed_disp_mat_1D)
-    Rr_landscape[t][:, :] = Rr_landscape  + (Rr_newseed * seed_disp_mat_1D)
-    rr_landscape[t][:, :] = rr_landscape  + (rr_newseed * seed_disp_mat_1D)
+    RR_landscape[t][:, :] = RR_landscape[t]  + (RR_newseed * seed_disp_mat_1D)
+    Rr_landscape[t][:, :] = Rr_landscape[t]  + (Rr_newseed * seed_disp_mat_1D)
+    rr_landscape[t][:, :] = rr_landscape[t]  + (rr_newseed * seed_disp_mat_1D)
     
   end
   
@@ -165,8 +164,8 @@ function model_run(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_lo
  
   #intial populations at each intial location
   int_pop_RR = pdf(Normal(int_g, int_sd), g_vals) * int_num_RR
-  int_pop_Rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_RR
-  int_pop_rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_RR
+  int_pop_Rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_Rr
+  int_pop_rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_rr
  
   # herbicide application, one element for every location
   herb_app_0 = round(Int64, ones(convert(Int32, (landscape_size / dx) + 1)))
