@@ -62,7 +62,7 @@ g_mixing_index = generate_index_pairs(g_vals);
 #test the dispersal matrix 
 seed_disp_mat_1D = zeros(convert(Int32, (landscape_size / dx) + 1), 
   convert(Int32, (landscape_size / dx) + 1));
-seed_disp_mat_builder_1D!(seed_disp_mat_1D, res = dx);
+seed_disp_mat_builder_1D!(seed_disp_mat_1D, dx);
 #test to check the edge rows and cols sum to 0.5
 seed_disp_colsum = sum(seed_disp_mat_1D, 1);
 seed_disp_rowsum = sum(seed_disp_mat_1D, 2);
@@ -149,7 +149,7 @@ sur_herb_ref = 41.9993644298266;
 
 # test for the dist summary function that gets the mean, sd and total BG_population_model
 test_dist = pdf(Normal(5, 1), g_vals) * 101
-test_summary = dist_summary(test_dist, g_vals, dg);
+test_summary = dist_summary(test_dist, collect(g_vals), dg);
 
 Test.with_handler(cust_hand) do
   #test the seedbank_update intergrates to 50 seeds

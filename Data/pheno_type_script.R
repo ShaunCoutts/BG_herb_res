@@ -202,8 +202,11 @@ max_res_95 = quantile(max_num_plants_res, prob = c(0.025, 0.975))
 # 0.025 = 97,941 and 0.975 = 132,003
 
 
-
-
+# Slight modification to get the expected number if the entire landscape is invaded to the 
+# maximum density level in each 20 x 20 m grid. We assume after 50 years blackgrass the population has 
+# spread across the entire 1D lanscape at an average density seen in the field seasons.
+# We assume continuous herbicide use. Asume landscape is 500m long that gives 25 grid squares, which is 1 ha 
+# (just all spread out) so can use the same numbers as above, with some stronmg assumptions.   
 
 
 
