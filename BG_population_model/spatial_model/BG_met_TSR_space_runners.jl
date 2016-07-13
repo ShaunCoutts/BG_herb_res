@@ -200,6 +200,70 @@ function model_run(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_lo
   return (param, no_herb_run, herb_run) 
 end
 
+# run the model for the filtering proccess, only need the model run under herbicide application, and there is no need to return the 
+# parameters as that will be taken care of by another function
+function model_run_filter(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}, 
+  int_g::Float64 = 0.0, int_sd::Float64 = 1.4142, num_iter::Int64 = 10, landscape_size::Float64 = 10.0, dx::Float64 = 1.0, 
+  lower_g::Float64 = -10.0, upper_g::Float64 = 10.0, offspring_sd::Float64 = 1.0, dg::Float64 = 0.5, base_sur::Float64 = 10.0, 
+  resist_G::Array{ASCIIString, 1} = ["RR", "Rr"], herb_app_loc::Array{Int64, 1} = collect(1:10))
+ 
+  # unpack the parameter vector for readability
+  int_num_RR = param[1]
+  int_num_Rr = param[2]
+  int_num_rr = param[3]
+  germ_prob = param[4]
+  fec0 = param[5]
+  fec_cost = param[6]
+  fec_max = param[7]
+  dd_fec = param[8]
+  herb_effect = param[9]
+  g_prot = param[10]
+  seed_sur = param[11]
+  pro_exposed = param[12]
+  scale_pollen = param[13] 
+  shape_pollen = param[14] 
+  seed_pro_short = param[15] 
+  seed_mean_dist_short = param[16] 
+  pro_seeds_to_mean_short = param[17] 
+  seed_mean_dist_long = param[18] 
+  pro_seeds_to_mean_long = param[19]
+  
+  # set up evaluation points on g
+  g_vals = collect(lower_g : dg : upper_g)
+ 
+  #intial populations at each intial location
+  int_pop_RR = pdf(Normal(int_g, int_sd), g_vals) * int_num_RR
+  int_pop_Rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_Rr
+  int_pop_rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_rr
+ 
+  # herbicide application, one element for every location
+  herb_app_0 = ones(convert(Int64, (landscape_size / dx) + 1))
+  herb_app = deepcopy(herb_app_0)
+  herb_app[herb_app_loc] += 1 #adds one to the locations where herbicide is going to be applied 
+  
+  # build the mixing kernel for metabolic resistance score every row is a offspring score
+  # every coloum is a g_m x g_p combination, so every coloumn is a normal dist with
+  # a mean of g_m*g_p and sd of offspring sd
+  g_mixing_kernel = zeros(length(g_vals), length(g_vals) ^ 2)
+  fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
+  g_mixing_index = generate_index_pairs(g_vals)
+ 
+ # give the effect of herb as a function of g
+  g_effect_fec = ifelse(g_vals .< 0, exp(-fec0), exp(-(fec0 - g_vals * fec_cost)))
+  
+  #set up the survival vectors 
+  sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
+   
+  #run with herbicide
+  herb_run = multi_iter_1D(int_pop_RR, int_pop_Rr, int_pop_rr, int_loc_RR, int_loc_Rr,
+    int_loc_rr, g_mixing_kernel, g_mixing_index, g_effect_fec, sur_tup, seed_sur, g_vals, 
+    resist_G, num_iter, round(Int64, landscape_size), dx, germ_prob, fec_max, dd_fec, dg, herb_app, 
+    scale_pollen, shape_pollen, seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, 
+    seed_mean_dist_long, pro_seeds_to_mean_long)
+  
+  return herb_run 
+  
+end
 
 
 

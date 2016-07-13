@@ -312,8 +312,12 @@ function pop_summaries(pop_snapshot::Array{Float64, 2}, ls_ext::Array{Float64, 1
   mean_g_pop = (mean_g_RR * num_sb_RR + mean_g_Rr * num_sb_Rr + mean_g_rr * num_sb_rr) / num_sb_tot
    
   # get the sperad indicies
+  pro_RR_x = sum(sum(pop_sb_RR, 1) .> 1) / length(landscape)
+  pro_Rr_x = sum(sum(pop_sb_Rr, 1) .> 1) / length(landscape)
+  pro_rr_x = sum(sum(pop_sb_rr, 1) .> 1) / length(landscape) 
+  pro_all_x = sum((sum(pop_sb_RR, 1) .> 1) | (sum(pop_sb_Rr, 1) .> 1) | (sum(pop_sb_rr, 1) .> 1)) / length(landscape)
+  
+  return [param_fixed, param_var, num_sb_RR, num_sb_Rr, num_sb_rr, num_sb_tot, num_ab_tot, num_ab_ph_tot, 
+    mean_g_RR, mean_g_Rr, mean_g_rr, mean_g_pop, pro_RR_x, pro_Rr_x, pro_rr_x, pro_all_x]
  
- 
-  TODO: get the sperad metrics 
-
 end

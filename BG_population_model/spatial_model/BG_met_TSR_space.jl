@@ -5,6 +5,103 @@
 using Distributions
 using BlackBoxOptim
 
+# function to combine a model run and summarise the result so pmap can call the function 
+function param_tester(param_var::Array{Float64, 1}, param_fixed	::Array{Float64, 1}, 
+  int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}, 
+  resist_G::Array{ASCIIString, 1}, herb_app_loc::Array{Int64, 1})
+
+  pop_run = model_run_filter(pars, int_loc_RR, int_loc_Rr, int_loc_rr, int_g, int_sd, num_iter, 
+    landscape_size, dx, lower_g, upper_g, offspring_sd, dg, base_sur, resist_G, herb_app_loc);
+
+  return [param_fixed, param_var, pop_summs]
+end
+
+#function to call to do the filtering 
+function param_filtering()
+  #read in some of the required functions
+  cd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model")
+  include("BG_met_TSR_space_pop_process.jl")
+  include("BG_met_TSR_space_dispersal_functions.jl")
+  include("BG_met_TSR_space_runners.jl")
+  
+  srand(3214) #set random seed
+  
+  # fixed parameters This is an empty field scenario, could also have a full field scenario 
+  # by making the intial lcoatins of rr at all locations
+  int_pop_tot = 1.0
+  landscape_size = 500.0
+  dx = 1.0
+  int_loc_RR = [249, 250, 251]
+  int_loc_Rr = [249, 250, 251]
+  int_loc_rr = [249, 250, 251]
+  dg = 0.5
+  int_g = 0.0 
+  int_sd = 1.4142 
+  lower_g = -10.0
+  upper_g = 10.0
+  offspring_sd = 1.0 
+  num_iter = 10
+  base_sur = 10.0 
+  resist_G = ["RR", "Rr"] 
+  herb_app_loc = collect(1:501)
+  
+  # upper and lower limits for each parameter that is varied 
+  l_int_num_RR, u_int_num_RR = 0, 0
+  l_int_num_Rr, u_int_num_Rr = 0.0001 * int_pop_tot, 0.2 * int_pop_tot 
+  l_int_num_rr, u_int_num_rr = 0, 0 
+  l_germ_prob, u_germ_prob = 0.45, 0.6
+  l_fec0, u_fec0 = 5.0, 10.0
+  l_fec_cost, u_fec_cost = 0.1, 2.0
+  l_fec_max, u_fec_max = 30.0, 300.0 
+  l_dd_fec, u_dd_fec = 0.001, 0.1
+  l_herb_effect, u_herb_effect = 2.0, 3.0 
+  l_g_prot, u_g_prot = 0.1, 2.0
+  l_seed_sur, u_seed_sur = 0.22, 0.79
+  l_pro_exposed, u_pro_exposed = 0.5, 1
+  l_scale_pollen, u_scale_pollen = 25.6, 38.4 
+  l_shape_pollen, u_shape_pollen = 2.656, 3.984 
+  l_seed_pro_short, u_seed_pro_short = 0.384, 0.576
+  l_seed_mean_dist_short, u_seed_mean_dist_short = 0.464, 0.696 
+  l_pro_seeds_to_mean_short, u_pro_seeds_to_mean_short = 0.352, 0.528 
+  l_seed_mean_dist_long, u_seed_mean_dist_long = 1.32, 1.98 
+  l_pro_seeds_to_mean_long, u_pro_seeds_to_mean_long = 0.312, 0.468 
+  
+  #LHS of the parameter space 
+  pars0 = BlackBoxOptim.Utils.latin_hypercube_sampling(
+    [l_int_num_RR, l_int_num_Rr, l_int_num_rr, l_germ_prob, l_fec0, l_fec_cost, l_fec_max, 
+      l_dd_fec, l_herb_effect, l_g_prot, l_seed_sur, l_pro_exposed, l_scale_pollen, l_shape_pollen, 
+      l_seed_pro_short, l_seed_mean_dist_short, l_pro_seeds_to_mean_short, l_seed_mean_dist_long,
+      l_pro_seeds_to_mean_long], 
+    [u_int_num_RR, u_int_num_Rr, u_int_num_rr, u_germ_prob, u_fec0, u_fec_cost, u_fec_max, 
+      u_dd_fec, u_herb_effect, u_g_prot, u_seed_sur, u_pro_exposed, u_scale_pollen, u_shape_pollen, 
+      u_seed_pro_short, u_seed_mean_dist_short, u_pro_seeds_to_mean_short, u_seed_mean_dist_long,
+      u_pro_seeds_to_mean_long],
+    num_par_comb)
+  #rescal a few of these as they are dependent on other parameters
+  pars0[3, :] = int_pop_tot - pars0[2, :] #make the intial rr population every thing that is not Rr 
+  pars0[9, :] *= base_sur # scale herb effect to s0
+  pars0[10, :] = pars0[10, :] .* pars0[9, :] # scale the protective efect of g to herb_effect 
+  pars0[6, :] = pars0[6, :] .* pars0[5, :] #scale demographic costs of resistance to fec0
+  
+  #turns each coloumn into a seperate array, which is the way the function takes the arguments
+  pars = [pars0[:, i] for i in 1:size(pars0)[2]]
+  
+  pars_fixed = [int_pop_tot, landscape_size, dx, dg, int_g, int_sd, lower_g, upper_g, offspring_sd, base_sur] 
+  
+  output = pmap(model_run_filter, pars, int_loc_RR, int_loc_Rr, int_loc_rr, int_g, int_sd, num_iter, landscape_size, dx, 
+    lower_g, upper_g, offspring_sd, dg, base_sur, resist_G, herb_app_loc)
+    
+  df_out = convert(DataFrame, output)
+  names!(df_out, convert(Array{Symbol, 1}, ["int_pop_tot", "ls_size", "dx", "dg", "int_g", 
+    "int_sd", "lower_g", "upper_g", "offspring_sd", "base_sur", "int_RR", "int_Rr", "int_rr", 
+    "germ_prob", "fec0", "fec_cost", "fec_max", "dd_fec", "herb_effect", "g_prot", "seed_sur", 
+    "pro_exposed", "scale_pollen", "shape_pollen", "seed_pro_short", "seed_mean_dist_short", 
+    "pro_seeds_to_mean_short", "seed_mean_dist_long", "pro_seeds_to_mean_long", "num_sb_RR", 
+    "num_sb_Rr", "num_sb_rr", "num_sb_tot", "num_ab_tot", "num_ab_ph_tot", "mean_g_RR", 
+    "mean_g_Rr", "mean_g_rr", "mean_g_pop", "pro_RR_x", "pro_Rr_x", "pro_rr_x", "pro_all_x"]))
+  
+end
+
 # function to run and call the the other functions and scripts, will eventually run the whole thing
 function main_calling_function(num_par_comb::Int64)
   cd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model")
