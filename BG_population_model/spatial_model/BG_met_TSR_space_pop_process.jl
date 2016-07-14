@@ -257,21 +257,20 @@ end
 # OUTPUT: vector of population metrics
 function pop_summaries(pop_snapshot::Array{Float64, 2}, ls_ext::Array{Float64, 1}, 
   dx::Float64, g_ext::Array{Float64, 1}, dg::Float64, param_var::Array{Float64, 1}, 
-  param_fixed::Array{Float64, 1})
+  base_sur::Float64)
 
   # extract some parameters that are useful
   germ_prob = param_var[4]
   herb_effect = param_var[9]
   g_prot = param_var[10]
   pro_exposed = param_var[12]
-  base_sur = param_fixed[1]
   
   # in order to calculate several of the population summaries I need to reconstruct the population
   landscape = collect(ls_ext[1] : dx : ls_ext[2])
   g_vals = collect(g_ext[1] : dg : g_ext[2])
-  pop_sb_RR = zeros(length(g_points), length(landscape)) # blank landscape seedbank
-  pop_sb_Rr = zeros(length(g_points), length(landscape)) 
-  pop_sb_rr = zeros(length(g_points), length(landscape)) 
+  pop_sb_RR = zeros(length(g_vals), length(landscape)) # blank landscape seedbank
+  pop_sb_Rr = zeros(length(g_vals), length(landscape)) 
+  pop_sb_rr = zeros(length(g_vals), length(landscape)) 
   
   #creat the seed bank and above ground numbers both pre and post herbicide  
   for x in 1:length(landscape)
@@ -291,24 +290,24 @@ function pop_summaries(pop_snapshot::Array{Float64, 2}, ls_ext::Array{Float64, 1
   
   #do one iteration of survival to ge the number of post herbicide above ground plants
   sur_pre_calc = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
-  survival_at_t(pop_ab_ph_RR, ["RR", "Rr"], "RR", ones(length(landscape)) + 1, sur_pre_calc)
-  survival_at_t(pop_ab_ph_Rr, ["RR", "Rr"], "Rr", ones(length(landscape)) + 1, sur_pre_calc)
-  survival_at_t(pop_ab_ph_rr, ["RR", "Rr"], "rr", ones(length(landscape)) + 1, sur_pre_calc)
+  survival_at_t!(pop_ab_ph_RR, ["RR", "Rr"], "RR", convert(Array{Int64, 1}, ones(length(landscape)) + 1), sur_pre_calc)
+  survival_at_t!(pop_ab_ph_Rr, ["RR", "Rr"], "Rr", convert(Array{Int64, 1}, ones(length(landscape)) + 1), sur_pre_calc)
+  survival_at_t!(pop_ab_ph_rr, ["RR", "Rr"], "rr", convert(Array{Int64, 1}, ones(length(landscape)) + 1), sur_pre_calc)
   
   
   #population numbers
-  num_sb_RR = sum(num_snapshot[3, :]) * dx
-  num_sb_Rr = sum(num_snapshot[6, :]) * dx
-  num_sb_rr = sum(num_snapshot[9, :]) * dx
+  num_sb_RR = sum(pop_snapshot[3, :]) * dx
+  num_sb_Rr = sum(pop_snapshot[6, :]) * dx
+  num_sb_rr = sum(pop_snapshot[9, :]) * dx
   num_sb_tot = num_sb_RR + num_sb_Rr + num_sb_rr
   
   num_ab_tot = (sum(pop_ab_RR) + sum(pop_ab_Rr) + sum(pop_ab_rr)) * dx * dg  
   num_ab_ph_tot = (sum(pop_ab_ph_RR) + sum(pop_ab_ph_Rr) + sum(pop_ab_ph_rr)) * dx * dg  
  
   #resistance numbers
-  mean_g_RR = (sum(num_snapshot[1, :] .* num_snapshot[3, :]) * dx) / num_sb_RR 
-  mean_g_Rr = (sum(num_snapshot[4, :] .* num_snapshot[6, :]) * dx) / num_sb_Rr 
-  mean_g_rr = (sum(num_snapshot[7, :] .* num_snapshot[9, :]) * dx) / num_sb_rr 
+  mean_g_RR = (sum(pop_snapshot[1, :] .* pop_snapshot[3, :]) * dx) / num_sb_RR 
+  mean_g_Rr = (sum(pop_snapshot[4, :] .* pop_snapshot[6, :]) * dx) / num_sb_Rr 
+  mean_g_rr = (sum(pop_snapshot[7, :] .* pop_snapshot[9, :]) * dx) / num_sb_rr 
   mean_g_pop = (mean_g_RR * num_sb_RR + mean_g_Rr * num_sb_Rr + mean_g_rr * num_sb_rr) / num_sb_tot
    
   # get the sperad indicies
@@ -317,7 +316,7 @@ function pop_summaries(pop_snapshot::Array{Float64, 2}, ls_ext::Array{Float64, 1
   pro_rr_x = sum(sum(pop_sb_rr, 1) .> 1) / length(landscape) 
   pro_all_x = sum((sum(pop_sb_RR, 1) .> 1) | (sum(pop_sb_Rr, 1) .> 1) | (sum(pop_sb_rr, 1) .> 1)) / length(landscape)
   
-  return [param_fixed, param_var, num_sb_RR, num_sb_Rr, num_sb_rr, num_sb_tot, num_ab_tot, num_ab_ph_tot, 
+  return [num_sb_RR, num_sb_Rr, num_sb_rr, num_sb_tot, num_ab_tot, num_ab_ph_tot, 
     mean_g_RR, mean_g_Rr, mean_g_rr, mean_g_pop, pro_RR_x, pro_Rr_x, pro_rr_x, pro_all_x]
  
 end

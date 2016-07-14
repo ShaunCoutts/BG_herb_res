@@ -202,7 +202,7 @@ end
 
 # run the model for the filtering proccess, only need the model run under herbicide application, and there is no need to return the 
 # parameters as that will be taken care of by another function
-function model_run_filter(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}, 
+@everywhere function model_run_filter(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}, 
   int_g::Float64 = 0.0, int_sd::Float64 = 1.4142, num_iter::Int64 = 10, landscape_size::Float64 = 10.0, dx::Float64 = 1.0, 
   lower_g::Float64 = -10.0, upper_g::Float64 = 10.0, offspring_sd::Float64 = 1.0, dg::Float64 = 0.5, base_sur::Float64 = 10.0, 
   resist_G::Array{ASCIIString, 1} = ["RR", "Rr"], herb_app_loc::Array{Int64, 1} = collect(1:10))
@@ -238,7 +238,7 @@ function model_run_filter(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1},
  
   # herbicide application, one element for every location
   herb_app_0 = ones(convert(Int64, (landscape_size / dx) + 1))
-  herb_app = deepcopy(herb_app_0)
+  herb_app = convert(Array{Int64, 1}, deepcopy(herb_app_0))
   herb_app[herb_app_loc] += 1 #adds one to the locations where herbicide is going to be applied 
   
   # build the mixing kernel for metabolic resistance score every row is a offspring score

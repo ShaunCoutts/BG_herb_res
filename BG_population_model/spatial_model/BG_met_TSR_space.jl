@@ -2,22 +2,51 @@
 # the conditions required for both metabolic and target site resistance to 
 # develope in a populaiton similtaniously.
 
-using Distributions
+@everywhere using Distributions
 using BlackBoxOptim
 
 # function to combine a model run and summarise the result so pmap can call the function 
-function param_tester(param_var::Array{Float64, 1}, param_fixed	::Array{Float64, 1}, 
-  int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}, 
-  resist_G::Array{ASCIIString, 1}, herb_app_loc::Array{Int64, 1})
+@everywhere function param_tester(all_pars::Tuple) 
 
-  pop_run = model_run_filter(pars, int_loc_RR, int_loc_Rr, int_loc_rr, int_g, int_sd, num_iter, 
-    landscape_size, dx, lower_g, upper_g, offspring_sd, dg, base_sur, resist_G, herb_app_loc);
+  # unpack the tuple for each parameters sets
+  param_var = all_pars[1]
+  param_fixed = all_pars[2]
+  int_loc_RR = all_pars[3]
+  int_loc_Rr = all_pars[4]
+  int_loc_rr = all_pars[5]
+  resist_G = all_pars[6]
+  herb_app_loc = all_pars[7]
+ 
+  # unpar the fixed parameter array further
+  ls_size = param_fixed[2] 
+  dx = param_fixed[3] 
+  dg = param_fixed[4] 
+  int_g = param_fixed[5] 
+  int_sd = param_fixed[6]
+  lower_g = param_fixed[7] 
+  upper_g = param_fixed[8] 
+  offspring_sd = param_fixed[9] 
+  base_sur = param_fixed[10]
+  num_iter = convert(Int64, param_fixed[11])
+ 
+  pop_run = model_run_filter(param_var, int_loc_RR, int_loc_Rr, int_loc_rr, int_g, int_sd, num_iter, 
+    ls_size, dx, lower_g, upper_g, offspring_sd, dg, base_sur, resist_G, herb_app_loc);
 
-  return [param_fixed, param_var, pop_summs]
+  pop_sums = pop_summaries(pop_run[:, :, end], [0 , ls_size], dx, [lower_g, upper_g], dg, param_var, base_sur)
+  
+  return [param_fixed; param_var; pop_sums]
+
 end
 
+# make a simple test fucntion to check the pdf function works in parallel
+@everywhere function test_pdf(x)
+  return pdf(Normal(0, 1), -10:10)
+end 
+
+pmap(test_pdf, 1:5)
+
 #function to call to do the filtering 
-function param_filtering()
+function param_filtering(num_par_comb::Int64)
   #read in some of the required functions
   cd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model")
   include("BG_met_TSR_space_pop_process.jl")
@@ -40,7 +69,7 @@ function param_filtering()
   lower_g = -10.0
   upper_g = 10.0
   offspring_sd = 1.0 
-  num_iter = 10
+  num_iter = 10.0
   base_sur = 10.0 
   resist_G = ["RR", "Rr"] 
   herb_app_loc = collect(1:501)
@@ -83,13 +112,18 @@ function param_filtering()
   pars0[10, :] = pars0[10, :] .* pars0[9, :] # scale the protective efect of g to herb_effect 
   pars0[6, :] = pars0[6, :] .* pars0[5, :] #scale demographic costs of resistance to fec0
   
-  #turns each coloumn into a seperate array, which is the way the function takes the arguments
-  pars = [pars0[:, i] for i in 1:size(pars0)[2]]
+  # cannot pass multipule arrays to map() (for good, but annoying reasons), so I will have to package 
+  # all the parameters I want into a single list 
+  pars = []
+  for i in 1:size(pars0)[2]
+    push!(pars, (pars0[:, i], param_fixed, int_loc_RR, int_loc_Rr, int_loc_rr, resist_G, herb_app_loc))
+  end
   
-  pars_fixed = [int_pop_tot, landscape_size, dx, dg, int_g, int_sd, lower_g, upper_g, offspring_sd, base_sur] 
+  # NOt sure is working yet, I may have to send more functions to all threads with everywhere, needs more testing
+  output = pmap(param_tester, pars)
+
   
-  output = pmap(model_run_filter, pars, int_loc_RR, int_loc_Rr, int_loc_rr, int_g, int_sd, num_iter, landscape_size, dx, 
-    lower_g, upper_g, offspring_sd, dg, base_sur, resist_G, herb_app_loc)
+  output = map(param_tester, dummy, pars[1], pars_fixed, int_loc_RR, int_loc_Rr, int_loc_rr, resist_G, herb_app_loc)
     
   df_out = convert(DataFrame, output)
   names!(df_out, convert(Array{Symbol, 1}, ["int_pop_tot", "ls_size", "dx", "dg", "int_g", 
