@@ -4,6 +4,7 @@
 
 @everywhere using Distributions
 using BlackBoxOptim
+using DataFrames
 
 # function to combine a model run and summarise the result so pmap can call the function 
 @everywhere function param_tester(all_pars::Tuple) 
@@ -38,13 +39,6 @@ using BlackBoxOptim
 
 end
 
-# make a simple test fucntion to check the pdf function works in parallel
-@everywhere function test_pdf(x)
-  return pdf(Normal(0, 1), -10:10)
-end 
-
-pmap(test_pdf, 1:5)
-
 #function to call to do the filtering 
 function param_filtering(num_par_comb::Int64)
   #read in some of the required functions
@@ -56,7 +50,8 @@ function param_filtering(num_par_comb::Int64)
   srand(3214) #set random seed
   
   # fixed parameters This is an empty field scenario, could also have a full field scenario 
-  # by making the intial lcoatins of rr at all locations
+  # by making the intial lcoatins of rr at all locations. For the filter sanity check we 
+  # make the intial population a small clump of seeds 
   int_pop_tot = 1.0
   landscape_size = 500.0
   dx = 1.0
@@ -69,7 +64,7 @@ function param_filtering(num_par_comb::Int64)
   lower_g = -10.0
   upper_g = 10.0
   offspring_sd = 1.0 
-  num_iter = 10.0
+  num_iter = 50.0
   base_sur = 10.0 
   resist_G = ["RR", "Rr"] 
   herb_app_loc = collect(1:501)
@@ -113,21 +108,21 @@ function param_filtering(num_par_comb::Int64)
   pars0[6, :] = pars0[6, :] .* pars0[5, :] #scale demographic costs of resistance to fec0
   
   # cannot pass multipule arrays to map() (for good, but annoying reasons), so I will have to package 
-  # all the parameters I want into a single list 
+  # all the parameters I want into a single list
+  
+  param_fixed = [int_pop_tot, landscape_size, dx, dg, int_g, int_sd, lower_g, upper_g, 
+    offspring_sd, base_sur, num_iter]
+  
   pars = []
   for i in 1:size(pars0)[2]
     push!(pars, (pars0[:, i], param_fixed, int_loc_RR, int_loc_Rr, int_loc_rr, resist_G, herb_app_loc))
   end
   
-  # NOt sure is working yet, I may have to send more functions to all threads with everywhere, needs more testing
-  output = pmap(param_tester, pars)
-
-  
-  output = map(param_tester, dummy, pars[1], pars_fixed, int_loc_RR, int_loc_Rr, int_loc_rr, resist_G, herb_app_loc)
+  @time output = map(param_tester, pars)
     
-  df_out = convert(DataFrame, output)
+  df_out = DataFrame(transpose(hcat(output...)))
   names!(df_out, convert(Array{Symbol, 1}, ["int_pop_tot", "ls_size", "dx", "dg", "int_g", 
-    "int_sd", "lower_g", "upper_g", "offspring_sd", "base_sur", "int_RR", "int_Rr", "int_rr", 
+    "int_sd", "lower_g", "upper_g", "offspring_sd", "base_sur", "num_iter", "int_RR", "int_Rr", "int_rr", 
     "germ_prob", "fec0", "fec_cost", "fec_max", "dd_fec", "herb_effect", "g_prot", "seed_sur", 
     "pro_exposed", "scale_pollen", "shape_pollen", "seed_pro_short", "seed_mean_dist_short", 
     "pro_seeds_to_mean_short", "seed_mean_dist_long", "pro_seeds_to_mean_long", "num_sb_RR", 

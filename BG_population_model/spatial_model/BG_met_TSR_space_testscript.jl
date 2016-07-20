@@ -140,12 +140,11 @@ ag_surs = deepcopy(ag_plants);
 survival_at_t!(ag_surs, resist_G, "Rr", convert(Array{Int64, 1}, herb_application), sur_tup)
 sur_resist = deepcopy(ag_surs[:, [5, 6, 7]]);
 
-
 ag_surs = deepcopy(ag_plants);
 survival_at_t!(ag_surs, resist_G, "rr", convert(Array{Int64, 1}, herb_application), sur_tup)
 sur_sucep = deepcopy(ag_surs[:, [5, 6, 7]]);
 #reference number so changes are picked up 
-sur_herb_ref = 41.9993644298266; 
+sur_herb_ref = 48.20947789657931; 
 
 # test for the dist summary function that gets the mean, sd and total BG_population_model
 test_dist = pdf(Normal(5, 1), g_vals) * 101
@@ -195,7 +194,8 @@ Test.with_handler(cust_hand) do
   
   #test survival
   @test isapprox(sur_tup[1], sur_tup[2][end], atol = 0.0000000001)
-  @test isapprox(sur_tup[2][1], (1 - pro_exposed), atol = 0.0001)
+  @test isapprox(sur_tup[2][1], (1 - pro_exposed) / (1 + exp(-base_sur)) + 
+    pro_exposed / (1 + exp(0)), atol = 0.0001)
   @test isapprox(sum(sur_resist, 1)[1], sum(ag_plants, 1)[5] * (1 / (1 + exp(-base_sur))), atol = 0.000000001)
   @test isapprox(sum(sur_sucep, 1)[2], sum(sur_resist, 1)[1], atol = 0.0000000001)
   @test isapprox(sum(sur_sucep, 1)[1], sur_herb_ref, atol = 0.0000000001)

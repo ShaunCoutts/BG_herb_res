@@ -248,7 +248,7 @@ end
   fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
   g_mixing_index = generate_index_pairs(g_vals)
  
- # give the effect of herb as a function of g
+ # give the effect of herb resist on fecundity as a function of g
   g_effect_fec = ifelse(g_vals .< 0, exp(-fec0), exp(-(fec0 - g_vals * fec_cost)))
   
   #set up the survival vectors 

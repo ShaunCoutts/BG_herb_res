@@ -189,9 +189,14 @@ function survival_pre_calc(base_sur::Float64, g_vals::Array{Float64, 1}, herb_ef
   g_prot::Float64, pro_exposed::Float64)
   
   sur_non_exposed = 1 / (1 + exp(-base_sur))
-  sur_exposed = ((1 - pro_exposed) / (1 + exp(-base_sur))) + 
+  
+  sur_exposed = ifelse(g_vals .< 0, 
+    ((1 - pro_exposed) / (1 + exp(-base_sur))) + #first condition if g_val is less than 0 give it the survival value at 0 
+      (pro_exposed ./ (1 + exp(-(base_sur - (herb_effect - min(herb_effect, 0)))))),
+    ((1 - pro_exposed) / (1 + exp(-base_sur))) + #second condition for g_vals greater 0
       (pro_exposed ./ (1 + exp(-(base_sur - (herb_effect - min(herb_effect, g_vals * g_prot))))))
-      
+  )
+  
   return (sur_non_exposed, sur_exposed)
    
 end
