@@ -178,8 +178,8 @@ function model_run(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_lo
   g_mixing_kernel = zeros(length(g_vals), length(g_vals) ^ 2)
   fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
   g_mixing_index = generate_index_pairs(g_vals)
-  # give the effect of herb as a function of g
-  g_effect_fec = ifelse(g_vals .< 0, exp(-fec0), exp(-(fec0 - g_vals * fec_cost)))
+  # give the effect of herb as a function of g, make it symetrical stabilising function, centered on 0
+  g_effect_fec = exp(-(fec0 - abs(g_vals) * fec_cost))
   
   #set up the survival vectors 
   sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
@@ -202,7 +202,7 @@ end
 
 # run the model for the filtering proccess, only need the model run under herbicide application, and there is no need to return the 
 # parameters as that will be taken care of by another function
-@everywhere function model_run_filter(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}, 
+function model_run_filter(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1}, int_loc_Rr::Array{Int64, 1}, int_loc_rr::Array{Int64, 1}, 
   int_g::Float64 = 0.0, int_sd::Float64 = 1.4142, num_iter::Int64 = 10, landscape_size::Float64 = 10.0, dx::Float64 = 1.0, 
   lower_g::Float64 = -10.0, upper_g::Float64 = 10.0, offspring_sd::Float64 = 1.0, dg::Float64 = 0.5, base_sur::Float64 = 10.0, 
   resist_G::Array{ASCIIString, 1} = ["RR", "Rr"], herb_app_loc::Array{Int64, 1} = collect(1:10))

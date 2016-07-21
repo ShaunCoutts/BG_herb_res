@@ -42,10 +42,10 @@ end
 #function to call to do the filtering 
 function param_filtering(num_par_comb::Int64)
   #read in some of the required functions
-  cd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model")
-  include("BG_met_TSR_space_pop_process.jl")
-  include("BG_met_TSR_space_dispersal_functions.jl")
-  include("BG_met_TSR_space_runners.jl")
+  @everywhere cd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model")
+  @everywhere include("BG_met_TSR_space_pop_process.jl")
+  @everywhere include("BG_met_TSR_space_dispersal_functions.jl")
+  @everywhere include("BG_met_TSR_space_runners.jl")
   
   srand(3214) #set random seed
   
@@ -67,7 +67,7 @@ function param_filtering(num_par_comb::Int64)
   num_iter = 50.0
   base_sur = 10.0 
   resist_G = ["RR", "Rr"] 
-  herb_app_loc = collect(1:501)
+  herb_app_loc = collect(1:2)
   
   # upper and lower limits for each parameter that is varied 
   l_int_num_RR, u_int_num_RR = 0, 0
@@ -75,10 +75,10 @@ function param_filtering(num_par_comb::Int64)
   l_int_num_rr, u_int_num_rr = 0, 0 
   l_germ_prob, u_germ_prob = 0.45, 0.6
   l_fec0, u_fec0 = 5.0, 10.0
-  l_fec_cost, u_fec_cost = 0.1, 2.0
+  l_fec_cost, u_fec_cost = 0.0, 0.0
   l_fec_max, u_fec_max = 30.0, 300.0 
   l_dd_fec, u_dd_fec = 0.001, 0.1
-  l_herb_effect, u_herb_effect = 2.0, 3.0 
+  l_herb_effect, u_herb_effect = 0.0, 0.0 
   l_g_prot, u_g_prot = 0.1, 2.0
   l_seed_sur, u_seed_sur = 0.22, 0.79
   l_pro_exposed, u_pro_exposed = 0.5, 1
@@ -118,7 +118,7 @@ function param_filtering(num_par_comb::Int64)
     push!(pars, (pars0[:, i], param_fixed, int_loc_RR, int_loc_Rr, int_loc_rr, resist_G, herb_app_loc))
   end
   
-  @time output = map(param_tester, pars)
+  @time output = pmap(param_tester, pars[1:3])
     
   df_out = DataFrame(transpose(hcat(output...)))
   names!(df_out, convert(Array{Symbol, 1}, ["int_pop_tot", "ls_size", "dx", "dg", "int_g", 

@@ -144,11 +144,19 @@ ag_surs = deepcopy(ag_plants);
 survival_at_t!(ag_surs, resist_G, "rr", convert(Array{Int64, 1}, herb_application), sur_tup)
 sur_sucep = deepcopy(ag_surs[:, [5, 6, 7]]);
 #reference number so changes are picked up 
-sur_herb_ref = 48.20947789657931; 
+sur_herb_ref = 41.9993644298266; 
 
 # test for the dist summary function that gets the mean, sd and total BG_population_model
 test_dist = pdf(Normal(5, 1), g_vals) * 101
 test_summary = dist_summary(test_dist, collect(g_vals), dg);
+
+# test the fecundity cost function
+g_effect_fec = exp(-(fec0 - abs(g_vals) * fec_cost));
+num_at_x = transpose(repeat([50], outer = [size(RR_newseed)[2]]));
+seeds_at_x = fec_max ./ (1 + g_effect_fec .+ dd_fec * num_at_x .+ dd_fec * (g_effect_fec * num_at_x))	
+tot_seeds_x = sum(seeds_at_x, 2)
+
+
 
 Test.with_handler(cust_hand) do
   #test the seedbank_update intergrates to 50 seeds
@@ -194,15 +202,18 @@ Test.with_handler(cust_hand) do
   
   #test survival
   @test isapprox(sur_tup[1], sur_tup[2][end], atol = 0.0000000001)
-  @test isapprox(sur_tup[2][1], (1 - pro_exposed) / (1 + exp(-base_sur)) + 
-    pro_exposed / (1 + exp(0)), atol = 0.0001)
+  @test isapprox(sur_tup[2][1], ((1 - pro_exposed) / (1 + exp(-base_sur))) + 
+    (pro_exposed / (1 + exp(-(base_sur - (herb_effect - g_prot * g_vals[1]))))), 
+    atol = 0.0001)
   @test isapprox(sum(sur_resist, 1)[1], sum(ag_plants, 1)[5] * (1 / (1 + exp(-base_sur))), atol = 0.000000001)
   @test isapprox(sum(sur_sucep, 1)[2], sum(sur_resist, 1)[1], atol = 0.0000000001)
   @test isapprox(sum(sur_sucep, 1)[1], sur_herb_ref, atol = 0.0000000001)
   
-  #test seed dispersal 
+  #test seed production and dispersal 
   @test isapprox(sum(sb_next3) * dg * dx, (tot_sb + tot_seed_fixed) * dx, atol = 0.0000001)
-  
+  @test isapprox(indmax(tot_seeds_x), findin(g_vals, 0)[1], atol = 0.000001) # check the fecundity cost function is centered on 0 
+  holder = tot_seeds_x[findin(g_vals, [-5, 5])]
+  @test isapprox(holder[1], holder[2], atol = 0.00001) # check the cost function is symertirical  
   #test the dist summary function 
   @test isapprox(test_summary, [5.0, 1.0, 101.0], atol = 0.0001)
 
