@@ -97,7 +97,7 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
     pollen_rr[:, :] = pollen_rr ./ transpose(total_pollen * dg)
     
     #create new seeds
-    new_seeds_at_t!(RR_newseed, Rr_newseed, rr_newseed, RR_ab_pop, Rr_ab_pop,
+    new_seeds_at_t_mm!(RR_newseed, Rr_newseed, rr_newseed, RR_ab_pop, Rr_ab_pop,
       rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index,   
       g_effect_fec, fec_max, dd_fec, dg)
     
@@ -248,8 +248,8 @@ function model_run_filter(param::Array{Float64, 1}, int_loc_RR::Array{Int64, 1},
   fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
   g_mixing_index = generate_index_pairs(g_vals)
  
- # give the effect of herb resist on fecundity as a function of g
-  g_effect_fec = ifelse(g_vals .< 0, exp(-fec0), exp(-(fec0 - g_vals * fec_cost)))
+  # give the effect of herb resist on fecundity as a function of g
+  g_effect_fec = exp(-(fec0 - abs(g_vals) * fec_cost))
   
   #set up the survival vectors 
   sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)

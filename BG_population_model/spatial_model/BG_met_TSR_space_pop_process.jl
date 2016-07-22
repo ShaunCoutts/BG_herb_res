@@ -129,7 +129,7 @@ function new_seeds_at_t_mm!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Flo
   # hard code the G corsses, there is only 9 and and they will have fixed proportions: 
     
   num_at_x = (sum(RR_mat, 1) + sum(Rr_mat, 1) + sum(rr_mat, 1)) * dg
-    
+  
   seeds_at_x = fec_corrected ./ (1 + g_effect_fec .+ dd_fec * num_at_x .+ dd_fec * (g_effect_fec * num_at_x))	
   
   #calcu numner of seeds for each G
@@ -277,7 +277,7 @@ function pop_summaries(pop_snapshot::Array{Float64, 2}, ls_ext::Array{Float64, 1
   for x in 1:length(landscape)
      pop_sb_RR[:, x] = pdf(Normal(pop_snapshot[1, x], pop_snapshot[2, x]), g_vals) * pop_snapshot[3, x]
      pop_sb_Rr[:, x] = pdf(Normal(pop_snapshot[4, x], pop_snapshot[5, x]), g_vals) * pop_snapshot[6, x]
-     pop_sb_RR[:, x] = pdf(Normal(pop_snapshot[7, x], pop_snapshot[8, x]), g_vals) * pop_snapshot[9, x]
+     pop_sb_rr[:, x] = pdf(Normal(pop_snapshot[7, x], pop_snapshot[8, x]), g_vals) * pop_snapshot[9, x]
   end
  
   # create the above ground populations, the post herbcide matricies also creatged to be mutated later
