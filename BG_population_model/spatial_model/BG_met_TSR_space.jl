@@ -43,7 +43,11 @@ end
 function param_filtering(num_par_comb::Int64, file_loc_out::AbstractString, out_name::AbstractString)
   #read in some of the required functions
   int_file_loc = pwd()
-  @everywhere file_loc_func_p = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model" 
+  # version for my computer
+  #  @everywhere file_loc_func_p = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model" 
+  #version for Zhus mac
+  @everywhere file_loc_func_p = "/Users/shauncoutts/BG_pop_model/spatial_model"
+  
   @everywhere cd(file_loc_func_p)
   @everywhere include("BG_met_TSR_space_pop_process.jl")
   @everywhere include("BG_met_TSR_space_dispersal_functions.jl")
@@ -78,7 +82,7 @@ function param_filtering(num_par_comb::Int64, file_loc_out::AbstractString, out_
   l_fec0, u_fec0 = 5.0, 10.0
   l_fec_cost, u_fec_cost = 0.0, 1.0
   l_fec_max, u_fec_max = 30.0, 300.0 
-  l_dd_fec, u_dd_fec = 0.001, 0.1
+  l_dd_fec, u_dd_fec = 0.001, 0.15
   l_herb_effect, u_herb_effect = 2.0, 3.0 
   l_g_prot, u_g_prot = 0.1, 2.0
   l_seed_sur, u_seed_sur = 0.22, 0.79
@@ -141,115 +145,123 @@ end
 
 srand(3214) #set random seed
 
+#Shaun computer version
 ## run the population filter so I can call the file as nohup
-param_filtering(10, # number of parameter combinations
-  "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output", #file location for function source files 
+# param_filtering(10, # number of parameter combinations
+#   "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output", #file location for function source files 
+#   "param_filtering_out.csv") #file location for output dataframe
+
+#Zhu computer version   
+param_filtering(24000, # number of parameter combinations, 2000 each proccess if I use 8 workers
+  "/Users/shauncoutts/BG_pop_model", #file location for function source files 
   "param_filtering_out.csv") #file location for output dataframe
+
   
-
-#simple runs and plotting for talks
-function pres_run()
-  cd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model")
-  include("BG_met_TSR_space_pop_process.jl")
-  include("BG_met_TSR_space_dispersal_functions.jl")
-  include("BG_met_TSR_space_runners.jl")
-  cd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/")
-  include("model_plotting_script.jl")
   
-  # some constant parameters
-  int_pop_tot = 1.0;
-  landscape_size = 100.0;
-  dx = 1.0;
-  dg = 0.5;
-  int_g = 0.0 ;
-  int_sd = 1.4142;
-  lower_g = -10.0;
-  upper_g = 10.0;
-  offspring_sd = 1.0; 
-  num_iter = 40;
-  base_sur = 10.0; 
-  resist_G = ["RR", "Rr"]; 
-  herb_app_loc = collect(1:101);
-  # the varied parameters 
-  int_num_RR = 0.000001; 
-  int_num_Rr = 0.1;
-  int_num_rr = int_pop_tot - int_num_Rr;
-  germ_prob = 0.7; 
-  fec0 = 0.8;
-  fec_cost = 0.5; 
-  fec_max = 100.0; 
-  dd_fec = 0.004;
-  herb_effect = 2.0;  
-  g_prot = 1.0; 
-  seed_sur = 0.5; 
-  pro_exposed = 0.8;
-  scale_pollen = 32.0;
-  shape_pollen = 3.2;
-  seed_pro_short = 0.48; 
-  seed_mean_dist_short = 0.52;
-  pro_seeds_to_mean_short = 0.4; 
-  seed_mean_dist_long = 1.6;
-  pro_seeds_to_mean_long = 0.4;
-  
-  pars = [int_num_RR, int_num_Rr, int_num_rr, germ_prob, fec0, fec_cost, fec_max, 
-      dd_fec, herb_effect, g_prot, seed_sur, pro_exposed, scale_pollen, shape_pollen, 
-      seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long,
-      pro_seeds_to_mean_long];  
-  pars[3] = int_pop_tot - pars[2] - pars[1]; #make the intial rr population every thing that is not Rr 
-  pars[9] *= base_sur; # scale herb effect to s0
-  pars[10] = pars[10] * pars[9]; # scale the protective efect of g to herb_effect 
-  pars[6] = pars[6] * pars[5]; #scale demographic costs of resistance to fec0
- 
-  # first set up a run into an empty field under herbicide 
-  int_loc_RR = [49, 50, 51];
-  int_loc_Rr = [49, 50, 51];
-  int_loc_rr = [49, 50, 51];
- 
-  inv_empty_ls = model_run(pars, int_loc_RR, int_loc_Rr, int_loc_rr, int_g, int_sd, num_iter, landscape_size, dx, 
-    lower_g, upper_g, offspring_sd, dg, base_sur, resist_G, herb_app_loc);
-    
-  spatial_plot(inv_empty_ls; plot_herb = true, 
-    file_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/",
-    file_out_name = "inv_empty_ls.png")
-
-  # invasion into a full landscape
-  int_loc_RR = [49, 50, 51];
-  int_loc_Rr = [49, 50, 51];
-  int_loc_rr = collect(1:100);
-  int_pop_tot = 10.0;
-  int_num_RR = 0.000001; 
-  int_num_Rr = 0.1;
-  int_num_rr = int_pop_tot - int_num_Rr;
-  
-  pars = [int_num_RR, int_num_Rr, int_num_rr, germ_prob, fec0, fec_cost, fec_max, 
-      dd_fec, herb_effect, g_prot, seed_sur, pro_exposed, scale_pollen, shape_pollen, 
-      seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long,
-      pro_seeds_to_mean_long];  
-  pars[3] = int_pop_tot - pars[2] - pars[1]; #make the intial rr population every thing that is not Rr 
-  pars[9] *= base_sur; # scale herb effect to s0
-  pars[10] = pars[10] * pars[9]; # scale the protective efect of g to herb_effect 
-  pars[6] = pars[6] * pars[5]; #scale demographic costs of resistance to fec0
- 
-  inv_full_ls = model_run(pars, int_loc_RR, int_loc_Rr, int_loc_rr, int_g, int_sd, num_iter, landscape_size, dx, 
-    lower_g, upper_g, offspring_sd, dg, base_sur, resist_G, herb_app_loc);
-    
-  spatial_plot(inv_full_ls; plot_herb = true, 
-    file_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/",
-    file_out_name = "inv_full_ls.png")
-
-#plot a simple blank plot with no information plotted on it 
-dummy_data_block = (ones(size(inv_full_ls[1])[1]), zeros(size(inv_full_ls[2])), zeros(size(inv_full_ls[3]))); 
-dummy_data_block[2][:, 1, :] = 1.0;
-dummy_data_block[3][:, 1, :] = 1.0;
-
-spatial_plot(dummy_data_block, plot_herb = true, 
-  file_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/",
-  file_out_name = "space_time_blank.png")
-
-
-end
-
-
+#   
+# #simple runs and plotting for talks
+# function pres_run()
+#   cd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model")
+#   include("BG_met_TSR_space_pop_process.jl")
+#   include("BG_met_TSR_space_dispersal_functions.jl")
+#   include("BG_met_TSR_space_runners.jl")
+#   cd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/")
+#   include("model_plotting_script.jl")
+#   
+#   # some constant parameters
+#   int_pop_tot = 1.0;
+#   landscape_size = 100.0;
+#   dx = 1.0;
+#   dg = 0.5;
+#   int_g = 0.0 ;
+#   int_sd = 1.4142;
+#   lower_g = -10.0;
+#   upper_g = 10.0;
+#   offspring_sd = 1.0; 
+#   num_iter = 40;
+#   base_sur = 10.0; 
+#   resist_G = ["RR", "Rr"]; 
+#   herb_app_loc = collect(1:101);
+#   # the varied parameters 
+#   int_num_RR = 0.000001; 
+#   int_num_Rr = 0.1;
+#   int_num_rr = int_pop_tot - int_num_Rr;
+#   germ_prob = 0.7; 
+#   fec0 = 0.8;
+#   fec_cost = 0.5; 
+#   fec_max = 100.0; 
+#   dd_fec = 0.004;
+#   herb_effect = 2.0;  
+#   g_prot = 1.0; 
+#   seed_sur = 0.5; 
+#   pro_exposed = 0.8;
+#   scale_pollen = 32.0;
+#   shape_pollen = 3.2;
+#   seed_pro_short = 0.48; 
+#   seed_mean_dist_short = 0.52;
+#   pro_seeds_to_mean_short = 0.4; 
+#   seed_mean_dist_long = 1.6;
+#   pro_seeds_to_mean_long = 0.4;
+#   
+#   pars = [int_num_RR, int_num_Rr, int_num_rr, germ_prob, fec0, fec_cost, fec_max, 
+#       dd_fec, herb_effect, g_prot, seed_sur, pro_exposed, scale_pollen, shape_pollen, 
+#       seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long,
+#       pro_seeds_to_mean_long];  
+#   pars[3] = int_pop_tot - pars[2] - pars[1]; #make the intial rr population every thing that is not Rr 
+#   pars[9] *= base_sur; # scale herb effect to s0
+#   pars[10] = pars[10] * pars[9]; # scale the protective efect of g to herb_effect 
+#   pars[6] = pars[6] * pars[5]; #scale demographic costs of resistance to fec0
+#  
+#   # first set up a run into an empty field under herbicide 
+#   int_loc_RR = [49, 50, 51];
+#   int_loc_Rr = [49, 50, 51];
+#   int_loc_rr = [49, 50, 51];
+#  
+#   inv_empty_ls = model_run(pars, int_loc_RR, int_loc_Rr, int_loc_rr, int_g, int_sd, num_iter, landscape_size, dx, 
+#     lower_g, upper_g, offspring_sd, dg, base_sur, resist_G, herb_app_loc);
+#     
+#   spatial_plot(inv_empty_ls; plot_herb = true, 
+#     file_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/",
+#     file_out_name = "inv_empty_ls.png")
+# 
+#   # invasion into a full landscape
+#   int_loc_RR = [49, 50, 51];
+#   int_loc_Rr = [49, 50, 51];
+#   int_loc_rr = collect(1:100);
+#   int_pop_tot = 10.0;
+#   int_num_RR = 0.000001; 
+#   int_num_Rr = 0.1;
+#   int_num_rr = int_pop_tot - int_num_Rr;
+#   
+#   pars = [int_num_RR, int_num_Rr, int_num_rr, germ_prob, fec0, fec_cost, fec_max, 
+#       dd_fec, herb_effect, g_prot, seed_sur, pro_exposed, scale_pollen, shape_pollen, 
+#       seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long,
+#       pro_seeds_to_mean_long];  
+#   pars[3] = int_pop_tot - pars[2] - pars[1]; #make the intial rr population every thing that is not Rr 
+#   pars[9] *= base_sur; # scale herb effect to s0
+#   pars[10] = pars[10] * pars[9]; # scale the protective efect of g to herb_effect 
+#   pars[6] = pars[6] * pars[5]; #scale demographic costs of resistance to fec0
+#  
+#   inv_full_ls = model_run(pars, int_loc_RR, int_loc_Rr, int_loc_rr, int_g, int_sd, num_iter, landscape_size, dx, 
+#     lower_g, upper_g, offspring_sd, dg, base_sur, resist_G, herb_app_loc);
+#     
+#   spatial_plot(inv_full_ls; plot_herb = true, 
+#     file_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/",
+#     file_out_name = "inv_full_ls.png")
+# 
+# #plot a simple blank plot with no information plotted on it 
+# dummy_data_block = (ones(size(inv_full_ls[1])[1]), zeros(size(inv_full_ls[2])), zeros(size(inv_full_ls[3]))); 
+# dummy_data_block[2][:, 1, :] = 1.0;
+# dummy_data_block[3][:, 1, :] = 1.0;
+# 
+# spatial_plot(dummy_data_block, plot_herb = true, 
+#   file_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/",
+#   file_out_name = "space_time_blank.png")
+# 
+# 
+# end
+# 
+# 
 
 
 
