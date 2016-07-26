@@ -23,8 +23,9 @@ par(mfrow = c(6, 3))
 pred_names = names(all_dat)[1:30]
 plot_inds = c(13, 15:30)
 for(i in plot_inds){
-  hist(all_dat[, i], main = pred_names[i])
-  hist(all_dat[all_dat$in_out == 'in', i], col = grey(0.5), border = grey(0.50), add = TRUE)
+  hist(all_dat[, i], main = pred_names[i], breaks = seq(min(all_dat[,i]), max(all_dat[,i]), length = 50))
+  hist(all_dat[all_dat$in_out == 1, i], col = grey(0.5), border = grey(0.50), add = TRUE, 
+    breaks = seq(min(all_dat[,i]), max(all_dat[,i]), length = 50))
 }
 
 # looks like it is almost all fec_max and fec_dd that controls if a population goes through the 
@@ -44,6 +45,27 @@ op_trees = gbm.perf(BRT_bi, oobag.curve = TRUE, method = 'cv')
 
 # get realtive influence
 summary(BRT_bi, n.trees = op_trees)
+
+#                                       var    rel.inf
+# fec_max                           fec_max 41.4808476
+# dd_fec                             dd_fec 34.3544299
+# seed_sur                         seed_sur  7.4913080
+# fec_cost                         fec_cost  4.9828577
+# fec0                                 fec0  1.6591691
+# germ_prob                       germ_prob  1.5347435
+# seed_pro_short             seed_pro_short  1.2453150
+# pro_exposed                   pro_exposed  1.1036397
+# int_Rr                             int_Rr  1.0669589
+# herb_effect                   herb_effect  1.0649905
+# g_prot                             g_prot  1.0461183
+# scale_pollen                 scale_pollen  1.0262934
+# shape_pollen                 shape_pollen  1.0205447
+# seed_mean_dist_short seed_mean_dist_short  0.9227837
+# 
+
+
+
+
 # looks like 2 important variables fec_max, and dd_fec, with 2 others varables, seed_sur and fec_cost,
 # have some influence 
 plot_inds = c(5, 6, 9, 4)
@@ -55,8 +77,11 @@ for(i in 1:(length(plot_inds) - 1)){
     count = count + 1
   }
 }
-
-grid.arrange(plot_list[[1]], plot_list[[2]], plot_list[[3]], plot_list[[4]], plot_list[[5]], plot_list[[6]], ncol = 2)
-
 # looks like the fec_dd term could be a bit bigger maybe up to 0.15
+setwd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output")
+pdf(file = 'sanity_check_PDP.pdf', width = 10, height = 15)
+  grid.arrange(plot_list[[1]], plot_list[[2]], plot_list[[3]], plot_list[[4]], plot_list[[5]], plot_list[[6]], ncol = 2)
+dev.off()
 
+passed_dat = all_dat[all_dat$in_out == 1, ]
+write.csv(passed_dat, file = 'sanity_check_pars_passed.csv')
