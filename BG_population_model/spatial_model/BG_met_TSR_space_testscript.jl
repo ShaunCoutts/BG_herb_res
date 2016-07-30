@@ -121,7 +121,7 @@ new_seeds_at_t_mm!(RR_newseed_mm, Rr_newseed_mm, rr_newseed_mm, ag_plants * 0.1,
 # test the number of seeds dispersed to each location is the expected amount 
 # the  number of expected seeds is the the number of seeds at each locaiton by the sum of the disp mat row for each of those locations
 #num_exp = sum((sum(RR_newseed, 1) * dg) .* sum(seed_disp_mat_1D, 1))
-tot_seed_fixed = 105.5967972459612;
+tot_seed_fixed = 105.84760487655326;
 tot_sb = sum(sb_next2) * dg;
 sb_next3 = deepcopy(sb_next2);
 sb_next3[:, :] = sb_next3  + (RR_newseed * seed_disp_mat_1D); 
