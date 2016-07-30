@@ -57,7 +57,19 @@ end
   tot_r = 2 * sum(pop_obj[9, :, :], 2) * dx + sum(pop_obj[6, :, :], 2) * dx 
   R_at_t = tot_R ./ (tot_R + tot_r) 
   R_50 = findfirst(R_at_t .>= 0.5)
+ 
+  # Some other indicies of resistance 
+  num_sb_RR = sum(pop_obj[3, :, :], 2) * dx
+  num_sb_Rr = sum(pop_obj[6, :, :], 2) * dx
+  num_sb_rr = sum(pop_obj[9, :, :], 2) * dx
+  num_sb_tot = num_sb_RR + num_sb_Rr + num_sb_rr
   
+  mean_g_pop = (sum(pop_obj[1, :, :] .* pop_obj[3, :, :], 2) * dx + sum(pop_obj[4, :, :] .* pop_obj[6, :, :], 2) * dx + 
+    sum(pop_obj[7, :, :] .* pop_obj[9, :, :], 2) * dx) ./ num_sb_tot
+  
+  time_to_max_g = findmax(mean_g_pop)[2]
+  final_g = mean_g_pop[end]
+ 
   #spread indices
   num_locs = size(pop_obj)[2]
   pop_at_x = sum(pop_obj[[3, 6, 9], :, :], 1) #combine the populations of RR, Rr and rr
@@ -101,7 +113,7 @@ end
   
   pro_rr_sur = sum(tot_rr_at_t) / sum(tot_pop_at_t)
 
-  return [tot_pop_at_t[end], occ_x_all[end], R_50, spread_rate, pro_rr_sur]
+  return [tot_pop_at_t[end], occ_x_all[end], R_at_t[end], R_50, spread_rate, pro_rr_sur, time_to_max_g, maximum(mean_g_pop), final_g]
   
 end
   
@@ -133,7 +145,7 @@ push!(pars, (transpose(convert(Array{Float64}, passed_dat[i, 13:31])), param_fix
     int_loc_RR, int_loc_Rr, int_loc_rr, resist_G, herb_app_loc))
 end
 
-output = pmap(sense_tester, pars[1:9]);
+output = pmap(sense_tester, pars);
   
 df_out = DataFrame(transpose(hcat(output...)));
 names!(df_out, convert(Array{Symbol, 1}, ["int_pop_tot", "ls_size", "dx", "dg", "int_g", 
@@ -141,9 +153,9 @@ names!(df_out, convert(Array{Symbol, 1}, ["int_pop_tot", "ls_size", "dx", "dg", 
   "germ_prob", "fec0", "fec_cost", "fec_max", "dd_fec", "herb_effect", "g_prot", "seed_sur", 
   "pro_exposed", "scale_pollen", "shape_pollen", "seed_pro_short", "seed_mean_dist_short", 
   "pro_seeds_to_mean_short", "seed_mean_dist_long", "pro_seeds_to_mean_long", "final_ab_pop", "final_x_occ", 
-  "R_50", "mean_spread", "pro_rr_sur"]));
+  "final_R", "R_50", "mean_spread", "pro_rr_sur", "time_2_max_g", "max_g", "final_g"]));
 
 # write the data frame to .csv file 
 #cd("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/");
-cd("/Users/shauncoutts/BG_pop_model/model_output");
+cd("/Users/shauncoutts/BG_pop_model");
 writetable("senes_runs.csv", df_out);

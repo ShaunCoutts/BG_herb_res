@@ -20,9 +20,9 @@ function seed_disp_mat_builder_1D!(disp_mat::Array{Float64, 2}, res::Float64, pr
   # do the first set of calcualtions for the first location x to every other
   d_raw_0 = 0.0 # the weibul is 0 at x = 0, notice second term in equatioon below 
   dist = all_locs[2]
-  d_raw_1 = pro_short * scale_short * dist ^ (shape_short - 2) * 
+  d_raw_1 = pro_short * scale_short * shape_short * dist ^ (shape_short - 2) * 
     exp(-scale_short * dist ^ shape_short) + (1 - pro_short) * scale_long * 
-    dist ^ (shape_long - 2) * exp(-scale_long * dist ^ shape_long)
+    shape_long * dist ^ (shape_long - 2) * exp(-scale_long * dist ^ shape_long)
   #trapazoidal intergrate to get total density from dist = 0 to dist = 0.5 * res, assume all seeds go to dist_0
   raw_kernel[1] = min(d_raw_0, d_raw_1) * res * 0.5 + res * 0.25 * abs(d_raw_0 - d_raw_1)
   
@@ -30,9 +30,9 @@ function seed_disp_mat_builder_1D!(disp_mat::Array{Float64, 2}, res::Float64, pr
  
   @fastmath for x in 2:(length(all_locs) - 1)
     dist = all_locs[x + 1]
-    d_raw_1 = pro_short * scale_short * dist ^ (shape_short - 2) * 
+    d_raw_1 = pro_short * scale_short * shape_short * dist ^ (shape_short - 2) * 
       exp(-scale_short * dist ^ shape_short) + (1 - pro_short) * scale_long * 
-      dist ^ (shape_long - 2) * exp(-scale_long * dist ^ shape_long)
+      shape_long * dist ^ (shape_long - 2) * exp(-scale_long * dist ^ shape_long)
     #trapazoidal intergrate to get total density from dist_0 to dist_1, assume all seeds go to dist_0
     raw_kernel[x] = min(d_raw_0, d_raw_1) * res + res * 0.5 * abs(d_raw_0 - d_raw_1)
     
@@ -79,24 +79,24 @@ function seed_disp_mat_builder_2D!(disp_mat::Array{Float64, 2}; res = 1, pro_sho
   for y in 1:length(all_locs)
     for x in 1:length(all_locs)
       dist_0 = sqrt((all_locs[origin[1]] - all_locs[x] - res * 0.5) ^ 2 + (all_locs[origin[2]] - all_locs[y] - res * 0.5) ^ 2) 
-      p_0 = area_correction * (pro_short * scale_short * dist_0 ^ (shape_short - 2) * 
+      p_0 = area_correction * (pro_short * scale_short * shape_short * dist_0 ^ (shape_short - 2) * 
 	exp(-scale_short * dist_0 ^ shape_short) + (1 - pro_short) * scale_long * 
-	dist_0 ^ (shape_long - 2) * exp(-scale_long * dist_0 ^ shape_long))
+	shape_long * dist_0 ^ (shape_long - 2) * exp(-scale_long * dist_0 ^ shape_long))
       
       dist_1 = sqrt((all_locs[origin[1]] - all_locs[x] + res * 0.5) ^ 2 + (all_locs[origin[2]] - all_locs[y] - res * 0.5) ^ 2) 
-      p_1 = area_correction * (pro_short * scale_short * dist_1 ^ (shape_short - 2) * 
+      p_1 = area_correction * (pro_short * scale_short * shape_short * dist_1 ^ (shape_short - 2) * 
 	exp(-scale_short * dist_1 ^ shape_short) + (1 - pro_short) * scale_long * 
-	dist_1 ^ (shape_long - 2) * exp(-scale_long * dist_1 ^ shape_long))
+	shape_long * dist_1 ^ (shape_long - 2) * exp(-scale_long * dist_1 ^ shape_long))
 	
       dist_2 = sqrt((all_locs[origin[1]] - all_locs[x] - res * 0.5) ^ 2 + (all_locs[origin[2]] - all_locs[y] + res * 0.5) ^ 2) 
-      p_2 = area_correction * (pro_short * scale_short * dist_2 ^ (shape_short - 2) * 
+      p_2 = area_correction * (pro_short * scale_short * shape_short * dist_2 ^ (shape_short - 2) * 
 	exp(-scale_short * dist_2 ^ shape_short) + (1 - pro_short) * scale_long * 
-	dist_2 ^ (shape_long - 2) * exp(-scale_long * dist_2 ^ shape_long))
+	shape_long * dist_2 ^ (shape_long - 2) * exp(-scale_long * dist_2 ^ shape_long))
       
       dist_3 = sqrt((all_locs[origin[1]] - all_locs[x] + res * 0.5) ^ 2 + (all_locs[origin[2]] - all_locs[y] + res * 0.5) ^ 2) 
-      p_3 = area_correction * (pro_short * scale_short * dist_3 ^ (shape_short - 2) * 
+      p_3 = area_correction * (pro_short * scale_short * shape_short * dist_3 ^ (shape_short - 2) * 
 	exp(-scale_short * dist_3 ^ shape_short) + (1 - pro_short) * scale_long * 
-	dist_3 ^ (shape_long - 2) * exp(-scale_long * dist_3 ^ shape_long))
+	shape_long * dist_3 ^ (shape_long - 2) * exp(-scale_long * dist_3 ^ shape_long))
       
       raw_kernel[y, x] = 0.25 * res^2 * (p_0 + p_1 + p_2 + p_3) 
     end
