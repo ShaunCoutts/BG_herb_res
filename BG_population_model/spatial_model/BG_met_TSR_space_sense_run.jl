@@ -107,8 +107,14 @@ end
     survival_at_t!(pop_ab_ph_Rr, ["RR", "Rr"], "Rr", convert(Array{Int64, 1}, ones(length(landscape)) + 1), sur_pre_calc)
     survival_at_t!(pop_ab_ph_rr, ["RR", "Rr"], "rr", convert(Array{Int64, 1}, ones(length(landscape)) + 1), sur_pre_calc)
     
-    tot_pop_at_t[t] = (sum(pop_ab_ph_RR) + sum(pop_ab_ph_Rr) + sum(pop_ab_ph_rr)) * dg * dx 
-    tot_rr_at_t[t] = sum(pop_ab_ph_rr) * dg * dx
+    sur_non_exposed = (1 - pro_exposed) / (1 + exp(-base_sur))
+    
+    rr_at_t = pop_ab_ph_rr - (pop_sb_rr * germ_prob * sur_non_exposed)
+    Rr_at_t = pop_ab_ph_Rr - (pop_sb_Rr * germ_prob * sur_non_exposed)
+    RR_at_t = pop_ab_ph_RR - (pop_sb_RR * germ_prob * sur_non_exposed)
+    
+    tot_pop_at_t[t] = (sum(RR_at_t) + sum(Rr_at_t) + sum(rr_at_t)) * dg * dx 
+    tot_rr_at_t[t] = sum(rr_at_t) * dg * dx
   end
   
   pro_rr_sur = sum(tot_rr_at_t) / sum(tot_pop_at_t)

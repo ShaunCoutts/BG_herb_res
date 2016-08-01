@@ -87,8 +87,8 @@ function param_filtering(num_par_comb::Int64, file_loc_out::AbstractString, out_
   l_g_prot, u_g_prot = 0.1, 2.0
   l_seed_sur, u_seed_sur = 0.22, 0.79
   l_pro_exposed, u_pro_exposed = 0.5, 1
-  l_scale_pollen, u_scale_pollen = 25.6, 38.4 
-  l_shape_pollen, u_shape_pollen = 2.656, 3.984 
+  l_scale_pollen, u_scale_pollen = 25.6, 38.4 #note that I do not use the confidence limtis from the paper since they issue a strong warning that scalea nd shape are not indepenedent and cannot be used as such 
+  l_shape_pollen, u_shape_pollen = 2.656, 3.984 # Instead we take est * (0.8, 1.2)
   l_seed_pro_short, u_seed_pro_short = 0.384, 0.576
   l_seed_mean_dist_short, u_seed_mean_dist_short = 0.464, 0.696 
   l_pro_seeds_to_mean_short, u_pro_seeds_to_mean_short = 0.352, 0.528 

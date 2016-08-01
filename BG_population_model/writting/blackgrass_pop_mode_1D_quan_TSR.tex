@@ -120,46 +120,25 @@ The third mixing kernel mixes both target site and metabolic resistance genes sp
 	d_p(i, j) = \frac{c}{a^{2/c}\Gamma\left(\dfrac{2}{c} \right)\Gamma\left(1 - \dfrac{2}{c} \right)}\left( 1 + \dfrac{\delta_{i,j}^c}{a} \right)^{-1} 
 \end{equation} 
 This is a logistic kernel, which was found to be the one of the best fitting pollen dispersal kernels for oil seed rape \citep{Klei2006}. This is a two parameter kernel with a scale, $a$, and shape, $c$, parameter, where $\delta_{i,j}$ is the distance between locations $i$ and $j$. For each maternal location $x_m$ the amount of each pollen type (i.e. a unique value of $g$ and $G$) arriving is divided by the total amount of pollen from every target site resistance genotype, from every location for every metabolic resistance score $g$ that arrives at the maternal location $x_m$ (double integration in denominator of Eq. \ref{eq:fecund}). The probability that a seed produced at maternal location $x_m$ is dispersed to location $x'$ is 
-%\begin{equation}\label{eq:seed_disp}
-%	d_m(i, j) = l \mu_1 \omega_1 \delta_{ij}^{\omega_1 - 2}e^{-\mu_1 \delta_{ij}^{\omega_1}} + (1 - l) \mu_2 \omega_2 \delta_{ij}^{\omega_2 - 2}e^{-\mu_2\delta_{ij}^{\omega_2}}
-%\end{equation} 
-Weibull dispersal kernel developed by \cite{Colb2001} to model seed dispersal of black grass where $\delta_{ij}$ is the distance between locations $i$ and $j$, $l$ is the proportion of seeds in the long dispersal kernel rather than the short dispersal kernel, $\mu_1$ and $\mu_2$ control scale of the dispersal kernel for the long and short parts of the kernel, $\omega_1$ and $\omega_2$ are shape parameters for the long and short dispersal kernels.    
-
-$\mu_1$ = mean dispersal distance long
-$\mu_2$ = mean dispersal distance short
-$\omega_1$ = proportion of seeds in the long distance kernel that disperse less than $\mu_1$
-$\omega_2$ = proportion of seeds in the short distance kernel that disperse less than $\mu_2$
-
 \begin{subequations}\label{eq:seed_disp}
 \begin{equation}\label{eq:seed_kern}
-	d_m(i, j) = l 
+	d_m(i, j) = \alpha \Upsilon_1 \Omega_1 \delta_{ij}^{\Omega_1 - 2} e^{-\Upsilon_1 \delta_{ij}^{\Omega_1}} + (1 - \alpha) \Upsilon_2 \Omega_2 \delta_{ij}^{\Omega_2 - 2} e^{-\Upsilon_2 \delta_{ij}^{\Omega_2}}  
 \end{equation}
 \begin{equation}\label{eq:shape}
-	\Omega_k
+	\Omega_k = \frac{1}{1 + \text{ln}(1 - \omega_k)}
 \end{equation}
 \begin{equation}\label{eq:scale}
-	\\Upsilon_k
+	\Upsilon_k = \frac{\Omega_k - 1}{\Omega_k \mu_k^{\Omega_k}}
 \end{equation}
 \end{subequations} 
-
-
-  shape_short = 1 / (log(1 - pro_seeds_to_mean_short) + 1)
-  shape_long = 1 / (log(1 - pro_seeds_to_mean_long) + 1)
-
-  scale_short = (shape_short - 1) / (shape_short * mean_dist_short ^ shape_short) 
-  scale_long = (shape_long - 1) / (shape_long * mean_dist_long ^ shape_long) 
- 
-  d_raw_1 = pro_short * scale_short * dist ^ (shape_short - 2) * 
-    exp(-scale_short * dist ^ shape_short) + (1 - pro_short) * scale_long * 
-    dist ^ (shape_long - 2) * exp(-scale_long * dist ^ shape_long)
-
+This double Weibull dispersal kernel was found to be the best fit to black grass seed dispersal in a majority of cases \citep{Colb2001}. $\delta_{ij}$ is the distance between locations $i$ and $j$, $\alpha$ is the proportion of seeds in the short dispersal kernel rather than the long dispersal kernel, $\mu_k$ is the distance most seeds disperse to under kernel $k \in \{1, 2\}$. The skew of kernel $k$ is controlled by $\omega_k$, the proportion of seeds that disperse up to distance $\mu_k$. 
 
 \section{Parametrization}
-Several of the population model parameters, particularly those relating to the quantitative genetic selection model, are unknown for our study system. However, we do have field observations with estimates of above ground plant densities and susceptibility to herbicide. While we cannot directly parametrize the model with this data, we can use it to constrain the parameter space to regions that produce sensible results (i.e. those that match up with the observed densities). To do this we run the system model over 50 time steps under different parameter combinations under continual herbicide application. We can then see which parameter combinations resulted in above ground populations like those we observe in the field.  
+Several of the population model parameters, particularly those relating to the quantitative genetic selection model, are unknown for our study system. However, we do have field observations with estimates of above ground plant densities and susceptibility to herbicide. While we cannot directly parametrize the model with this data, we can use it to constrain the parameter space to regions that produce sensible results (i.e. those that match up with the observed densities). We use Latin hypercube sampling to evenly sample 24,000 parameter combinations across the parameter space. We run each set of parameters for 50 time steps with constant herbicide use, starting with an initial population of three seeds, one in each of the center three locations, with an initial frequency if the target site resistant genotype Rr, set by int$_{Rr}$. For each run we record the above ground post herbicide population after 50 time steps. From this dataset of 24,000 parameter combinations we filter out those parameter combinations that resulted in unrealistic population dynamics. We use data from 140 fields across England to define what realistic, resistant, populations look like. These fields were visually inspected in ??? - ???, and every 20 m by 20 m grid square was assessed as being in one of four density classes; 'absent' (0 plants/20m$^2$), 'low' (1 -- 160 plants/20m$^2$), 'medium' (160 -- 450 plants/20m$^2$), 'high'(450 -- 1450 plants/20m$^2$) and very high ($>$1450 plants/20m$^2$), coded as \{0, 1, 2, 3, 4\}. The resistance status of each field to the three most common herbicide active ingredients was determined in a glass house trial. Seeds from 100 seed heads from 10 different locations in each field were taken post herbicide application (July -- August). These seeds were raised in a glass house and divided into three groups of 12 -- 19 plants (median 18) for each field. Each group had ??? of the herbicide 'Atlantis', 'Fenoxaprop' or 'Cycloxydim' applied, mortality and any damage were recorded after ??? days. We assume that after 50 years of continuous herbicide use black grass population will be resistant, thus, we only included highly resistant fields, where survival to all herbicides was $>80\%$ (???? fields). To set the lower and upper number of blackgrass plants in winter wheat per hectare, after herbicide application, we use the mean density class of the highly resistant fields with the minimum (0.94) and maximum (4) observed mean density class. We then used the observed number of plants per 20m$^2$for each density class (calculated from \citealt{Quee2011}) and a randomization process (see appendix 1) to determine that post herbicide populations should fall between 16,348 and 132,000 plants per ha. Because our model is run on a 1D landscape, while the data are given in plants/m$^2$, estimated at a 20m resolution, we assume the modelled population occurs in a 20 m x 500 m, 1 ha field. Note that this process is not intended to definitively parametrize the model, rather is acts as a sanity check on the model outcome, removing parameter combinations that result in black grass which are never observed in the field data. Only four parameters determined if a parameter set passed this sanity check, $f_d$, $f_\text{max}$, $f_r$ and $\phi_b$ see appendix 1 for more details.
 
 For this approach to work well we need to constrain the parameter space as much as possible \textit{a prior}. Estimates and sources for each parameter are given in Table \ref{tab:parameters}.          
 
-\begin{longtable}[h]{x{1.5cm} x{2.1cm} x{2cm} x{1.5cm} p{3.5cm} p{3cm}} \label{tab:parameters}\\
+\begin{longtable}[h]{x{1.5cm} x{2cm} x{2.1cm} x{1.5cm} p{3.5cm} p{3cm}} \label{tab:parameters}\\
 \caption{System model parameters}\\
 	\hline
 	\textbf{parameter} & \textbf{units} & \textbf{range} & \textbf{estimate} & \textbf{description} & \textbf{source}\\
@@ -177,7 +156,15 @@ For this approach to work well we need to constrain the parameter space as much 
 	$\varsigma$ & prop. & 0.5 -- 1$^\dag$ & 0.8$^\blacklozenge$ & proportion of above ground individuals exposed to herbicide & HGCA\\   		
 	$\xi$ & logits & $2s_0$ -- $3s_0^\dag$ & no est$^\ddag$ & reduction in survival due to herbicide (only meaningful in relation to $s_0$ & simulation\\	
 	$\rho$ & logits & $0.1\xi$ -- $2\xi$ & no est$^\ddag$ & protection against herbicide conferred by a one unit increase in $g$, only meaningful in relation to $\xi$ & simulation\\
-	int$_{Rr}$ & proportion & 0.001 -- 0.2 & & initial frequency of resistant target site genotype. All other individuals are assumed to be of genotype rr & simulation.'\\     
+	int$_{Rr}$ & proportion & 0.001 -- 0.2 & & initial frequency of resistant target site genotype. All other individuals are assumed to be of genotype rr & simulation.'\\
+	\multicolumn{6}{l}{\underline{Dispersal}}\\
+	$\alpha$ & prop. & 0.38 -- 0.58$^\dag$ & 0.48 & proportion of seeds in short dispersal kernel & \cite{Colb2001}\\   
+	$\mu_1$ & m & 0.46 -- 0.7$^\dag$ & 0.58 & distance at which maximum number of seeds are found in short seed dispersal kernel & \cite{Colb2001}\\
+	$\mu_2$ & m & 1.32 -- 1.98$^\dag$ & 1.65 & distance at which maximum number of seeds are found in long seed dispersal kernel & \cite{Colb2001}\\
+	$\omega_1$ & prop. & 0.35 -- 0.53$^\dag$ & 0.44 & proportion of seeds that disperse up to distance $\mu_1$ in short seed dispersal kernel & \cite{Colb2001}\\
+	$\omega_2$ & prop. & 0.31 -- 0.47$^\dag$ & 0.39 & proportion of seeds that disperse up to distance $\mu_2$ in long seed dispersal kernel & \cite{Colb2001}\\
+	$a$ & & 25.6 --38.4$^\dag$ & 32.3 & scale parameter for pollen dispersal kernel & \cite{Klei2006}\\
+	$c$ & & 2.66 -- 3.98$^\dag$ & 3.32 & shape parameter for pollen dispersal kernel & \cite{Klei2006}\\
 	\hline
 	\multicolumn{6}{l}{$\blacklozenge$ sourced from grey literature, unpublished data and expert opinion}\\
 	\multicolumn{6}{l}{$\dag$ range not available from literature, simulation used to find plausible range}\\
@@ -185,20 +172,16 @@ For this approach to work well we need to constrain the parameter space as much 
 	 range}
 \end{longtable}
 
-We use Latin hypercube sampling to evenly sample 24,000 parameter combinations across the parameter space. We run each set of parameters for 50 time steps with constant herbicide use, starting with an initial population of three seeds, one in each of the center three locations, with an initial frequency if the target site resistant genotype Rr, set by int$_{Rr}$. For each run we record the above ground post herbicide population after 50 time steps.    
-
-From this dataset of 24,000 parameter combinations we filter out those parameter combinations that resulted in unrealistic population dynamics. We use data from 140 fields across England to define what realistic, resistant, populations look like. These fields were visually inspected in ??? - ???, and every 20 m by 20 m grid square was assessed as being in one of four density classes; 'absent' (0 plants/20m$^2$), 'low' (1 -- 160 plants/20m$^2$), 'medium' (160 -- 450 plants/20m$^2$), 'high'(450 -- 1450 plants/20m$^2$) and very high ($>$1450 plants/20m$^2$), coded as \{0, 1, 2, 3, 4\}. The resistance status of each field to the three most common herbicide active ingredients was determined in a glass house trial. Seeds from 100 seed heads from 10 different locations in each field were taken post herbicide application (July -- August). These seeds were raised in a glass house and divided into three groups of 12 -- 19 plants (median 18) for each field. Each group had ??? of the herbicide 'Atlantis', 'Fenoxaprop' or 'Cycloxydim' applied, mortality and any damage were recorded after ??? days. We assume that after 50 years of continuous herbicide use black grass population will be resistant, thus, we only included highly resistant fields, where survival to all herbicides was $>80\%$ (???? fields). To set the lower and upper number of blackgrass plants in winter wheat per hectare, after herbicide application, we use the mean density class of the highly resistant fields with the minimum (0.94) and maximum (4) observed mean density class. We then used the observed number of plants per 20m$^2$for each density class (calculated from \citealt{Quee2011}) and a randomization process (see appendix 1) to determine that post herbicide populations should fall between 16,348 and 132,000 plants per ha. Because our model is run on a 1D landscape, while the data are given in plants/m$^2$, estimated at a 20m resolution, we assume the modelled population occurs in a 20 m x 500 m, 1 ha field. Note that this process is not intended to definitively parametrize the model, rather is acts as a sanity check on the model outcome, removing parameter combinations that result in black grass which are never observed in the field data. Only four parameters determined if a parameter set passed this sanity check, $f_d$, $f_\text{max}$, $f_r$ and $\phi_b$ see appendix 1 for more details.     
-
 \subsection{Sensitivity analysis}
 The sanity check resulted in 11,710 parameter combinations that produced black grass populations which fell in the acceptable range. We performed a global sensitivity analysis on this set of 11,710 'realistic' parameter sets to explore how different parameters, and their interactions, affected the behaviour of the model. We followed the approach of \cite{Cout2014} and fit Boosted Regression Trees (BRTs) to the dataset of 11,710 sanity checked parameter combinations to find relationships between the parameter values and the model behaviours of interest. We are primarily interested in three aspects of the models behaviour. We measure the speed at which target site resistance establishes in the population as the time step, $t$, at which the resistant target site allele, R, makes up 50\% of all target site alleles in the population  
 \begin{equation}\label{eq:t_R50}
 	t_{R50} = \text{first } t \text{ when } \frac{\left(2\int_x\int_g b(g, \text{RR}, x, t) + \int_x\int_g b(g, \text{Rr}, x, t) \right)\text{d}x\text{d}g}{2\sum_{\forall G} \int_x\int_g b(g, G, x, t)\text{d}x\text{d}g} \geq 0.5
-\end{equation}.    
+\end{equation}
 Secondly we measure how quickly the black grass population spread across the landscape as $\overline{C}$, the mean number of new locations with at $\geq$ one seed in the seed bank at each time step. So that slow expansion due to a full landscape does not affect the estimate of spread speed the mean is only taken over time steps where $<$90\% of locations have $\geq 1$ seed in the seed bank. Finally we measure the relative contributions of metabolic resistance and target site resistance to the survival of black grass under herbicide as the mean proportion of individuals of target site genotype rr that survived until seed production taken over 50 time steps.  
 \begin{equation}\label{eq:mean_pro_rr}
-	\overline{P}_{rr} = \frac{\sum_{t=1}^{t=T}\int_x\int_g n(g, \text{rr}, x, t)s(g, \text{rr}, x, h_x = 1)\text{d}g\text{d}x}{\sum_{t=1}^{t=T}\int_x M(h_x = 1, x, t)\text{d}x}
-\end{equation} .
-If $\overline{P}_{rr} = 0$ then all of the individuals that survived until seed set did so due to target site resistance and if $\overline{P}_{rr} = 1$ then all survival until seed production was attributable to metabolic resistance.   
+	\overline{P}_{rr} = \frac{\sum_{t=1}^{t=T}\int_x\int_g n(g, \text{rr}, x, t)s(g, \text{rr}, x, h_x = 1) - n(g, \text{rr}, x, t)\dfrac{1 - \varsigma}{1 + e^{-s_0}}\text{d}g\text{d}x}{\sum_{t=1}^{t=T}\sum_{\forall G}\int_x\int_g n(g, G, x, t)s(g, G, x, h_x = 1) - n(g, G, x, t)\dfrac{1 - \varsigma}{1 + e^{-s_0}}\text{d}g\text{d}x}
+\end{equation} 
+If $\overline{P}_{rr} = 0$ then all of the individuals exposed to herbicide that survived until seed set did so due to target site resistance and if $\overline{P}_{rr} = 1$ then all survival in exposed individuals until seed production was attributable to metabolic resistance.   
 
 \bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
 \bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
