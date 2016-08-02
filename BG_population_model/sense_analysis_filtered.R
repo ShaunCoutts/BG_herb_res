@@ -6,11 +6,19 @@ sen_dat = read.csv("/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_populat
   header = TRUE, stringsAsFactors = FALSE)
 
 sen_dat$rel_g_pro = sen_dat$g_prot / sen_dat$herb_effect
+sen_dat$max_g_sur = 1 / (1 + exp(-(sen_dat$base_sur - (sen_dat$herb_effect - 
+  pmin(sen_dat$herb_effect, sen_dat$g_prot * sen_dat$max_g)))))  
   
 # check the relationship between the measures of pop_performance
-plot(sen_dat[, c('final_ab_pop', 'final_x_occ', 'R_50', 'mean_spread', 'pro_rr_sur')]) #add others from new runs
+plot(sen_dat[, c('final_ab_pop', 'final_x_occ', 'final_R', 'R_50', 'mean_spread', 'pro_rr_sur', 'time_2_max_g', 
+  'max_g', 'final_g', 'max_g_sur')]) #add others from new runs
 
-# final_x_occ is 1:1 correlated with mean_spread also R_50 and pro_rr_sur have some sort of strange relationship 
+# final_x_occ is 1:1 correlated with mean_spread also R_50 and final_R are closley correlated since most runs did not reach 100% R. 
+# final_R and pro_rr_sur have a very tight correlation, as one likely blocks the other so best 3 to look at are 
+# final_R, mean_spread and max_g_sur
+
+TODO: put the correlation plots of model summaries along with matrix plot of predictors, and BRT sense output for each measure
+in a PDF, also fit the BRTs for each measure, so should be a 5 page summary pdf.
 
 # check for relationship between the predictors
 
@@ -44,8 +52,8 @@ pro_rr_sum = summary(BRT_pro_rr, n.trees = op_trees, plotit = FALSE)
 
 plot_inds = c(4, 8, 1, 10)
 plot_list = list()
-par_sym = c('int[Rr]', 'phi[e]', 'f[0]', 'f[r]', 'f[max]', 'f[d]', 'xi','rho / xi', 'phi[b]', 'varsigma', 'a', 'c', '1 - l', 'mu[2]',
-  'omega[2]', 'mu[1]', 'omega[1]')
+par_sym = c('int[Rr]', 'phi[e]', 'f[0]', 'f[r]', 'f[max]', 'f[d]', 'xi','rho / xi', 'phi[b]', 'varsigma', 'a', 'c', 'alpha', 'mu[1]',
+  'omega[1]', 'mu[2]', 'omega[2]')
 #make a table to print 
 rel_inf_df = data.frame(parameter = c( ,
    'phi[e]', 'a', seed_pro_short, shape_pollen, seed_mean_dist_short,  rep('a', 8)), 
