@@ -60,7 +60,7 @@ phen_rot_df$last4year =  rowSums(phen_rot_df[,c('crop_y_2014', 'crop_y_2013', 'c
   
 # look at just the populations that have recently been in wheat 3 out of the last 4 year and final year was in winter wheat
 phen_l4ww = phen_rot_df[phen_rot_df$last4year >= 0.75, ]
-phen_l4ww = phen_ww[phen_ww$crop_y_2014 == 'ww', ]
+phen_l4ww = phen_l4ww[phen_l4ww$crop_y_2014 == 'ww', ]
   
 #also look at only the populations thag spent 2013 and 2014 in winter wheat
 phen_l2ww = phen_rot_df[phen_rot_df$last2years, ]
