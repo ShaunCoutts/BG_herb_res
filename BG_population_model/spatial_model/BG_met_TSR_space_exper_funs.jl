@@ -9,16 +9,16 @@ function one_step_foward!(next_t::Int64, RR_ls::Array{Float64, 3},  Rr_ls::Array
    rr_ls::Array{Float64, 3}, RR_ab_pop::Array{Float64, 2}, Rr_ab_pop::Array{Float64, 2}, 
    rr_ab_pop::Array{Float64, 2}, pollen_RR::Array{Float64, 2}, pollen_Rr::Array{Float64, 2},
    pollen_rr::Array{Float64, 2}, total_pollen::Array{Float64, 1}, RR_newseed::Array{Float64, 2}, 
-   Rr_newseed::Arr{Float, 2}, rr_newseed::Array{Float64, 2}, dg::Float64, seed_sur::Float64, 
-   germ_prob::Float64, sur_tup::Tuple{Float64, Array{Float64, 1}}, resist_G::Array{ASCIIString, 1},
-   herb_application::Array{Int64, 1}, pollen_disp_mat::Array{Float64, 2}, fec_max::Float64, 
-   dd_fec::Float64, g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, 
+   Rr_newseed::Array{Float64, 2}, rr_newseed::Array{Float64, 2}, dg::Float64, seed_sur::Float64, 
+   germ_prob::Float64, sur_tup::Tuple{Float64, Array{Float64, 1}}, resist_G::Array{String, 1},
+   herb_application::Array{Int64, 1}, pollen_disp_mat::Array{Float64, 2}, seed_disp_mat_1D::Array{Float64, 2}, 
+   fec_max::Float64, dd_fec::Float64, g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, 
    g_effect_fec::Array{Float64, 1})
 
   #move seeds to the next timestep, killing as we do so
-  seedbank_update!(RR_ls[:, :, next_t], RR_ls[:, :, next_t - 1], seed_sur)
-  seedbank_update!(Rr_ls[:, :, next_t], Rr_ls[:, :, next_t - 1], seed_sur)
-  seedbank_update!(rr_ls[:, :, next_t], rr_ls[:, :, next_t - 1], seed_sur)
+  RR_ls[:, :, next_t] = RR_ls[:, :, next_t - 1] * seed_sur
+  Rr_ls[:, :, next_t] = Rr_ls[:, :, next_t - 1] * seed_sur
+  rr_ls[:, :, next_t] = rr_ls[:, :, next_t - 1] * seed_sur
   
   #germination   
   new_plants!(RR_ab_pop, RR_ls[:, :, next_t], germ_prob)
@@ -48,7 +48,7 @@ function one_step_foward!(next_t::Int64, RR_ls::Array{Float64, 3},  Rr_ls::Array
   # disperse the seeds
   RR_ls[:, :, next_t] = RR_ls[:, :, next_t]  + (RR_newseed * seed_disp_mat_1D)
   Rr_ls[:, :, next_t] = Rr_ls[:, :, next_t]  + (Rr_newseed * seed_disp_mat_1D)
-  rr_ls[:, :, next_t] = rr_landscape[:, :, next_t]  + (rr_newseed * seed_disp_mat_1D)
+  rr_ls[:, :, next_t] = rr_ls[:, :, next_t]  + (rr_newseed * seed_disp_mat_1D)
 
   return nothing
   
@@ -60,7 +60,7 @@ function hot_seed_injection!(RR_ls_empty::Array{Float64, 3}, Rr_ls_empty::Array{
   rr_ls_empty::Array{Float64, 3}, RR_ls_naive::Array{Float64, 3}, Rr_ls_naive::Array{Float64, 3}, 
   rr_ls_naive::Array{Float64, 3}, RR_ls_expos::Array{Float64, 3}, Rr_ls_expos::Array{Float64, 3}, 
   rr_ls_expos::Array{Float64, 3}, num_RR::Float64, num_Rr::Float64, num_rr::Float64, 
-  locs::Array{Float64, 1}, t_inject::Int64, inject_mean_g::Float64, inject_sd_g::Float64, 
+  locs::Array{Int64, 1}, t_inject::Int64, inject_mean_g::Float64, inject_sd_g::Float64, 
   g_vals::Array{Float64, 1})
   
   RR_ls_empty[:, locs, t_inject] += pdf(Normal(inject_mean_g, inject_sd_g), g_vals) * num_RR
@@ -96,11 +96,11 @@ function pop_snapshots(RR_ls::Array{Float64, 3}, Rr_ls::Array{Float64, 3},
   output[4, :] = sum(output[1:3, :], 1)
  
   # mean_g
-  output[5, :] = (sum((sum(RR_ls, 2) * dx) .* g_vals, 1) * dg) ./ output[1, :]
-  output[6, :] = (sum((sum(Rr_ls, 2) * dx) .* g_vals, 1) * dg) ./ output[2, :]
-  output[7, :] = (sum((sum(rr_ls, 2) * dx) .* g_vals, 1) * dg) ./ output[3, :]
+  output[5, :] = vec(sum((sum(RR_ls, 2) * dx) .* g_vals, 1) * dg) ./ output[1, :]
+  output[6, :] = vec(sum((sum(Rr_ls, 2) * dx) .* g_vals, 1) * dg) ./ output[2, :]
+  output[7, :] = vec(sum((sum(rr_ls, 2) * dx) .* g_vals, 1) * dg) ./ output[3, :]
   # population mean_g 
-  output[8, :] = (sum(((sum(RR_ls, 2) + sum(Rr_ls, 2) + sum(rr_ls, 2)) * dx) .* g_vals, 1) * dg) ./ output[4, :]
+  output[8, :] = vec(sum(((sum(RR_ls, 2) + sum(Rr_ls, 2) + sum(rr_ls, 2)) * dx) .* g_vals, 1) * dg) ./ output[4, :]
   
   # % landscape occupied 
   output[9, :] = sum(sum(RR_ls, 1) * dg .> 1.0, 2) / size(RR_ls)[2]
@@ -113,18 +113,15 @@ end
 
 # run an entire sceanrio to produce a set of data for a plot of three measures of populaiton 
 # resistance and extent over time (enough data for 9 plots, 3 measures x 3 sink pop types)
+# return is a tuple of (11 x tim_steps array empty ls, 11 x tim_steps array naive ls, 11 x tim_steps array exposed ls)
 function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, dx::Float64, 
   num_iter::Int64, burnin::Int64, num_inject::Float64, pro_R_inject::Float64, inject_mean_g::Float64, 
-  inject_sd_g::Float64, inject_locs::Array{Float64, 1}, int_rr::Float64, int_mean_g::Float64,
-  int_sd_g::Float64,
-  seed_sur::Float64, germ_prob::Float64, resist_G::Array{ASCIIString, 1}, fec_max::Float64, 
-  dd_fec::Float64, fec0::Float64, fec_cost::Float64, base_sur::Float64, herb_effect::Float64, 
-  g_prot::Float64, pro_exposed::Float64,
-  
-  seed_pro_short::Float64, seed_mean_dist_shor::Float64, pro_seeds_to_mean_short::Float64, 
-  seed_mean_dist_long::Float64, pro_seeds_to_mean_long::Float64, scale_pollen::Float64, shape_pollen::Float64,
-  offspring_sd::Float64, 
-  )
+  inject_sd_g::Float64, inject_locs::Array{Int64, 1}, int_rr::Float64, int_mean_g::Float64,
+  int_sd_g::Float64, seed_sur::Float64, germ_prob::Float64, resist_G::Array{String, 1}, 
+  fec_max::Float64, dd_fec::Float64, fec0::Float64, fec_cost::Float64, base_sur::Float64, 
+  herb_effect::Float64, g_prot::Float64, pro_exposed::Float64, seed_pro_short::Float64, 
+  seed_mean_dist_shor::Float64, pro_seeds_to_mean_short::Float64, seed_mean_dist_long::Float64, 
+  pro_seeds_to_mean_long::Float64, scale_pollen::Float64, shape_pollen::Float64, offspring_sd::Float64)
 
   # set of temporary holdoing matricies to set aside some memory, so these don't have to be rebuilt at each iteration
   # a set of matrices to hold the above ground populations
@@ -185,9 +182,9 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
   end 
   
   #herb application for navie and exposed populations
-  herb_app_naive = ones(x_dim)
+  herb_app_naive = convert(Array{Int64, 1}, ones(x_dim))
   herb_app_expos = deepcopy(herb_app_naive)
-  herb_app_expos = += 1 #adds one to the locations where herbicide is going to be applied 
+  herb_app_expos += 1 #adds one to the locations where herbicide is going to be applied 
   
   # run the burnin period on the exposed and niave pops
   for t in 2:burnin
@@ -196,15 +193,15 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
     one_step_foward!(t, RR_naive,  Rr_naive, rr_naive, RR_ab_pop, Rr_ab_pop, 
       rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
       Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
-      herb_app_naive, pollen_disp_mat, fec_max, dd_fec, g_mixing_kernel, 
-      g_mixing_index, g_effect_fec)
+      herb_app_naive, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+      g_mixing_kernel, g_mixing_index, g_effect_fec)
       
     # step through the exposed population letting it develope
     one_step_foward!(t, RR_expos,  Rr_expos, rr_expos, RR_ab_pop, Rr_ab_pop, 
       rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
       Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
-      herb_app_expos, pollen_disp_mat, fec_max, dd_fec, g_mixing_kernel, 
-      g_mixing_index, g_effect_fec)
+      herb_app_expos, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+      g_mixing_kernel, g_mixing_index, g_effect_fec)
       
   end
   
@@ -213,9 +210,9 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
   num_Rr_inject = 0.0
   num_rr_inject = 1 - num_RR_inject
   
-  hot_seed_injection!(RR_ls_empty, Rr_ls_empty, rr_ls_empty, RR_ls_naive, Rr_ls_naive, 
-    rr_ls_naive, RR_ls_expos, Rr_ls_expos, rr_ls_expos, num_RR_inject, num_Rr_inject, 
-    num_rr_inject, inject_locs, burnin + 1, inject_mean_g, inject_sd_g, g_vals)
+  hot_seed_injection!(RR_empty, Rr_empty, rr_empty, RR_naive, Rr_naive, 
+    rr_naive, RR_expos, Rr_expos, rr_expos, num_RR_inject, num_Rr_inject, 
+    num_rr_inject, inject_locs, burnin, inject_mean_g, inject_sd_g, g_vals)
   
   # run the model for num_iter under herbicide application  
   for t in (burnin + 1):(num_iter + burnin)
@@ -224,22 +221,22 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
     one_step_foward!(t, RR_naive,  Rr_naive, rr_naive, RR_ab_pop, Rr_ab_pop, 
       rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
       Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
-      herb_app_expos, pollen_disp_mat, fec_max, dd_fec, g_mixing_kernel, 
-      g_mixing_index, g_effect_fec)
+      herb_app_expos, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+      g_mixing_kernel, g_mixing_index, g_effect_fec)
       
     # step through the exposed population
     one_step_foward!(t, RR_expos,  Rr_expos, rr_expos, RR_ab_pop, Rr_ab_pop, 
       rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
       Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
-      herb_app_expos, pollen_disp_mat, fec_max, dd_fec, g_mixing_kernel, 
-      g_mixing_index, g_effect_fec)
+      herb_app_expos, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec,
+      g_mixing_kernel, g_mixing_index, g_effect_fec)
      
     # step through the empty population
     one_step_foward!(t, RR_empty,  Rr_empty, rr_empty, RR_ab_pop, Rr_ab_pop, 
       rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
       Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
-      herb_app_expos, pollen_disp_mat, fec_max, dd_fec, g_mixing_kernel, 
-      g_mixing_index, g_effect_fec)
+      herb_app_expos, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+      g_mixing_kernel, g_mixing_index, g_effect_fec)
       
   end
   
@@ -248,5 +245,13 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
   output_expos = pop_snapshots(RR_expos, Rr_expos, rr_expos, g_vals, dg, dx)
   
   return (output_empty, output_naive, output_expos)
+  
+end
+
+
+# returns the inital mean g from a given survival of exposed indivudals 
+function sur_2_g(sur::Float64, herb_ef::Float64, s0::Float64, g_pro::Float64)
+  
+  return - ((log((1 / sur) - 1) - herb_ef + s0) / g_pro)
   
 end
