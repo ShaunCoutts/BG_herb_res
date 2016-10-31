@@ -12,8 +12,8 @@ cd(file_loc_func_p)
 include("BG_met_TSR_space_exper_funs.jl")
 include("BG_met_TSR_space_pop_process.jl")
 include("BG_met_TSR_space_dispersal_functions.jl")
+include("spatial_model_plotting_script.jl")
   
-
 
 ###################################################################################################
 # script to run the translocation experiments
@@ -43,11 +43,11 @@ shape_pollen = 3.23;
 offspring_sd = 1.0;
 fec_max = 45.0;
 fec0 = 10.0;
-fec_cost = 1.0;
-dd_fec = 0.025;
+fec_cost = 0.3;
+dd_fec = 0.15;
 base_sur = 10.0; 
 herb_effect = 20.0; 
-g_prot = 1.0; 
+g_prot = 2.5; 
 pro_exposed = 0.8;
 seed_sur = 0.45;
 germ_prob = 0.52;
@@ -56,6 +56,10 @@ resist_G = ["RR", "Rr"];
 # set up the evaluation points for quantitative resistance
 g_vals = collect(lower_g : dg : upper_g);   
 
+# set up the plotting color palettes and plotting output locations
+sink_col = [HSL(0, 0, 0) HSL(180, 1.0, 0.5) HSL(220, 1.0, 0.5)]
+G_col = [HSL(0, 1, 0.7) HSL(280, 1, 0.7) HSL(125, 1, 0.7)] 
+output_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output" 
 
 # The set up the set of seeds added after the burnin period
 # Four different source populations: low mean_g and low %R, low mean_g and high %R, 
@@ -82,6 +86,57 @@ g_low_TSR_low = run_scene_trans(g_vals, x_dim, dg, dx, num_iter, burnin, num_inj
   seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
   pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd);
 
+plot_scenario(g_low_TSR_low, G_col, sink_col, burnin, output_loc, "g_low_TSR_low_overview.pdf", 1.9)
+  
+# low g and high TSR source
+g_low_TSR_high = run_scene_trans(g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, int_TSR_high,
+  inject_g_low, inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
+  resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, g_prot, pro_exposed, 
+  seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
+  pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd);
+
+plot_scenario(g_low_TSR_high, G_col, sink_col, burnin, output_loc, "g_low_TSR_high_overview.pdf", 1.9)
+
+# high g and low TSR source
+g_high_TSR_low = run_scene_trans(g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, int_TSR_low,
+  inject_g_high, inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
+  resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, g_prot, pro_exposed, 
+  seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
+  pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd);
+
+plot_scenario(g_high_TSR_low, G_col, sink_col, burnin, output_loc, "g_high_TSR_low_overview.pdf", 1.9)
+
+# high g and high TSR source
+g_high_TSR_high = run_scene_trans(g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, int_TSR_high,
+  inject_g_high, inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
+  resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, g_prot, pro_exposed, 
+  seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
+  pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd);
+
+plot_scenario(g_high_TSR_high, G_col, sink_col, burnin, output_loc, "g_high_TSR_high_overview.pdf", 1.9)
+
+
+# make some plots that show the effect of a few parameters of interest, try using pmap to speed things 
+# up a bit cuase I will have to run these modesl many times
+
+# build a parameter list with 1 variable that changes between entries
+# start with g_protection
+g_prot_var = collect(0 : 0.25 : 4)
+par_list_g_pro = []
+for i in 1:length(g_prot_var)
+  push!(par_list_g_pro, (g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, int_TSR_low,
+  inject_g_low, inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
+  resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, g_prot_var[i], pro_exposed, 
+  seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
+  pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd))
+end
+
+# TODO, write the warapper function to unpack this tuple so I can give that to pmap.
+# also need that function to return an array or tuple with a couple of summary results
+
+
+
+pmap(list_pars, runner_fun, batch_size = 3)
 
 
 
@@ -91,16 +146,12 @@ g_low_TSR_low = run_scene_trans(g_vals, x_dim, dg, dx, num_iter, burnin, num_inj
 
 
 
-1 / (1 + exp(-(base_sur - (herb_effect - int_g_high * g_prot))))
 
-run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, dx::Float64, 
-  num_iter::Int64, burnin::Int64, num_inject::Float64, pro_R_inject::Float64, inject_mean_g::Float64, 
-  inject_sd_g::Float64, inject_locs::Array{Float64, 1}, int_rr::Float64, int_mean_g::Float64,
-  int_sd_g::Float64, seed_sur::Float64, germ_prob::Float64, resist_G::Array{ASCIIString, 1}, 
-  fec_max::Float64, dd_fec::Float64, fec0::Float64, fec_cost::Float64, base_sur::Float64, 
-  herb_effect::Float64, g_prot::Float64, pro_exposed::Float64, seed_pro_short::Float64, 
-  seed_mean_dist_shor::Float64, pro_seeds_to_mean_short::Float64, seed_mean_dist_long::Float64, 
-  pro_seeds_to_mean_long::Float64, scale_pollen::Float64, shape_pollen::Float64, offspring_sd::Float64)
+
+
+
+
+
 
 
 

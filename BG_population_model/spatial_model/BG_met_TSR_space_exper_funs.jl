@@ -80,13 +80,14 @@ function hot_seed_injection!(RR_ls_empty::Array{Float64, 3}, Rr_ls_empty::Array{
 end
 
 # Takes the snapshots of the population at each timestep based on the three G landscapes for a single scenario 
-# returns a 11 x time_steps 2D array, first 4 rows give total pops (3 G types + total), next 4 mean_g (3 G types + total), 
+# returns a 12 x time_steps 2D array, first 4 rows give total pops (3 G types + total), next 4 mean_g (3 G types + total),
+# nest 1 gives the survival of exposed rr indviduals under mean g
 # next 3 %occ (3 G types) 
 function pop_snapshots(RR_ls::Array{Float64, 3}, Rr_ls::Array{Float64, 3},
-  rr_ls::Array{Float64, 3}, g_vals::Array{Float64, 1}, dg::Float64, dx::Float64)
+  rr_ls::Array{Float64, 3}, g_vals::Array{Float64, 1}, dg::Float64, dx::Float64, 
+  herb_ef::Float64, s0::Float64, g_pro::Float64)
   
-  time_steps = size(RR_ls)[3]
-  output = zeros(11, time_steps) # 11 because #G (3), mean_g for each G (3), mean_g overall, total_pop, #occ each G (3) (3 + 3 + 3 + 1 + 1 = 11)  
+  output = zeros(12, size(RR_ls)[3]) # 11 because #G (3), mean_g for each G (3), mean_g overall, survival under mean g + total_pop, #occ each G (3) (3 + 3 + 3 + 1 + 1 + 1 = 12)  
   
   # total populations for each G
   output[1, :] = sum(RR_ls, [1, 2]) * dg * dx
@@ -101,11 +102,18 @@ function pop_snapshots(RR_ls::Array{Float64, 3}, Rr_ls::Array{Float64, 3},
   output[7, :] = vec(sum((sum(rr_ls, 2) * dx) .* g_vals, 1) * dg) ./ output[3, :]
   # population mean_g 
   output[8, :] = vec(sum(((sum(RR_ls, 2) + sum(Rr_ls, 2) + sum(rr_ls, 2)) * dx) .* g_vals, 1) * dg) ./ output[4, :]
+ 
+  # survival of exposed rr under mean g for rr 
+  for t in 1:size(RR_ls)[3]
+  
+    output[9, t] = g_2_sur(output[7, t], herb_ef, s0, g_pro)
+ 
+  end
   
   # % landscape occupied 
-  output[9, :] = sum(sum(RR_ls, 1) * dg .> 1.0, 2) / size(RR_ls)[2]
-  output[10, :] = sum(sum(Rr_ls, 1) * dg .> 1.0, 2) / size(Rr_ls)[2]
-  output[11, :] = sum(sum(rr_ls, 1) * dg .> 1.0, 2) / size(rr_ls)[2]
+  output[10, :] = sum(sum(RR_ls, 1) * dg .> 1.0, 2) / size(RR_ls)[2]
+  output[11, :] = sum(sum(Rr_ls, 1) * dg .> 1.0, 2) / size(Rr_ls)[2]
+  output[12, :] = sum(sum(rr_ls, 1) * dg .> 1.0, 2) / size(rr_ls)[2]
   
   return output
   
@@ -240,9 +248,12 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
       
   end
   
-  output_empty = pop_snapshots(RR_empty, Rr_empty, rr_empty, g_vals, dg, dx)
-  output_naive = pop_snapshots(RR_naive, Rr_naive, rr_naive, g_vals, dg, dx)
-  output_expos = pop_snapshots(RR_expos, Rr_expos, rr_expos, g_vals, dg, dx)
+  output_empty = pop_snapshots(RR_empty, Rr_empty, rr_empty, g_vals, dg, dx, 
+    herb_effect, base_sur, g_prot)
+  output_naive = pop_snapshots(RR_naive, Rr_naive, rr_naive, g_vals, dg, dx,
+    herb_effect, base_sur, g_prot)
+  output_expos = pop_snapshots(RR_expos, Rr_expos, rr_expos, g_vals, dg, dx,
+   herb_effect, base_sur, g_prot)
   
   return (output_empty, output_naive, output_expos)
   
@@ -254,4 +265,11 @@ function sur_2_g(sur::Float64, herb_ef::Float64, s0::Float64, g_pro::Float64)
   
   return - ((log((1 / sur) - 1) - herb_ef + s0) / g_pro)
   
+end
+
+# returns the survival of a given g, for an exopsed, suceptable individual 
+function g_2_sur(g::Float64, herb_ef::Float64, s0::Float64, g_pro::Float64)
+
+  return 1 / (1 + exp(-(s0 - (herb_ef - min(herb_ef, g * g_prot)))))
+
 end
