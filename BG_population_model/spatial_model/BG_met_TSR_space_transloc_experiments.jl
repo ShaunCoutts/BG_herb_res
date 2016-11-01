@@ -1,17 +1,28 @@
 # simulation experiments for the TSR and NTSR joint evolution
 # to test how TSR can invade into a population with NTSR
 
-# Ideally I will be be able to specify which parameters to vary and
-# the values to test them at. I could just pass every parameter 
-# then I get length and run a for loop over it.
+using DataFrames
+
+# make a thin wrapper to pass to pmap that unpacks the parameter values 
+@everywhere function runner_wrapper(pars::Array{Any, 1})
+
+  #unpack the parameter vlaues 
+  run_res = run_scene_trans(pars[1], pars[2], pars[3], pars[4], pars[5], pars[6], pars[7], pars[8],
+    pars[9], pars[10], pars[11], pars[12], pars[13], pars[14], pars[15], pars[16], pars[17], pars[18], 
+    pars[19], pars[20], pars[21], pars[22], pars[23], pars[24], pars[25], pars[26], pars[27], pars[28], 
+    pars[29], pars[30], pars[31], pars[32], pars[33])
+    
+    return [pars[8:9]; pars[15:16]; pars[18:32]; trans_ex_snapshot(run_res, convert(Float64, pars[2]), pars[34])]
+    
+end
 
 # need to run each source scenario three times, once in a empty landscape, one in an exposed population
 # and one in a herbicide exposed population (can pre calculate all these so don't need to re-caclulate each time 
-file_loc_func_p = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model" 
-cd(file_loc_func_p)
-include("BG_met_TSR_space_exper_funs.jl")
-include("BG_met_TSR_space_pop_process.jl")
-include("BG_met_TSR_space_dispersal_functions.jl")
+@everywhere file_loc_func_p = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model" 
+@everywhere cd(file_loc_func_p)
+@everywhere include("BG_met_TSR_space_exper_funs.jl")
+@everywhere include("BG_met_TSR_space_pop_process.jl")
+@everywhere include("BG_met_TSR_space_dispersal_functions.jl")
 include("spatial_model_plotting_script.jl")
   
 
@@ -119,24 +130,28 @@ plot_scenario(g_high_TSR_high, G_col, sink_col, burnin, output_loc, "g_high_TSR_
 # make some plots that show the effect of a few parameters of interest, try using pmap to speed things 
 # up a bit cuase I will have to run these modesl many times
 
+# set a threshold after which we do not bother to calculate spread
+threshold = 0.95
+
 # build a parameter list with 1 variable that changes between entries
 # start with g_protection
-g_prot_var = collect(0 : 0.25 : 4)
+g_prot_var = collect(0 : 1.0 : 4)
 par_list_g_pro = []
 for i in 1:length(g_prot_var)
-  push!(par_list_g_pro, (g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, int_TSR_low,
-  inject_g_low, inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
-  resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, g_prot_var[i], pro_exposed, 
-  seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
-  pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd))
+  push!(par_list_g_pro, [g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, int_TSR_low,
+    inject_g_low, inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
+    resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, g_prot_var[i], pro_exposed, 
+    seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
+    pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd, threshold])
 end
 
 # TODO, write the warapper function to unpack this tuple so I can give that to pmap.
 # also need that function to return an array or tuple with a couple of summary results
 
+runner_wrapper(par_list_g_pro[1])
 
-
-pmap(list_pars, runner_fun, batch_size = 3)
+out = pmap(runner_wrapper, par_list_g_pro, batch_size = 2)
+#TODO: test this pmap function to see if it works
 
 
 

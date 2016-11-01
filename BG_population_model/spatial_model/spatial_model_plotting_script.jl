@@ -89,7 +89,6 @@ function plot_scenario(output_tup::Tuple{Array{Float64, 2}, Array{Float64, 2}, A
   
 end
 
-
 # function to produce a sinlge plot of %R over time and survival under mean g
 function get_pro_R(RR_ts::Array{Float64, 1}, Rr_ts::Array{Float64, 1}, 
   rr_ts::Array{Float64, 1})
@@ -98,7 +97,67 @@ function get_pro_R(RR_ts::Array{Float64, 1}, Rr_ts::Array{Float64, 1},
   
 end
 
+function get_pro_R(RR::Float64, Rr::Float64, rr::Float64)
+  
+  return (2 * RR + Rr) / (2 * (RR + Rr + rr))
+  
+end
 
+# function to produce a sinlge plot of %R over time and survival under mean g
+function get_mean_spread(ts::Array{Float64, 1}, thresh::Float64)
+  
+  unsat_ts = ts[ts .< thresh]
+  
+  if(length(unsat_ts) > 2)
+  
+   return occ_dif = mean(unsat_ts[2:end] - unsat_ts[1:(end - 1)]) 
+  
+  else
+  
+    return(0)
+  
+  end
+  
+end
+
+# produces a tuple that summaries the output_tup with a few snapshot numbers of the population in the final timestep
+function trans_ex_snapshot(output_tup::Tuple{Array{Float64, 2}, Array{Float64, 2}, Array{Float64, 2}},
+  landscape_size::Float64, threshold::Float64)
+  # set up a matrix to hold the results
+  # source scenarios are in rows (empty, naive, exposed) and metrics are in coloumns
+  # (%R, mean_spread_RRorRr, mean_spread_RR, mean_spread_Rr, mean_spread_rr) 
+  snapshot = zeros(3, 5)
+  
+  # % R 
+  snapshot[1, 1] = get_pro_R(output_tup[1][1, end], output_tup[1][2, end], output_tup[1][3, end]) #empty_%R
+  snapshot[2, 1] = get_pro_R(output_tup[2][1, end], output_tup[2][2, end], output_tup[2][3, end]) #naive_%R
+  snapshot[3, 1] = get_pro_R(output_tup[3][1, end], output_tup[3][2, end], output_tup[3][3, end]) #expos_%R
+ 
+  # mean spread rates
+  # reconstruct the number of locations occupied at each time step, rahter than proportion
+  empty_occ = output_tup[1][10:12, burnin:end] * landscape_size 
+  naive_occ = output_tup[2][10:12, burnin:end] * landscape_size 
+  expos_occ = output_tup[3][10:12, burnin:end] * landscape_size 
+  
+  thres = threshold * landscape_size
+  
+  # do the RrorRR first, take max of Rr and RR at each time
+  snapshot[1, 2] = get_mean_spread(max(empty_occ[1, :], empty_occ[2, :]), thres)
+  snapshot[2, 2] = get_mean_spread(max(naive_occ[1, :], naive_occ[2, :]), thres)
+  snapshot[3, 2] = get_mean_spread(max(expos_occ[1, :], expos_occ[2, :]), thres)
+ 
+  # do the mean spread for each G
+  for i in 1:3
+    snapshot[1, i + 2] = get_mean_spread(empty_occ[i, :], thres)
+    snapshot[2, i + 2] = get_mean_spread(naive_occ[i, :], thres)
+    snapshot[3, i + 2] = get_mean_spread(expos_occ[i, :], thres)
+  end
+  
+  # flatten out the snap shot matrix so it can fit in a row with the parameter values for easy plotting
+  # order is [empty; naive; expos]
+  return [snapshot[1, :]; snapshot[2, :]; snapshot[3, :]]      
+  
+end
 
 
 

@@ -128,7 +128,7 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
   int_sd_g::Float64, seed_sur::Float64, germ_prob::Float64, resist_G::Array{String, 1}, 
   fec_max::Float64, dd_fec::Float64, fec0::Float64, fec_cost::Float64, base_sur::Float64, 
   herb_effect::Float64, g_prot::Float64, pro_exposed::Float64, seed_pro_short::Float64, 
-  seed_mean_dist_shor::Float64, pro_seeds_to_mean_short::Float64, seed_mean_dist_long::Float64, 
+  seed_mean_dist_short::Float64, pro_seeds_to_mean_short::Float64, seed_mean_dist_long::Float64, 
   pro_seeds_to_mean_long::Float64, scale_pollen::Float64, shape_pollen::Float64, offspring_sd::Float64)
 
   # set of temporary holdoing matricies to set aside some memory, so these don't have to be rebuilt at each iteration
