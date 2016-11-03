@@ -12,7 +12,7 @@ using DataFrames
     pars[19], pars[20], pars[21], pars[22], pars[23], pars[24], pars[25], pars[26], pars[27], pars[28], 
     pars[29], pars[30], pars[31], pars[32], pars[33])
     
-    return [pars[8:9]; pars[15:16]; pars[18:32]; trans_ex_snapshot(run_res, convert(Float64, pars[2]), pars[34])]
+    return [pars[8:9]; pars[15:16]; pars[18:32]; trans_ex_snapshot(run_res, convert(Float64, pars[2]), pars[34], pars[6])]
     
 end
 
@@ -151,15 +151,19 @@ end
 runner_wrapper(par_list_g_pro[1])
 
 out = pmap(runner_wrapper, par_list_g_pro, batch_size = 2)
-#TODO: test this pmap function to see if it works
 
+# Turn the output to a matrix
+mat_out = transpose(hcat(out ...))
+df_g_pro = DataFrame(mat_out)
+names!(df_g_pro, [:inj_TSR, :inj_g, :seed_sur, :germ_prob, :fec_max, :dd_fec, :fec0, :fec_cost,
+  :s0, :herb_effect, :g_pro, :pro_expo, :P_s_seed, :mds_seed, :P_mds_seed, :mdl_seed, :P_mdl_seed, 
+  :scale_pollen, :shape_pollen, 
+  :pR_em, :spr_TSR_em, :spr_RR_em, :spr_Rr_em, :spr_rr_em, 
+  :pR_na, :spr_TSR_na, :spr_RR_na, :spr_Rr_na, :spr_rr_na, 
+  :pR_ex, :spr_TSR_ex, :spr_RR_ex, :spr_Rr_ex, :spr_rr_ex])
 
-
-
-
-
-
-
+# working version, now need to add a survival under g to the summary and make some pretty plots 
+# with the dataframe I use
 
 
 
