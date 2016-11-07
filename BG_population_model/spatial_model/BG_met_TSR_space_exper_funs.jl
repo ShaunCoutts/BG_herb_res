@@ -46,10 +46,10 @@ function one_step_foward!(next_t::Int64, RR_ls::Array{Float64, 3},  Rr_ls::Array
     g_effect_fec, fec_max, dd_fec, dg)
   
   # disperse the seeds
-  RR_ls[:, :, next_t] = RR_ls[:, :, next_t]  + (RR_newseed * seed_disp_mat_1D)
-  Rr_ls[:, :, next_t] = Rr_ls[:, :, next_t]  + (Rr_newseed * seed_disp_mat_1D)
-  rr_ls[:, :, next_t] = rr_ls[:, :, next_t]  + (rr_newseed * seed_disp_mat_1D)
-
+  RR_ls[:, :, next_t] = RR_ls[:, :, next_t] + (RR_newseed * seed_disp_mat_1D)
+  Rr_ls[:, :, next_t] = Rr_ls[:, :, next_t] + (Rr_newseed * seed_disp_mat_1D)
+  rr_ls[:, :, next_t] = rr_ls[:, :, next_t] + (rr_newseed * seed_disp_mat_1D)
+  
   return nothing
   
 end
@@ -216,7 +216,7 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
   # introduce seeds from the population with different TSR and quantitative resistance
   num_RR_inject = num_inject * pro_R_inject
   num_Rr_inject = 0.0
-  num_rr_inject = 1 - num_RR_inject
+  num_rr_inject = num_inject - num_RR_inject
   
   hot_seed_injection!(RR_empty, Rr_empty, rr_empty, RR_naive, Rr_naive, 
     rr_naive, RR_expos, Rr_expos, rr_expos, num_RR_inject, num_Rr_inject, 
@@ -280,13 +280,23 @@ function trans_ex_snapshot(output_tup::Tuple{Array{Float64, 2}, Array{Float64, 2
   # set up a matrix to hold the results
   # source scenarios are in rows (empty, naive, exposed) and metrics are in coloumns
   # (%R, mean_spread_RRorRr, mean_spread_RR, mean_spread_Rr, mean_spread_rr) 
-  snapshot = zeros(3, 5)
+  snapshot = Array{Any, 2}(3, 7)
+ 
+  # scenario labels
+  snapshot[1, 1] = "empty"
+  snapshot[2, 1] = "naive"
+  snapshot[3, 1] = "expos"
   
   # % R 
-  snapshot[1, 1] = get_pro_R(output_tup[1][1, end], output_tup[1][2, end], output_tup[1][3, end]) #empty_%R
-  snapshot[2, 1] = get_pro_R(output_tup[2][1, end], output_tup[2][2, end], output_tup[2][3, end]) #naive_%R
-  snapshot[3, 1] = get_pro_R(output_tup[3][1, end], output_tup[3][2, end], output_tup[3][3, end]) #expos_%R
- 
+  snapshot[1, 2] = get_pro_R(output_tup[1][1, end], output_tup[1][2, end], output_tup[1][3, end]) #empty_%R
+  snapshot[2, 2] = get_pro_R(output_tup[2][1, end], output_tup[2][2, end], output_tup[2][3, end]) #naive_%R
+  snapshot[3, 2] = get_pro_R(output_tup[3][1, end], output_tup[3][2, end], output_tup[3][3, end]) #expos_%R
+  
+  # survival under final g 
+  for i in 1:3
+    snapshot[i, 3] = output_tup[i][9, end] # sur under final g
+  end
+  
   # mean spread rates
   # reconstruct the number of locations occupied at each time step, rahter than proportion
   empty_occ = output_tup[1][10:12, burnin:end] * landscape_size 
@@ -296,20 +306,18 @@ function trans_ex_snapshot(output_tup::Tuple{Array{Float64, 2}, Array{Float64, 2
   thres = threshold * landscape_size
   
   # do the RrorRR first, take max of Rr and RR at each time
-  snapshot[1, 2] = get_mean_spread(max(empty_occ[1, :], empty_occ[2, :]), thres)
-  snapshot[2, 2] = get_mean_spread(max(naive_occ[1, :], naive_occ[2, :]), thres)
-  snapshot[3, 2] = get_mean_spread(max(expos_occ[1, :], expos_occ[2, :]), thres)
+  snapshot[1, 4] = get_mean_spread(max(empty_occ[1, :], empty_occ[2, :]), thres)
+  snapshot[2, 4] = get_mean_spread(max(naive_occ[1, :], naive_occ[2, :]), thres)
+  snapshot[3, 4] = get_mean_spread(max(expos_occ[1, :], expos_occ[2, :]), thres)
  
   # do the mean spread for each G
   for i in 1:3
-    snapshot[1, i + 2] = get_mean_spread(empty_occ[i, :], thres)
-    snapshot[2, i + 2] = get_mean_spread(naive_occ[i, :], thres)
-    snapshot[3, i + 2] = get_mean_spread(expos_occ[i, :], thres)
+    snapshot[1, i + 4] = get_mean_spread(empty_occ[i, :], thres)
+    snapshot[2, i + 4] = get_mean_spread(naive_occ[i, :], thres)
+    snapshot[3, i + 4] = get_mean_spread(expos_occ[i, :], thres)
   end
   
-  # flatten out the snap shot matrix so it can fit in a row with the parameter values for easy plotting
-  # order is [empty; naive; expos]
-  return [snapshot[1, :]; snapshot[2, :]; snapshot[3, :]]      
+  return snapshot
   
 end
 

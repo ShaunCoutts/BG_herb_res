@@ -13,6 +13,7 @@
 # load Plots, this should call the other backends as needed so 
 # no need to load them
 using Plots
+using StatPlots
 using Colors
 # choose a backend for Plots to wrap, I use PyPlot here for high
 # levels of features 
@@ -87,7 +88,89 @@ function plot_scenario(output_tup::Tuple{Array{Float64, 2}, Array{Float64, 2}, A
   savefig(plt, figure_name)
   cd(int_file_loc)
   
+  return nothing
+  
 end
 
 
+# visulisation of univiriant parameter sweep to see how parameter vlaues affect
+# %R and survival under g at final time step, first attempt showing 6 lines on a single 
+# plot, this may be a bit much
+function pop_res_4_scen(res_df::DataFrame, x_var::Symbol, y_var::Array{Symbol, 1},  
+  sink_col, output_loc::AbstractString, figure_name::AbstractString, adjust_scale::Float64, 
+  x_lab::String, y_lab::Array{String, 1}, low_TSR_inj::Float64, low_g_inj::Float64, high_TSR_inj::Float64, 
+  high_g_inj::Float64)
+ 
+  # get a little basic info about the plotting axes
+  x_min = floor(minimum(res_df[x_var]), 1)
+  x_max = ceil(maximum(res_df[x_var]), 1)
+  y_min = floor(minimum(vcat(colwise(minimum, res_df[y_var]) ...)), 1)
+  y_max = ceil(maximum(vcat(colwise(maximum, res_df[y_var]) ...)), 1)
+  
+  #rearrange the sink colours to reflect the order they are plotted from the dataframe
+  sink_col_ra = sink_col[[1 3 2]]
+  
+  # set up the fonts fo all the labels first 
+  ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  title_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  
+  # make a grid of 4 empty plots with all the formatting on them 
+  layout_arr = @layout [grid(2, 1) grid(2, 1); grid(2, 1) grid(2, 1)]
+  plt = plot(xlim = (x_min, x_max), ylim = (y_min, y_max), layout = layout_arr, grid = false, legend = :bottomleft,
+    title = ["a) quant. res. low, TSR low" "" "b) quant. res. low. TSR high" "" "c) quant. res. high, TSR low" "" "d) quant. res. high, TSR high" ""],
+    titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, legendfont = leg_font, 
+    size = (600 * adjust_scale, 400 * adjust_scale), border = false, bg_inside = :lightgrey)
+  
+  # plot the low g low TSR scen
+  plot!(plt, res_df[(res_df[:inj_TSR] .== low_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[1], group = :scen, 
+    subplot = 1, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = y_lab[1], 
+    label = ["empty-%R" "expos-%R" "naive-%R"])
+
+  if length(y_var) == 2
+    plot!(plt, res_df[(res_df[:inj_TSR] .== low_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[2], group = :scen, 
+      subplot = 2, color = sink_col_ra, linewidth = 3, linestyle = :dash, 
+      label = ["empty-sur rr" "expos-sur rr" "naive-sur rr"], ylabel = y_lab[2], xlabel = "")
+  end
+  
+ 
+  # plot the low g, high TSR scen 
+  plot!(plt, res_df[(res_df[:inj_TSR] .== high_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[1], group = :scen, 
+    subplot = 3, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "", legend = false)
+ 
+  if length(y_var) == 2
+    plot!(plt, res_df[(res_df[:inj_TSR] .== high_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[2], group = :scen, 
+      subplot = 4, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "",  linestyle = :dash, legend = false)
+  end
+    
+   # plot the high g, low TSR scen 
+  plot!(plt, res_df[(res_df[:inj_TSR] .== low_TSR_inj) & (res_df[:inj_g] .== high_g_inj), :], x_var, y_var[1], group = :scen, 
+    subplot = 5, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = y_lab[1], legend = false)
+    
+  if length(y_var) == 2
+    plot!(plt, res_df[(res_df[:inj_TSR] .== low_TSR_inj) & (res_df[:inj_g] .== high_g_inj), :], x_var, y_var[2], group = :scen, 
+      subplot = 6, color = sink_col_ra, linewidth = 3, linestyle = :dash, legend = false, xlabel = x_lab, ylabel = y_lab[2])
+  end
+   
+  # plot the high g, high TSR scen 
+ 
+  plot!(plt, res_df[(res_df[:inj_TSR] .== high_TSR_inj) & (res_df[:inj_g] .== high_g_inj), :], x_var, y_var[1], group = :scen, 
+    subplot = 7, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "", legend = false)
+  if length(y_var) == 2
+    plot!(plt, res_df[(res_df[:inj_TSR] .== high_TSR_inj) & (res_df[:inj_g] .== high_g_inj), :], x_var, y_var[2], group = :scen, 
+      subplot = 8, color = sink_col_ra, linewidth = 3, linestyle = :dash, legend = false, xlabel = x_lab, ylabel = "")
+  end
+    
+  # save the figure 
+  #get present directory top return the working folder later
+  int_file_loc = pwd()
+  #set output locaiton
+  cd(output_loc)
+  savefig(plt, figure_name)
+  cd(int_file_loc)
+  
+  return nothing
+    
+end
 

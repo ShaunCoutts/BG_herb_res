@@ -12,7 +12,9 @@ using DataFrames
     pars[19], pars[20], pars[21], pars[22], pars[23], pars[24], pars[25], pars[26], pars[27], pars[28], 
     pars[29], pars[30], pars[31], pars[32], pars[33])
     
-    return [pars[8:9]; pars[15:16]; pars[18:32]; trans_ex_snapshot(run_res, convert(Float64, pars[2]), pars[34], pars[6])]
+    final_pop = trans_ex_snapshot(run_res, convert(Float64, pars[2]), pars[34], pars[6])
+    pars_block = vcat(fill(transpose([pars[8:9]; pars[15:16]; pars[18:32]]), 3) ...)
+    return hcat(pars_block, final_pop) 
     
 end
 
@@ -130,57 +132,57 @@ plot_scenario(g_high_TSR_high, G_col, sink_col, burnin, output_loc, "g_high_TSR_
 # make some plots that show the effect of a few parameters of interest, try using pmap to speed things 
 # up a bit cuase I will have to run these modesl many times
 
+#### g_prot plot ###
 # set a threshold after which we do not bother to calculate spread
 threshold = 0.95
 
 # build a parameter list with 1 variable that changes between entries
 # start with g_protection
-g_prot_var = collect(0 : 1.0 : 4)
+g_prot_var = collect(0 : 0.1 : 4)
+g_pro_rep = repmat(g_prot_var, 4)
+#use the function below t make a matrix with all the combinations I want
+TSR_reps = repeat([int_TSR_low, int_TSR_high], inner = length(g_prot_var) * 2)
+g_reps = repeat(repeat([inject_g_low, inject_g_high], inner = length(g_prot_var)), outer = 2)
+inj_scens = hcat([g_pro_rep, TSR_reps, g_reps] ...)
+
 par_list_g_pro = []
-for i in 1:length(g_prot_var)
-  push!(par_list_g_pro, [g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, int_TSR_low,
-    inject_g_low, inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
-    resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, g_prot_var[i], pro_exposed, 
+for i in 1:size(inj_scens)[1]
+  push!(par_list_g_pro, [g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, inj_scens[i, 2],
+    inj_scens[i, 3], inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
+    resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, inj_scens[i, 1], pro_exposed, 
     seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
     pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd, threshold])
 end
 
-# TODO, write the warapper function to unpack this tuple so I can give that to pmap.
-# also need that function to return an array or tuple with a couple of summary results
+out = pmap(runner_wrapper, par_list_g_pro, batch_size = 55)
 
-runner_wrapper(par_list_g_pro[1])
-
-out = pmap(runner_wrapper, par_list_g_pro, batch_size = 2)
-
-# Turn the output to a matrix
-mat_out = transpose(hcat(out ...))
+# Turn the output into a dataframe, which is a bit easier to work with, with all the different 
+# parameters changing and metrics
+mat_out = vcat(out ...)
 df_g_pro = DataFrame(mat_out)
 names!(df_g_pro, [:inj_TSR, :inj_g, :seed_sur, :germ_prob, :fec_max, :dd_fec, :fec0, :fec_cost,
   :s0, :herb_effect, :g_pro, :pro_expo, :P_s_seed, :mds_seed, :P_mds_seed, :mdl_seed, :P_mdl_seed, 
-  :scale_pollen, :shape_pollen, 
-  :pR_em, :spr_TSR_em, :spr_RR_em, :spr_Rr_em, :spr_rr_em, 
-  :pR_na, :spr_TSR_na, :spr_RR_na, :spr_Rr_na, :spr_rr_na, 
-  :pR_ex, :spr_TSR_ex, :spr_RR_ex, :spr_Rr_ex, :spr_rr_ex])
+  :scale_pollen, :shape_pollen, :scen, 
+  :pro_R, :sur_g, :spr_TSR, :spr_RR, :spr_Rr, :spr_rr])
+  
+# This dataframe takes quiet a bit to produce, save results so I don't need to keep re-runing the model_output
+cd(output_loc)
+writetable("g_pro_prerun.csv", df_g_pro, header = true)
+df_g_pro = readtable("g_pro_prerun.csv", header = true)
 
-# working version, now need to add a survival under g to the summary and make some pretty plots 
-# with the dataframe I use
-
-
-
-
-
-
-
+#plot these scenarios
+pop_res_4_scen(df_g_pro, :g_pro, [:pro_R, :sur_g], sink_col, 
+  output_loc, "effect_g_pro_resist.pdf", 1.9, "protective effect g", ["%R", "survival rr"], int_TSR_low, 
+  inject_g_low, int_TSR_high, inject_g_high)
 
 
-
-
-
-
-
-
-
-
+### TSR in injected population
+TSR_var = collect(0 : 0.05 : 1)  
+TSR_rep = repmat(TSR_var, 2)
+g_reps = repeat([inject_g_low, inject_g_high], inner = length(TSR_var))
+inj_scens = hcat([TSR_rep, g_reps] ...)
+  
+## TODO: run the TSR scenarios and make the nice plot   
 
 
 
