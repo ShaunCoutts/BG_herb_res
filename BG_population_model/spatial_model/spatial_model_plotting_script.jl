@@ -109,6 +109,8 @@ function pop_res_4_scen(res_df::DataFrame, x_var::Symbol, y_var::Array{Symbol, 1
   
   #rearrange the sink colours to reflect the order they are plotted from the dataframe
   sink_col_ra = sink_col[[1 3 2]]
+  #make a grey scale to choose some shades from 
+  grey_pal = colormap("Grays", 100)
   
   # set up the fonts fo all the labels first 
   ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
@@ -116,12 +118,12 @@ function pop_res_4_scen(res_df::DataFrame, x_var::Symbol, y_var::Array{Symbol, 1
   leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
   tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
   
-  # make a grid of 4 empty plots with all the formatting on them 
+  # make a grid of 8 empty plots with all the formatting on them 
   layout_arr = @layout [grid(2, 1) grid(2, 1); grid(2, 1) grid(2, 1)]
   plt = plot(xlim = (x_min, x_max), ylim = (y_min, y_max), layout = layout_arr, grid = false, legend = :bottomleft,
     title = ["a) quant. res. low, TSR low" "" "b) quant. res. low. TSR high" "" "c) quant. res. high, TSR low" "" "d) quant. res. high, TSR high" ""],
     titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, legendfont = leg_font, 
-    size = (600 * adjust_scale, 400 * adjust_scale), border = false, bg_inside = :lightgrey)
+    size = (600 * adjust_scale, 400 * adjust_scale), border = false, bg_inside = grey_pal[10])
   
   # plot the low g low TSR scen
   plot!(plt, res_df[(res_df[:inj_TSR] .== low_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[1], group = :scen, 
@@ -174,3 +176,128 @@ function pop_res_4_scen(res_df::DataFrame, x_var::Symbol, y_var::Array{Symbol, 1
     
 end
 
+# make a plot for the change in TSR injection number 
+function TSR_inj_var_plot(res_df::DataFrame, x_var::Symbol, y_var::Array{Symbol, 1},  
+  sink_col, output_loc::AbstractString, figure_name::AbstractString, adjust_scale::Float64, 
+  x_lab::String, y_lab::Array{String, 1}, low_g_inj::Float64, high_g_inj::Float64)
+  
+  # get a little basic info about the plotting axes
+  x_min = floor(minimum(res_df[x_var]), 1)
+  x_max = ceil(maximum(res_df[x_var]), 1)
+  y_min = floor(minimum(vcat(colwise(minimum, res_df[y_var]) ...)), 1)
+  y_max = ceil(maximum(vcat(colwise(maximum, res_df[y_var]) ...)), 1)
+  
+  #rearrange the sink colours to reflect the order they are plotted from the dataframe
+  sink_col_ra = sink_col[[1 3 2]]
+  #make a grey scale to choose some shades from 
+  grey_pal = colormap("Grays", 100)
+  
+  # set up the fonts fo all the labels first 
+  ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  title_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  
+  # make a grid of 4 empty plots with all the formatting on them 
+  layout_arr = @layout grid(2, 2)
+  plt = plot(xlim = (x_min, x_max), ylim = (y_min, y_max), layout = layout_arr, grid = false,
+    title = ["a) quant. res. low" "b) quant. res. high" "" ""],
+    titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, legendfont = leg_font, 
+    size = (600 * adjust_scale, 600 * adjust_scale), border = false, bg_inside = grey_pal[10])
+ 
+  # plot the low g
+  plot!(plt, res_df[res_df[:inj_g] .== low_g_inj, :], x_var, y_var[1], group = :scen, 
+    subplot = 1, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = y_lab[1], legend = :bottomleft)
+ 
+  plot!(plt, res_df[res_df[:inj_g] .== low_g_inj, :], x_var, y_var[2], group = :scen, 
+    subplot = 3, color = sink_col_ra, linewidth = 3, xlabel = x_lab, ylabel = y_lab[2], linestyle = :dash, 
+    legend = :topright)
+   
+  # plot the low g
+  plot!(plt, res_df[res_df[:inj_g] .== high_g_inj, :], x_var, y_var[1], group = :scen, 
+    subplot = 2, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "", legend = false)
+ 
+  plot!(plt, res_df[res_df[:inj_g] .== high_g_inj, :], x_var, y_var[2], group = :scen, 
+    subplot = 4, color = sink_col_ra, linewidth = 3, xlabel = x_lab, ylabel = "",  linestyle = :dash, 
+    legend = false)
+  
+  # save the figure 
+  #get present directory top return the working folder later
+  int_file_loc = pwd()
+  #set output locaiton
+  cd(output_loc)
+  savefig(plt, figure_name)
+  cd(int_file_loc)
+  
+  return nothing
+
+end
+  
+# produce 3 2D colormat plots to show how 2 varaibles (:x, :y) interact to determine the 3rd (:z).
+function colormats_2D(res_df::DataFrame, x_var::Symbol, y_var::Symbol, z_var::Symbol,  
+  output_loc::AbstractString, figure_name::AbstractString, adjust_scale::Float64, 
+  x_lab::String, y_lab::String, z_lab::String, inj_scen_name::String)
+  
+  #make a grey scale to choose some shades from 
+  grey_pal = colormap("Grays", 100)
+  
+  # set up the fonts fo all the labels first 
+  ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  title_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  
+  # make a grid of 4 empty plots with all the formatting on them 
+  layout_arr = @layout [b{0.0001h}; a{0.25w} a{0.5w} a{0.25w}; grid(1, 2)]
+  plt = plot(layout = layout_arr, grid = false, background_color_outside = grey_pal[10], border = false,
+    background_color = grey_pal[10], title = [inj_scen_name "" "a) empty" "" "b) naive" "c) exposed"],
+    titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, legendfont = leg_font, 
+    size = (600 * adjust_scale, 600 * adjust_scale), xlabel = ["" "" x_lab "" x_lab x_lab], 
+    ylabel = ["" "" y_lab "" y_lab y_lab])
+ 
+  # set up the plotting axes
+  x_ax = unique(res_df[x_var])
+  y_ax = unique(res_df[y_var])
+  
+  # make a contour plot for each reciving plot_scenario
+  df_empty = convert(Array{Any, 2}, res_df[res_df[:scen] .== "empty", [x_var, y_var, z_var]])
+  df_naive = convert(Array{Any, 2}, res_df[res_df[:scen] .== "naive", [x_var, y_var, z_var]])
+  df_expos = convert(Array{Any, 2}, res_df[res_df[:scen] .== "expos", [x_var, y_var, z_var]])
+  
+  z_mat_empty = zeros(length(y_ax), length(x_ax))
+  z_mat_naive = zeros(length(y_ax), length(x_ax))
+  z_mat_expos = zeros(length(y_ax), length(x_ax))
+  
+  for x in 1:length(x_ax)
+    for y in 1:length(y_ax)
+      
+      z_mat_empty[y, x] = z_finder(x_ax[x], y_ax[y], df_empty)[1] 
+      z_mat_naive[y, x] = z_finder(x_ax[x], y_ax[y], df_naive)[1] 
+      z_mat_expos[y, x] = z_finder(x_ax[x], y_ax[y], df_expos)[1] 
+      
+    end
+  end
+ 
+  contour!(x_ax, y_ax, z_mat_empty, fill = true, subplot = 3) 
+  contour!(x_ax, y_ax, z_mat_naive, fill = true, subplot = 5) 
+  contour!(x_ax, y_ax, z_mat_expos, fill = true, subplot = 6, zlims = (0, 1)) 
+  
+  # save the figure 
+  #get present directory top return the working folder later
+  int_file_loc = pwd()
+  #set output locaiton
+  cd(output_loc)
+  savefig(plt, figure_name)
+  cd(int_file_loc)
+  
+  return nothing
+
+end
+
+# function to take two values and find a thrid value to return, 
+# order of search array should be [x y z]
+function z_finder(targ_x, targ_y, search_array::Array{Any, 2})
+  
+  return search_array[(search_array[:, 1] .== targ_x) & (search_array[:, 2] .== targ_y), 3]
+  
+end  

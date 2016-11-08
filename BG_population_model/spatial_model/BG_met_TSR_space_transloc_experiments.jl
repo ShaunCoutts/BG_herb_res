@@ -59,8 +59,8 @@ fec0 = 10.0;
 fec_cost = 0.3;
 dd_fec = 0.15;
 base_sur = 10.0; 
-herb_effect = 20.0; 
-g_prot = 2.5; 
+herb_effect = 15.0; 
+g_prot = 2.0; 
 pro_exposed = 0.8;
 seed_sur = 0.45;
 germ_prob = 0.52;
@@ -167,7 +167,7 @@ names!(df_g_pro, [:inj_TSR, :inj_g, :seed_sur, :germ_prob, :fec_max, :dd_fec, :f
   
 # This dataframe takes quiet a bit to produce, save results so I don't need to keep re-runing the model_output
 cd(output_loc)
-writetable("g_pro_prerun.csv", df_g_pro, header = true)
+# writetable("g_pro_prerun.csv", df_g_pro, header = true)
 df_g_pro = readtable("g_pro_prerun.csv", header = true)
 
 #plot these scenarios
@@ -177,12 +177,77 @@ pop_res_4_scen(df_g_pro, :g_pro, [:pro_R, :sur_g], sink_col,
 
 
 ### TSR in injected population
-TSR_var = collect(0 : 0.05 : 1)  
+TSR_var = collect(0 : 0.025 : 1)  
 TSR_rep = repmat(TSR_var, 2)
 g_reps = repeat([inject_g_low, inject_g_high], inner = length(TSR_var))
 inj_scens = hcat([TSR_rep, g_reps] ...)
+ 
+par_list_TSR_inj = []
+for i in 1:size(inj_scens)[1]
+  push!(par_list_TSR_inj, [g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, inj_scens[i, 1],
+    inj_scens[i, 2], inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
+    resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, g_prot, pro_exposed, 
+    seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
+    pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd, threshold])
+end
+
+out = pmap(runner_wrapper, par_list_TSR_inj, batch_size = 28)
+ 
+mat_out = vcat(out ...)
+df_TSR_inj = DataFrame(mat_out)
+names!(df_TSR_inj, [:inj_TSR, :inj_g, :seed_sur, :germ_prob, :fec_max, :dd_fec, :fec0, :fec_cost,
+  :s0, :herb_effect, :g_pro, :pro_expo, :P_s_seed, :mds_seed, :P_mds_seed, :mdl_seed, :P_mdl_seed, 
+  :scale_pollen, :shape_pollen, :scen, 
+  :pro_R, :sur_g, :spr_TSR, :spr_RR, :spr_Rr, :spr_rr])
   
-## TODO: run the TSR scenarios and make the nice plot   
+# This dataframe takes quiet a bit to produce, save results so I don't need to keep re-runing the model_output
+cd(output_loc)
+#writetable("TSR_inj_prerun.csv", df_TSR_inj, header = true)
+df_TSR_inj = readtable("TSR_inj_prerun.csv", header = true)
+
+TSR_inj_var_plot(df_TSR_inj, :inj_TSR, [:pro_R, :sur_g], sink_col, 
+  output_loc, "TSR_inj_final.pdf", 1.9, "%RR in transported seeds", ["%R", "survival rr"], inject_g_low, 
+  inject_g_high)
+  
+
+
+
+
+# Do a big run to see the effect of herbicide effectivness and protective effect 
+# Computationally this will be pretty expensive for all the source scenarions
+# testing each parameter at 6 levels is a nice trade-off between run time and grain size
+# If I want an even effect of herbicide on the probability scale need to work out the effect 
+# on the -(logit scale - base sur)
+herb_eff_var = [19.21024, 14.587071, 13.888764, 13.474725, 13.177533, 12.944439]
+g_pro_var = collect(1.0 : (3.0 - 1.0) / 5 : 3.0)
+sur_var = hcat([repeat(herb_eff_var, inner = length(g_pro_var)), repeat(g_pro_var, outer = length(herb_eff_var))] ...)
+
+TSR_reps = repeat([int_TSR_low, int_TSR_high], inner = size(sur_var)[1] * 2)
+g_reps = repeat(repeat([inject_g_low, inject_g_high], inner = size(sur_var)[1]), outer = 2)
+inj_scens = hcat([repmat(sur_var, 4), TSR_reps, g_reps] ...)
+
+par_list_herb_eff = []
+for i in 1:size(inj_scens)[1]
+  push!(par_list_herb_eff, [g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, inj_scens[i, 3],
+    inj_scens[i, 4], inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
+    resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, inj_scens[i, 1], inj_scens[i, 2], pro_exposed, 
+    seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
+    pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd, threshold])
+end
+
+out = pmap(runner_wrapper, par_list_herb_eff, batch_size = 48)
+ 
+mat_out = vcat(out ...)
+df_herb_eff = DataFrame(mat_out)
+names!(df_herb_eff, [:inj_TSR, :inj_g, :seed_sur, :germ_prob, :fec_max, :dd_fec, :fec0, :fec_cost,
+  :s0, :herb_effect, :g_pro, :pro_expo, :P_s_seed, :mds_seed, :P_mds_seed, :mdl_seed, :P_mdl_seed, 
+  :scale_pollen, :shape_pollen, :scen, 
+  :pro_R, :sur_g, :spr_TSR, :spr_RR, :spr_Rr, :spr_rr])
+  
+# This dataframe takes quiet a bit to produce, save results so I don't need to keep re-runing the model_output
+cd(output_loc)
+# writetable("herb_eff_prerun.csv", df_herb_eff, header = true)
+df_herb_eff = readtable("herb_eff_prerun.csv", header = true)
 
 
 
