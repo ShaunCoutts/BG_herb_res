@@ -352,3 +352,108 @@ function get_mean_spread(ts::Array{Float64, 1}, thresh::Float64)
   
 end
 
+
+# run an single sceanrio to produce a set of data for a plot of three measures of populaiton 
+# resistance and extent over time return is x_dim x g_vals x tim_steps array. 
+function run_natspread(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, 
+  num_iter::Int64, int_rr::Array{Float64, 1}, int_Rr::Array{Float64, 1}, 
+  int_RR::Array{Float64, 1}, int_mean_g::Float64, int_sd_g::Float64, seed_sur::Float64, 
+  germ_prob::Float64, resist_G::Array{String, 1}, fec_max::Float64, dd_fec::Float64, 
+  g_effect_fec::Array{Float64, 1}, sur_tup::Tuple{Float64, Array{Float64, 1}}, 
+  offspring_sd::Float64, seed_disp_mat_1D::Array{Float64, 2}, pollen_disp_mat::Array{Float64, 2}, 
+  herb_app::Array{Int64, 1})
+
+  # set of temporary holdoing matricies to set aside some memory, so these don't have to be rebuilt at each iteration
+  # a set of matrices to hold the above ground populations
+  RR_ab_pop = zeros(length(g_vals), x_dim)
+  Rr_ab_pop = zeros(length(g_vals), x_dim)
+  rr_ab_pop = zeros(length(g_vals), x_dim)
+
+  # a set of matrices to hold the total amount of pollen that arrives are each location for each metabolic 
+  # resitance score for each genotype
+  pollen_RR = zeros(length(g_vals), x_dim)
+  pollen_Rr = zeros(length(g_vals), x_dim)
+  pollen_rr = zeros(length(g_vals), x_dim)
+  total_pollen = zeros(x_dim)
+
+  #set of matrices to hold the new seeds produced at each location pre dispersal 
+  RR_newseed = zeros(length(g_vals), x_dim)
+  Rr_newseed = zeros(length(g_vals), x_dim)
+  rr_newseed = zeros(length(g_vals), x_dim)
+
+  # build the mixing kernel for metabolic resistance score every row is a offspring score
+  # every coloum is a g_m x g_p combination, so every coloumn is a normal dist with
+  # a mean of g_m*g_p and sd of offspring sd
+  g_mixing_kernel = zeros(length(g_vals), length(g_vals) ^ 2)
+  fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
+  g_mixing_index = generate_index_pairs(g_vals)
+  # give the effect of herb as a function of g, make it symetrical stabilising function, centered on 0
+  
+  # set up the landscapes
+  # set aside a chunck of memory for the landscapes for each genotype or structure [g_vals, x_dim, timesteps] 
+  RR_ls = zeros(length(g_vals), x_dim, num_iter)
+  Rr_ls = zeros(length(g_vals), x_dim, num_iter)
+  rr_ls = zeros(length(g_vals), x_dim, num_iter)
+
+  # intitilase the population on the full landscapes in the first time slice
+  for x in 1:x_dim
+    rr_ls[:, x, 1] = pdf(Normal(int_mean_g, int_sd_g), g_vals) * int_rr[x]
+    Rr_ls[:, x, 1] = pdf(Normal(int_mean_g, int_sd_g), g_vals) * int_Rr[x]
+    RR_ls[:, x, 1] = pdf(Normal(int_mean_g, int_sd_g), g_vals) * int_RR[x]
+  end 
+    
+  # run the model
+  for t in 2:num_iter
+     
+    # step through the exposed population letting it develope
+    one_step_foward!(t, RR_ls,  Rr_ls, rr_ls, RR_ab_pop, Rr_ab_pop, 
+      rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
+      Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
+      herb_app, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+      g_mixing_kernel, g_mixing_index, g_effect_fec)
+      
+  end
+  
+  return (RR_ls, Rr_ls, rr_ls)
+  
+end
+
+# series of functions to reduce the output of a nat spread run to a 
+# 2D matrix of a metric 
+
+function proR_time_space(natspread_out_tup)
+  
+  out_dims = size(natspread_out_tup[1])
+  #get total numbers at each location and time, summing over g
+  num_RR = reshape(sum(natspread_out_tup[1], 1), out_dims[2:3])
+  num_Rr = reshape(sum(natspread_out_tup[2], 1), out_dims[2:3])
+  num_rr = reshape(sum(natspread_out_tup[3], 1), out_dims[2:3])
+  
+  # calc proportion R and turn any areas with no individuals present to 0
+  pro_R = (2 * num_RR + num_Rr) ./ (2 * (num_RR + num_Rr + num_rr))
+  pro_R[isnan(pro_R)] = 0.0
+  
+  return pro_R
+
+end
+
+function totnum_time_space(natspread_out_tup)
+  
+  out_dims = size(natspread_out_tup[1])
+  #get total numbers at each location and time, summing over g
+  num_RR = reshape(sum(natspread_out_tup[1], 1), out_dims[2:3])
+  num_Rr = reshape(sum(natspread_out_tup[2], 1), out_dims[2:3])
+  num_rr = reshape(sum(natspread_out_tup[3], 1), out_dims[2:3])
+  
+  return num_RR + num_Rr + num_rr
+
+end
+
+function sur_rr_time_space(natspread_out_tup)
+
+# output[7, t] is the mean g of rr indivuduals 
+g_2_sur(output[7, t], herb_ef, s0, g_pro)
+
+# tomorrow finish this, run the stuff then do the plots, make the 2 channle plot 
+
+end

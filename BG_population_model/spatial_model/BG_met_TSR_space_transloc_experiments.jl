@@ -209,10 +209,6 @@ TSR_inj_var_plot(df_TSR_inj, :inj_TSR, [:pro_R, :sur_g], sink_col,
   output_loc, "TSR_inj_final.pdf", 1.9, "%RR in transported seeds", ["%R", "survival rr"], inject_g_low, 
   inject_g_high)
   
-
-
-
-
 # Do a big run to see the effect of herbicide effectivness and protective effect 
 # Computationally this will be pretty expensive for all the source scenarions
 # testing each parameter at 6 levels is a nice trade-off between run time and grain size
@@ -249,6 +245,60 @@ cd(output_loc)
 # writetable("herb_eff_prerun.csv", df_herb_eff, header = true)
 df_herb_eff = readtable("herb_eff_prerun.csv", header = true)
 
+# conver the herb_effect to probability in a new coloumn
+df_herb_eff[:prob_herb_eff] = logit_sur_2_prob(df_herb_eff[:herb_effect], df_herb_eff[:s0][1]);
 
+# start with the source pop low g, low TSR
+df_glow_TSRlow = df_herb_eff[(df_herb_eff[:inj_g] .== inject_g_low) & (df_herb_eff[:inj_TSR] .== int_TSR_low), :]
 
+colormats_2D(df_glow_TSRlow, :g_pro, :prob_herb_eff, :pro_R, output_loc, 
+  "herb_eff_g_pro_lowg_lowTSR.pdf", 1.9, "protective effect g (logits)", "survival suceptable", 
+  "%R", "quant. res. low, TSR low")
 
+# source pop low g, high TSR 
+df_glow_TSRhigh = df_herb_eff[(df_herb_eff[:inj_g] .== inject_g_low) & (df_herb_eff[:inj_TSR] .== int_TSR_high), :]
+
+colormats_2D(df_glow_TSRhigh, :g_pro, :prob_herb_eff, :pro_R, output_loc, 
+  "herb_eff_g_pro_lowg_highTSR.pdf", 1.9, "protective effect g (logits)", "survival suceptable", 
+  "%R", "quant. res. low, TSR high")
+ 
+# source pop high g , low TSR 
+df_ghigh_TSRlow = df_herb_eff[(df_herb_eff[:inj_g] .== inject_g_high) & (df_herb_eff[:inj_TSR] .== int_TSR_low), :]
+
+colormats_2D(df_ghigh_TSRlow, :g_pro, :prob_herb_eff, :pro_R, output_loc, 
+  "herb_eff_g_pro_highg_lowTSR.pdf", 1.9, "protective effect g (logits)", "survival suceptable", 
+  "%R", "quant. res. high, TSR low")
+   
+# source pop high g , high TSR 
+df_ghigh_TSRhigh = df_herb_eff[(df_herb_eff[:inj_g] .== inject_g_high) & (df_herb_eff[:inj_TSR] .== int_TSR_high), :]
+
+colormats_2D(df_ghigh_TSRhigh, :g_pro, :prob_herb_eff, :pro_R, output_loc, 
+  "herb_eff_g_pro_highg_highTSR.pdf", 1.9, "protective effect g (logits)", "survival suceptable", 
+  "%R", "quant. res. high, TSR low")
+  
+### now for survival 
+# start with the source pop low g, low TSR
+colormats_2D(df_glow_TSRlow, :g_pro, :prob_herb_eff, :sur_g, output_loc, 
+  "herb_eff_g_pro_lowg_lowTSR_surg.pdf", 1.9, "protective effect g (logits)", "survival suceptable", 
+  "sur_rr", "quant. res. low, TSR low")
+
+# source pop low g, high TSR 
+colormats_2D(df_glow_TSRhigh, :g_pro, :prob_herb_eff, :sur_g, output_loc, 
+  "herb_eff_g_pro_lowg_highTSR_surg.pdf", 1.9, "protective effect g (logits)", "survival suceptable", 
+  "sur_rr", "quant. res. low, TSR high")
+ 
+# source pop high g , low TSR 
+colormats_2D(df_ghigh_TSRlow, :g_pro, :prob_herb_eff, :sur_g, output_loc, 
+  "herb_eff_g_pro_highg_lowTSR_surg.pdf", 1.9, "protective effect g (logits)", "survival suceptable", 
+  "sur_rr", "quant. res. high, TSR low")
+   
+# source pop high g , high TSR 
+colormats_2D(df_ghigh_TSRhigh, :g_pro, :prob_herb_eff, :sur_g, output_loc, 
+  "herb_eff_g_pro_highg_highTSR_surg.pdf", 1.9, "protective effect g (logits)", "survival suceptable", 
+  "sur_rr", "quant. res. high, TSR low")
+  
+ 
+  
+  
+  
+  

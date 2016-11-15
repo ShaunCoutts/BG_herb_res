@@ -252,8 +252,8 @@ function colormats_2D(res_df::DataFrame, x_var::Symbol, y_var::Symbol, z_var::Sy
   plt = plot(layout = layout_arr, grid = false, background_color_outside = grey_pal[10], border = false,
     background_color = grey_pal[10], title = [inj_scen_name "" "a) empty" "" "b) naive" "c) exposed"],
     titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, legendfont = leg_font, 
-    size = (600 * adjust_scale, 600 * adjust_scale), xlabel = ["" "" x_lab "" x_lab x_lab], 
-    ylabel = ["" "" y_lab "" y_lab y_lab])
+    size = (700 * adjust_scale, 600 * adjust_scale), xlabel = ["" "" x_lab "" x_lab x_lab], 
+    ylabel = ["" "" y_lab "" y_lab ""])
  
   # set up the plotting axes
   x_ax = unique(res_df[x_var])
@@ -280,7 +280,7 @@ function colormats_2D(res_df::DataFrame, x_var::Symbol, y_var::Symbol, z_var::Sy
  
   contour!(x_ax, y_ax, z_mat_empty, fill = true, subplot = 3) 
   contour!(x_ax, y_ax, z_mat_naive, fill = true, subplot = 5) 
-  contour!(x_ax, y_ax, z_mat_expos, fill = true, subplot = 6, zlims = (0, 1)) 
+  contour!(x_ax, y_ax, z_mat_expos, fill = true, subplot = 6) 
   
   # save the figure 
   #get present directory top return the working folder later
@@ -301,3 +301,9 @@ function z_finder(targ_x, targ_y, search_array::Array{Any, 2})
   return search_array[(search_array[:, 1] .== targ_x) & (search_array[:, 2] .== targ_y), 3]
   
 end  
+
+function logit_sur_2_prob(logit_vect, base_sur::Float64)
+
+  return 1 ./ (1 + exp(-(base_sur - logit_vect))) 
+
+end
