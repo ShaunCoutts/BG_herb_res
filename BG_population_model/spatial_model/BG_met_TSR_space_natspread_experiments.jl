@@ -22,7 +22,7 @@ dg = 0.5;
 int_mean_g = 0.0;
 int_sd_g = 1.4142;
 
-x_dim = 500; # number of spatial evaluation points, actual landscape size is x_dim * dx
+x_dim = 150; # number of spatial evaluation points, actual landscape size is x_dim * dx
 dx = 1.0;
 source_locs = 1:20 # source population locations, at edge of landscape
 recive_locs = 21:x_dim
@@ -97,19 +97,119 @@ herb_nn_ls_empty = run_natspread(g_vals, x_dim, dg, num_iter, source_rr_reciv_em
   germ_prob, resist_G, fec_max, dd_fec, g_effect_fec, sur_tup, offspring_sd, 
   seed_disp_mat_1D, pollen_disp_mat, herb_app_none_expos);
 
+herb_en_ls_empty = run_natspread(g_vals, x_dim, dg, num_iter, source_rr_reciv_empty, 
+  source_Rr_reciv_empty, source_RR_reciv_empty, int_mean_g, int_sd_g, seed_sur, 
+  germ_prob, resist_G, fec_max, dd_fec, g_effect_fec, sur_tup, offspring_sd, 
+  seed_disp_mat_1D, pollen_disp_mat, herb_app_source_expos);
 
+herb_ne_ls_empty = run_natspread(g_vals, x_dim, dg, num_iter, source_rr_reciv_empty, 
+  source_Rr_reciv_empty, source_RR_reciv_empty, int_mean_g, int_sd_g, seed_sur, 
+  germ_prob, resist_G, fec_max, dd_fec, g_effect_fec, sur_tup, offspring_sd, 
+  seed_disp_mat_1D, pollen_disp_mat, herb_app_reciv_expos);
 
-run_natspread(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, 
-  num_iter::Int64, int_rr::Array{Float64, 1}, int_Rr::Array{Float64, 1}, 
-  int_RR::Array{Float64, 1}, int_mean_g::Float64, int_sd_g::Float64, seed_sur::Float64, 
-  germ_prob::Float64, resist_G::Array{String, 1}, fec_max::Float64, dd_fec::Float64, 
-  g_effect_fec::Array{Float64, 1}, sur_tup::Tuple{Float64, Array{Float64, 1}}, 
-  offspring_sd::Float64, seed_disp_mat_1D::Array{Float64, 2}, pollen_disp_mat::Array{Float64, 2}, 
-  herb_app::Array{Int64, 1})
-#Little test example down here to figure out how to plot a 2 color channle matrix 
+herb_ee_ls_empty = run_natspread(g_vals, x_dim, dg, num_iter, source_rr_reciv_empty, 
+  source_Rr_reciv_empty, source_RR_reciv_empty, int_mean_g, int_sd_g, seed_sur, 
+  germ_prob, resist_G, fec_max, dd_fec, g_effect_fec, sur_tup, offspring_sd, 
+  seed_disp_mat_1D, pollen_disp_mat, herb_app_all_expos);
+  
+herb_nn_ls_full = run_natspread(g_vals, x_dim, dg, num_iter, source_rr_reciv_full, 
+  source_Rr_reciv_full, source_RR_reciv_full, int_mean_g, int_sd_g, seed_sur, 
+  germ_prob, resist_G, fec_max, dd_fec, g_effect_fec, sur_tup, offspring_sd, 
+  seed_disp_mat_1D, pollen_disp_mat, herb_app_none_expos);
 
-# heat map attempt
-heatmap([RGBA(0.0, 0.0, 0.0, 1.0) RGBA(0.4, 1.0, 0.0, 1.0); 
-  RGBA(1.0, 0.4, 0.0, 1.0) RGBA(0.0, 0.0, 3.0, 1.0)])
+herb_en_ls_full = run_natspread(g_vals, x_dim, dg, num_iter, source_rr_reciv_full, 
+  source_Rr_reciv_full, source_RR_reciv_full, int_mean_g, int_sd_g, seed_sur, 
+  germ_prob, resist_G, fec_max, dd_fec, g_effect_fec, sur_tup, offspring_sd, 
+  seed_disp_mat_1D, pollen_disp_mat, herb_app_source_expos);
 
+herb_ne_ls_full = run_natspread(g_vals, x_dim, dg, num_iter, source_rr_reciv_full, 
+  source_Rr_reciv_full, source_RR_reciv_full, int_mean_g, int_sd_g, seed_sur, 
+  germ_prob, resist_G, fec_max, dd_fec, g_effect_fec, sur_tup, offspring_sd, 
+  seed_disp_mat_1D, pollen_disp_mat, herb_app_reciv_expos);
 
+herb_ee_ls_full = run_natspread(g_vals, x_dim, dg, num_iter, source_rr_reciv_full, 
+  source_Rr_reciv_full, source_RR_reciv_full, int_mean_g, int_sd_g, seed_sur, 
+  germ_prob, resist_G, fec_max, dd_fec, g_effect_fec, sur_tup, offspring_sd, 
+  seed_disp_mat_1D, pollen_disp_mat, herb_app_all_expos);
+
+  
+###########################################################################################
+## PLOT THE RESULTS
+# start getting the totnum for each scenario as will need this for all plots
+totnum_nn_empty = totnum_time_space(herb_nn_ls_empty, dg);
+totnum_nn_full = totnum_time_space(herb_nn_ls_full, dg);
+totnum_ne_empty = totnum_time_space(herb_ne_ls_empty, dg);
+totnum_ne_full = totnum_time_space(herb_ne_ls_full, dg);
+totnum_en_empty = totnum_time_space(herb_en_ls_empty, dg);
+totnum_en_full = totnum_time_space(herb_en_ls_full, dg);
+totnum_ee_empty = totnum_time_space(herb_ee_ls_empty, dg);
+totnum_ee_full = totnum_time_space(herb_ee_ls_full, dg);
+
+totnum_max = maximum(hcat(totnum_nn_empty, totnum_nn_full, totnum_ne_empty,
+  totnum_ne_full, totnum_en_empty, totnum_en_full, totnum_ee_empty, totnum_ee_full));
+  
+proR_nn_empty = proR_time_space(herb_nn_ls_empty, dg);
+proR_nn_full = proR_time_space(herb_nn_ls_full, dg);
+proR_ne_empty = proR_time_space(herb_ne_ls_empty, dg);
+proR_ne_full = proR_time_space(herb_ne_ls_full, dg);
+proR_en_empty = proR_time_space(herb_en_ls_empty, dg);
+proR_en_full = proR_time_space(herb_en_ls_full, dg);
+proR_ee_empty = proR_time_space(herb_ee_ls_empty, dg);
+proR_ee_full = proR_time_space(herb_ee_ls_full, dg);
+
+proR_max = maximum(hcat(proR_nn_empty, proR_nn_full, proR_ne_empty,
+  proR_ne_full, proR_en_empty, proR_en_full, proR_ee_empty, proR_ee_full));
+  
+# start by making the colormats for pro_R
+colmat_nn_empty = colmat_2channel(totnum_nn_empty, proR_nn_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_nn_full = colmat_2channel(totnum_nn_full, proR_nn_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_ne_empty = colmat_2channel(totnum_ne_empty, proR_ne_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_ne_full = colmat_2channel(totnum_ne_full, proR_ne_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_en_empty = colmat_2channel(totnum_en_empty, proR_en_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_en_full = colmat_2channel(totnum_en_full, proR_en_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_ee_empty = colmat_2channel(totnum_ee_empty, proR_ee_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_ee_full = colmat_2channel(totnum_ee_full, proR_ee_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+
+#make a grey scale to choose some shades from 
+grey_pal = colormap("Grays", 100);
+adjust_scale = 1.9;
+
+# set up the fonts fo all the labels first 
+ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+title_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+ 
+# now make the plots 
+layout_arr = @layout grid(4, 3); 
+  
+plt = plot(layout = layout_arr, grid = false, background_color_outside = grey_pal[10], 
+  border = false, background_color = grey_pal[10],   
+  title = ["a) source naive, recive naive" "b) source naive, recive exposed" "" "" "" "legend" "c) source exposed, recive naive" "d) source exposed, recive exposed" "" "" "" ""],
+  titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, 
+  legendfont = leg_font, size = (700 * adjust_scale, 600 * adjust_scale), 
+  xlabel = ["" "" "" "" "" "density" "" "" "" "time" "time" ""], 
+  ylabel = ["space" "" "" "space" "" "%R" "space" "" "" "space" "" ""])
+
+heatmap!(plt, colmat_nn_empty, subplot = 1, xlim = (0, 50), ylim = (0, x_dim))
+heatmap!(plt, colmat_nn_full, subplot = 4, xlim = (0, 50), ylim = (0, x_dim))
+
+heatmap!(plt, colmat_ne_empty, subplot = 2, xlim = (0, 50), ylim = (0, x_dim))
+heatmap!(plt, colmat_ne_full, subplot = 5, xlim = (0, 50), ylim = (0, x_dim))
+
+heatmap!(plt, colmat_en_empty, subplot = 7, xlim = (0, 50), ylim = (0, x_dim))
+heatmap!(plt, colmat_en_full, subplot = 10, xlim = (0, 50), ylim = (0, x_dim))
+
+heatmap!(plt, colmat_ee_empty, subplot = 8, xlim = (0, 50), ylim = (0, x_dim))
+heatmap!(plt, colmat_ee_full, subplot = 11, xlim = (0, 50), ylim = (0, x_dim))
+
+# run for 150 years to make a square matrix and see how this plays out over time 
+# also make a lagend, and repeate for sur rr and %R*sur_rr (to see where we get both)

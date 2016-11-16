@@ -307,3 +307,42 @@ function logit_sur_2_prob(logit_vect, base_sur::Float64)
   return 1 ./ (1 + exp(-(base_sur - logit_vect))) 
 
 end
+
+##############################################################################################
+## PLOTTING FOR THE NATURAL SPREAD EXPERIMENTS ###############################################
+
+proR_time_space(herb_en_ls_empty, dg)
+totnum_time_space(herb_en_ls_empty, dg)
+sur_g_time_space(herb_en_ls_empty[3], dg, g_vals, herb_effect, 
+  base_sur, g_prot)
+
+# take 2 matricies of floats, produce a matrix of HSL colors using 2 channles, 
+# the first channle controls lightness, 2nd channle does hue 
+function colmat_2channel(mat1::Array{Float64, 2}, mat2::Array{Float64, 2}, 
+  min_light::Float64, max_light::Float64, hue_start::Float64, hue_end::Float64, 
+  min_c1::Float64, max_c1::Float64, min_c2::Float64, max_c2::Float64)
+  
+  # map all vlaues in mat1 to scale between min_light and max_light
+  mat_dim = size(mat1) # use same size for both mats so it throws an error if they are different shapes
+  col_mat = Array{RGB{Float64}, 2}(mat_dim)
+  for y in 1:mat_dim[1]
+    for x in 1:mat_dim[2]
+      
+      light = rescale(mat1[y, x], min_c1, max_c1, min_light, max_light)
+      hue = rescale(mat2[y, x], min_c2, max_c2, hue_start, hue_end)
+      col_mat[y, x] = convert(RGB, HSL(hue, 1.0, light))
+   
+    end
+  end
+  
+  return col_mat
+  
+end
+
+function rescale(x::Float64, old_min::Float64, old_max::Float64,
+  new_min::Float64, new_max::Float64)
+  
+  return (((new_max - new_min) * (x - old_min)) / (old_max - old_min)) + new_min  
+  
+end
+ 

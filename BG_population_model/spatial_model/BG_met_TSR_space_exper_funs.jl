@@ -421,13 +421,13 @@ end
 # series of functions to reduce the output of a nat spread run to a 
 # 2D matrix of a metric 
 
-function proR_time_space(natspread_out_tup)
+function proR_time_space(natspread_out_tup, dg::Float64)
   
   out_dims = size(natspread_out_tup[1])
   #get total numbers at each location and time, summing over g
-  num_RR = reshape(sum(natspread_out_tup[1], 1), out_dims[2:3])
-  num_Rr = reshape(sum(natspread_out_tup[2], 1), out_dims[2:3])
-  num_rr = reshape(sum(natspread_out_tup[3], 1), out_dims[2:3])
+  num_RR = reshape(sum(natspread_out_tup[1], 1) * dg, out_dims[2:3])
+  num_Rr = reshape(sum(natspread_out_tup[2], 1) * dg, out_dims[2:3])
+  num_rr = reshape(sum(natspread_out_tup[3], 1) * dg, out_dims[2:3])
   
   # calc proportion R and turn any areas with no individuals present to 0
   pro_R = (2 * num_RR + num_Rr) ./ (2 * (num_RR + num_Rr + num_rr))
@@ -437,23 +437,36 @@ function proR_time_space(natspread_out_tup)
 
 end
 
-function totnum_time_space(natspread_out_tup)
+function totnum_time_space(natspread_out_tup, dg::Float64)
   
   out_dims = size(natspread_out_tup[1])
   #get total numbers at each location and time, summing over g
-  num_RR = reshape(sum(natspread_out_tup[1], 1), out_dims[2:3])
-  num_Rr = reshape(sum(natspread_out_tup[2], 1), out_dims[2:3])
-  num_rr = reshape(sum(natspread_out_tup[3], 1), out_dims[2:3])
+  num_RR = reshape(sum(natspread_out_tup[1], 1) * dg, out_dims[2:3])
+  num_Rr = reshape(sum(natspread_out_tup[2], 1) * dg, out_dims[2:3])
+  num_rr = reshape(sum(natspread_out_tup[3], 1) * dg, out_dims[2:3])
   
   return num_RR + num_Rr + num_rr
 
 end
 
-function sur_rr_time_space(natspread_out_tup)
+function sur_g_time_space(natspread_out_ls::Array{Float64, 3}, dg::Float64,
+  g_vals::Array{Float64, 1}, herb_ef::Float64, s0::Float64, g_pro::Float64)
 
-# output[7, t] is the mean g of rr indivuduals 
-g_2_sur(output[7, t], herb_ef, s0, g_pro)
-
-# tomorrow finish this, run the stuff then do the plots, make the 2 channle plot 
-
+  dims = size(natspread_out_ls)
+  out = zeros(dims[2:3])
+  for t in 1:dims[3]
+    for x in 1:dims[2]
+      
+      num_loc = sum(natspread_out_ls[:, x, t]) * dg
+      if num_loc > 0.0
+	out[x, t] = g_2_sur((sum(natspread_out_ls[:, x, t] .* g_vals) * dg) ./ num_loc, 
+	  herb_ef, s0, g_pro)
+      else
+	out[x, t] = 0.0
+      end
+    end
+  end
+  
+  return out
+  
 end
