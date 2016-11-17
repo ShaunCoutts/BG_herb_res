@@ -311,11 +311,6 @@ end
 ##############################################################################################
 ## PLOTTING FOR THE NATURAL SPREAD EXPERIMENTS ###############################################
 
-proR_time_space(herb_en_ls_empty, dg)
-totnum_time_space(herb_en_ls_empty, dg)
-sur_g_time_space(herb_en_ls_empty[3], dg, g_vals, herb_effect, 
-  base_sur, g_prot)
-
 # take 2 matricies of floats, produce a matrix of HSL colors using 2 channles, 
 # the first channle controls lightness, 2nd channle does hue 
 function colmat_2channel(mat1::Array{Float64, 2}, mat2::Array{Float64, 2}, 
@@ -345,4 +340,82 @@ function rescale(x::Float64, old_min::Float64, old_max::Float64,
   return (((new_max - new_min) * (x - old_min)) / (old_max - old_min)) + new_min  
   
 end
- 
+
+function legend_colmat(min_x::Float64, max_x::Float64, min_y::Float64, max_y::Float64,
+  min_light::Float64, max_light::Float64, hue_start::Float64, hue_end::Float64)
+  
+  resolution = 100
+  x_ax = transpose(repeat(linspace(min_x, max_x, resolution), outer = (1, resolution)))
+  y_ax = repeat(linspace(min_y, max_y, resolution), outer = (1, resolution))
+  y_ax = y_ax[end:-1:1, :]
+  
+  col_leg = colmat_2channel(x_ax, y_ax, min_light, max_light, hue_start, hue_end, 
+    min_x, max_x, min_y, max_y)
+  
+ return col_leg 
+  
+end
+
+# grid of two channel heat maps to show how populations change over time
+# pass in 6 colormatircies to plot 
+function dualchan_heatmap_grid(ee_empty::Array{RGB{Float64}, 2}, ee_full::Array{RGB{Float64}, 2},
+  ne_empty::Array{RGB{Float64}, 2}, ne_full::Array{RGB{Float64}, 2}, en_empty::Array{RGB{Float64}, 2},
+  en_full::Array{RGB{Float64}, 2}, adjust_scale::Float64, light_max::Float64, z_min::Float64, z_max::Float64, 
+  z_lab::String, hue_min::Float64, hue_max::Float64, output_loc::String, output_name::String)
+
+  #make a grey scale to choose some shades from 
+  grey_pal = colormap("Grays", 100);
+
+  # set up the fonts fo all the labels first 
+  ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  title_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  
+  # bit of annotation to label regions
+  ann_lab_source = Plots.PlotText("source of TSR", Plots.Font("FreeSans", 10, :hleft, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0)))
+  ann_lab_recive = Plots.PlotText("reciving area", Plots.Font("FreeSans", 10, :hleft, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0)))
+
+  # now make the plots 
+  layout_arr = @layout [grid(2, 3) a{0.1w}]; 
+    
+  plt = plot(layout = layout_arr, grid = false, background_color_outside = grey_pal[10], 
+    border = false, background_color = grey_pal[10],   
+    title = ["a) source exposed\n    recive exposed" "b) source naive\n    recive exposed" "c) source exposed\n    recive naive"  "d)" "e)" "f)" ""],
+    titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, 
+    legendfont = leg_font, size = (600 * adjust_scale, 400 * adjust_scale), 
+    xlabel = ["" "" "" "time (years)" "time (years)" "tiome (years)" ""], 
+    ylabel = ["space (m)" "" "" "space (m)" "" "" z_lab]);
+
+  heatmap!(plt, ee_empty, subplot = 1, annotations = [(10, 10, ann_lab_source), (10, 30, ann_lab_recive)], 
+    xticks = []);
+  heatmap!(plt, ee_full, subplot = 4);
+
+  heatmap!(plt, ne_empty, subplot = 2, xticks = [], yticks = []);
+  heatmap!(plt, ne_full, subplot = 5, yticks = []);
+
+  heatmap!(plt, en_empty, subplot = 3, xticks = [], yticks = []);
+  heatmap!(plt, en_full, subplot = 6, yticks = []);
+
+  leg_mat = legend_colmat(light_max, light_max + 1, z_min, z_max, 0.5, 0.5, hue_min, hue_max)
+  heatmap!(plt, leg_mat, subplot = 7, yticks = ([100, 75, 50, 25, 1], [z_min, (z_max * 0.25) + z_min, 
+    (z_max * 0.5) + z_min, (z_max * 0.75) + z_min, z_max]), xticks = [], aspect_ratio = 3.0);
+  #add line to show the source and sink
+  for i in 1:6
+    plot!(plt, [1, num_iter], [source_locs[end], source_locs[end]], subplot = i, label = "",
+      linecolor = :black);
+  end
+  plot!(plt, [1, num_iter], [source_locs[end], source_locs[end]], subplot = 1, label = "",
+      linecolor = :black);
+
+  # save the figure 
+  #get present directory top return the working folder later
+  int_file_loc = pwd()
+  #set output locaiton
+  cd(output_loc)
+  savefig(plt, output_name)
+  cd(int_file_loc)
+
+  return nothing
+
+end

@@ -4,7 +4,7 @@
 
 ########################################################################################################3
 using DataFrames
-
+output_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/" 
 @everywhere file_loc_func_p = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model" 
 @everywhere cd(file_loc_func_p)
 @everywhere include("BG_met_TSR_space_exper_funs.jl")
@@ -30,7 +30,7 @@ recive_locs = 21:x_dim
 int_num_RR = 0.1;
 int_num_Rr = 0.0;
 int_num_rr = 10.0; # number of intial seeds at each location for each genoptype, assume only TS susceptible
-num_iter = 50;
+num_iter = 150;
 
 seed_pro_short = 0.4; 
 seed_mean_dist_short = 0.5; 
@@ -42,7 +42,7 @@ shape_pollen = 3.23;
 offspring_sd = 1.0;
 fec_max = 45.0;
 fec0 = 10.0;
-fec_cost = 0.3;
+fec_cost = 1.0;
 dd_fec = 0.15;
 base_sur = 10.0; 
 herb_effect = 15.0; 
@@ -148,6 +148,7 @@ totnum_ee_full = totnum_time_space(herb_ee_ls_full, dg);
 totnum_max = maximum(hcat(totnum_nn_empty, totnum_nn_full, totnum_ne_empty,
   totnum_ne_full, totnum_en_empty, totnum_en_full, totnum_ee_empty, totnum_ee_full));
   
+# pro_R summary
 proR_nn_empty = proR_time_space(herb_nn_ls_empty, dg);
 proR_nn_full = proR_time_space(herb_nn_ls_full, dg);
 proR_ne_empty = proR_time_space(herb_ne_ls_empty, dg);
@@ -159,12 +160,29 @@ proR_ee_full = proR_time_space(herb_ee_ls_full, dg);
 
 proR_max = maximum(hcat(proR_nn_empty, proR_nn_full, proR_ne_empty,
   proR_ne_full, proR_en_empty, proR_en_full, proR_ee_empty, proR_ee_full));
+
+# sur_rr_summary  
+surg_nn_empty = sur_g_time_space(herb_nn_ls_empty[3], dg, g_vals, herb_effect, 
+  base_sur, g_prot);
+surg_nn_full = sur_g_time_space(herb_nn_ls_full[3], dg, g_vals, herb_effect, 
+  base_sur, g_prot);
+surg_ne_empty = sur_g_time_space(herb_ne_ls_empty[3], dg, g_vals, herb_effect, 
+  base_sur, g_prot);
+surg_ne_full = sur_g_time_space(herb_ne_ls_full[3], dg, g_vals, herb_effect, 
+  base_sur, g_prot);
+surg_en_empty = sur_g_time_space(herb_en_ls_empty[3], dg, g_vals, herb_effect, 
+  base_sur, g_prot);
+surg_en_full = sur_g_time_space(herb_en_ls_full[3], dg, g_vals, herb_effect, 
+  base_sur, g_prot);
+surg_ee_empty = sur_g_time_space(herb_ee_ls_empty[3], dg, g_vals, herb_effect, 
+  base_sur, g_prot);
+surg_ee_full = sur_g_time_space(herb_ee_ls_full[3], dg, g_vals, herb_effect, 
+  base_sur, g_prot);
+
+###################################################################################################
+# make the plots
   
 # start by making the colormats for pro_R
-colmat_nn_empty = colmat_2channel(totnum_nn_empty, proR_nn_empty, 1.0, 0.5, 175.05, 360.0, 
-  0.0, totnum_max, 0.0, 1.0);
-colmat_nn_full = colmat_2channel(totnum_nn_full, proR_nn_full, 1.0, 0.5, 175.05, 360.0, 
-  0.0, totnum_max, 0.0, 1.0);
 colmat_ne_empty = colmat_2channel(totnum_ne_empty, proR_ne_empty, 1.0, 0.5, 175.05, 360.0, 
   0.0, totnum_max, 0.0, 1.0);
 colmat_ne_full = colmat_2channel(totnum_ne_full, proR_ne_full, 1.0, 0.5, 175.05, 360.0, 
@@ -178,38 +196,44 @@ colmat_ee_empty = colmat_2channel(totnum_ee_empty, proR_ee_empty, 1.0, 0.5, 175.
 colmat_ee_full = colmat_2channel(totnum_ee_full, proR_ee_full, 1.0, 0.5, 175.05, 360.0, 
   0.0, totnum_max, 0.0, 1.0);
 
-#make a grey scale to choose some shades from 
-grey_pal = colormap("Grays", 100);
-adjust_scale = 1.9;
-
-# set up the fonts fo all the labels first 
-ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
-title_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
-leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
-tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
- 
-# now make the plots 
-layout_arr = @layout grid(4, 3); 
   
-plt = plot(layout = layout_arr, grid = false, background_color_outside = grey_pal[10], 
-  border = false, background_color = grey_pal[10],   
-  title = ["a) source naive, recive naive" "b) source naive, recive exposed" "" "" "" "legend" "c) source exposed, recive naive" "d) source exposed, recive exposed" "" "" "" ""],
-  titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, 
-  legendfont = leg_font, size = (700 * adjust_scale, 600 * adjust_scale), 
-  xlabel = ["" "" "" "" "" "density" "" "" "" "time" "time" ""], 
-  ylabel = ["space" "" "" "space" "" "%R" "space" "" "" "space" "" ""])
+dualchan_heatmap_grid(colmat_ee_empty, colmat_ee_full, colmat_ne_empty, colmat_ne_full, 
+  colmat_en_empty, colmat_en_full, 1.9, totnum_max, 0.0, 1.0, "%R", 175.05, 360.0, output_loc, 
+  "pro_R_time_space.pdf")
 
-heatmap!(plt, colmat_nn_empty, subplot = 1, xlim = (0, 50), ylim = (0, x_dim))
-heatmap!(plt, colmat_nn_full, subplot = 4, xlim = (0, 50), ylim = (0, x_dim))
+# survival colormats
+colmat_ne_empty = colmat_2channel(totnum_ne_empty, surg_ne_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_ne_full = colmat_2channel(totnum_ne_full, surg_ne_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_en_empty = colmat_2channel(totnum_en_empty, surg_en_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_en_full = colmat_2channel(totnum_en_full, surg_en_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_ee_empty = colmat_2channel(totnum_ee_empty, surg_ee_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_ee_full = colmat_2channel(totnum_ee_full, surg_ee_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
 
-heatmap!(plt, colmat_ne_empty, subplot = 2, xlim = (0, 50), ylim = (0, x_dim))
-heatmap!(plt, colmat_ne_full, subplot = 5, xlim = (0, 50), ylim = (0, x_dim))
+dualchan_heatmap_grid(colmat_ee_empty, colmat_ee_full, colmat_ne_empty, colmat_ne_full, 
+  colmat_en_empty, colmat_en_full, 1.9, totnum_max, 0.0, 1.0, "survival rr", 175.05, 360.0, output_loc, 
+  "sur_rr_time_space.pdf")
+ 
+# survival_rr and %R interaction colormats
+colmat_ne_empty = colmat_2channel(totnum_ne_empty, proR_ne_empty .* surg_ne_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_ne_full = colmat_2channel(totnum_ne_full,  proR_ne_full .* surg_ne_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_en_empty = colmat_2channel(totnum_en_empty,  proR_en_empty .* surg_en_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_en_full = colmat_2channel(totnum_en_full,  proR_en_full .* surg_en_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_ee_empty = colmat_2channel(totnum_ee_empty,  proR_ee_empty .* surg_ee_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_ee_full = colmat_2channel(totnum_ee_full,  proR_ee_full .* surg_ee_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
 
-heatmap!(plt, colmat_en_empty, subplot = 7, xlim = (0, 50), ylim = (0, x_dim))
-heatmap!(plt, colmat_en_full, subplot = 10, xlim = (0, 50), ylim = (0, x_dim))
-
-heatmap!(plt, colmat_ee_empty, subplot = 8, xlim = (0, 50), ylim = (0, x_dim))
-heatmap!(plt, colmat_ee_full, subplot = 11, xlim = (0, 50), ylim = (0, x_dim))
-
-# run for 150 years to make a square matrix and see how this plays out over time 
-# also make a lagend, and repeate for sur rr and %R*sur_rr (to see where we get both)
+dualchan_heatmap_grid(colmat_ee_empty, colmat_ee_full, colmat_ne_empty, colmat_ne_full, 
+  colmat_en_empty, colmat_en_full, 1.9, totnum_max, 0.0, 1.0, "survival rr x %R", 175.05, 360.0, output_loc, 
+  "sur_rr_and_proR_time_space.pdf")
+ 
