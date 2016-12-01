@@ -56,11 +56,11 @@ shape_pollen = 3.23;
 offspring_sd = 1.0;
 fec_max = 45.0;
 fec0 = 10.0;
-fec_cost = 0.3;
+fec_cost = 1.0;
 dd_fec = 0.15;
 base_sur = 10.0; 
-herb_effect = 15.0; 
-g_prot = 2.0; 
+herb_effect = 20.0; 
+g_prot = 2.5; 
 pro_exposed = 0.8;
 seed_sur = 0.45;
 germ_prob = 0.52;
@@ -172,10 +172,10 @@ df_g_pro = readtable("g_pro_prerun.csv", header = true)
 
 #plot these scenarios
 pop_res_4_scen(df_g_pro, :g_pro, [:pro_R, :sur_g], sink_col, 
-  output_loc, "effect_g_pro_resist.pdf", 1.9, "protective effect g", ["%R", "survival rr"], int_TSR_low, 
+  output_loc, "effect_g_pro_resist.pdf", 1.9, convert(String, L"$\rho$"), ["%R", "survival rr"], int_TSR_low, 
   inject_g_low, int_TSR_high, inject_g_high)
 
-
+  
 ### TSR in injected population
 TSR_var = collect(0 : 0.025 : 1)  
 TSR_rep = repmat(TSR_var, 2)

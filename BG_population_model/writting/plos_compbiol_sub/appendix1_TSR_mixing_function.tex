@@ -1,0 +1,45 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{setspace, graphicx, lineno, caption, color, float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amstext} %to enter text in mathematical formulae
+\usepackage[retainorgcmds]{IEEEtrantools}
+
+\usepackage[left=2.5cm,top=2.5cm,right=2.5cm, bottom=2.5cm,nohead]{geometry}
+\doublespacing
+%paragraph formatting
+\setlength{\parskip}{12pt}
+\setlength{\parindent}{0cm}
+
+\begin{document}
+\section*{Appendix 1. Target site mixing function}
+
+The target site mixing function
+\begin{subequations}
+\begin{equation}\label{eq:TSR_mixing_kern}
+	Q(G, G_m, G_p) = \frac{\sum_{\forall k \in G_m \times G_p} q(G, k)}{card\left( G_m \times G_p \right)}
+\end{equation}      
+\begin{equation}\label{eq:allel_count}
+	q(G, k) = \begin{cases}
+		1 &\text{if } a_1 \in k \bigwedge a_2 \in k\\
+		0 &\text{otherwise} 
+	\end{cases}, \text{where } G = \{a_1, a_2\}
+\end{equation} 
+\end{subequations}
+returns the fraction of seeds produced of target site genotype $G$ by parents of target site genotype $G_m$ and $G_p$. Each target site genotype is a set of two alleles, $G = \{a_1, a_2\}$, with $a_i \in \{R, r \}$, and full the set of target site resistant genotypes is $G \in \{\{R, R\}, \{R, r\}, \{r, r\} \}$. The numerator is the number of all possible combinations of $G_m\{a_i\}$ and $G_p\{a_j\}$ that result in genotype $G$. To achieve this we use a structure called a Cartesian product. The Cartesian product of sets $X$ and $Y$ ($X \times Y$) is the set of all ordered pairs $(x, y)$, with $x \in X$, $y \in Y$ and $(x, y) = (x', y')$ if and only if $x = x'$ and $y = y'$. To give a more concrete example we explicitly write out the Cartesian product when $G_m = \{R, r\}$ and $G_p = \{R, r\}$  
+\begin{equation*}
+	\{R, r\} \times \{R, r\} = \{(R, R), (R, r), (r, R), (r, r)\}
+\end{equation*}
+The task is now to find the number of these ordered pairs which contain both alleles present in the genotype of interest, $G$. To do this we use the function $q(G, k)$. Recall that $G = \{a_1, a_2\}$ and note that the variable $k$ is iterated over $G_m \times G_p$, which is the set of all possible ordered pairs of alleles in $G_m$ and $G_p$. To extend the example above if the genotype of interest is $\{R, r\}$ then 
+\begin{equation*}
+	\sum_{\forall k \in \{R, r\} \times \{R, r\}} q(\{R, r \}, k) = 2
+\end{equation*}    
+Since only two of the ordered pairs, $(R, r)$ and $(r, R)$ contain both $a_1 = R$ and $a_2 = r$. To make this a proportion of all possible combinations we divide by the cardinality of the Cartesian product, $card \left( G_m \times G_p \right)$. For example 
+\begin{equation*}
+	card\left( \{R, r\} \times \{R, r\} \right) = card\left( \{(R, R), (R, r), (r, R), (r, r)\} \right) = 4
+\end{equation*}
+
+\end{document}

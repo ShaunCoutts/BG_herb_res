@@ -15,6 +15,7 @@
 using Plots
 using StatPlots
 using Colors
+using LaTeXStrings
 # choose a backend for Plots to wrap, I use PyPlot here for high
 # levels of features 
 pyplot()
@@ -113,7 +114,7 @@ function pop_res_4_scen(res_df::DataFrame, x_var::Symbol, y_var::Array{Symbol, 1
   grey_pal = colormap("Grays", 100)
   
   # set up the fonts fo all the labels first 
-  ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
+  ax_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
   title_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
   leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
   tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0))
@@ -128,40 +129,43 @@ function pop_res_4_scen(res_df::DataFrame, x_var::Symbol, y_var::Array{Symbol, 1
   # plot the low g low TSR scen
   plot!(plt, res_df[(res_df[:inj_TSR] .== low_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[1], group = :scen, 
     subplot = 1, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = y_lab[1], 
-    label = ["empty-%R" "expos-%R" "naive-%R"])
+    label = ["empty-%R" "expos-%R" "naive-%R"], xticks = [])
 
   if length(y_var) == 2
     plot!(plt, res_df[(res_df[:inj_TSR] .== low_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[2], group = :scen, 
       subplot = 2, color = sink_col_ra, linewidth = 3, linestyle = :dash, 
-      label = ["empty-sur rr" "expos-sur rr" "naive-sur rr"], ylabel = y_lab[2], xlabel = "")
+      label = ["empty-sur rr" "expos-sur rr" "naive-sur rr"], ylabel = y_lab[2], xlabel = "", xforeground_color_axis = grey_pal[10])
   end
   
  
   # plot the low g, high TSR scen 
   plot!(plt, res_df[(res_df[:inj_TSR] .== high_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[1], group = :scen, 
-    subplot = 3, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "", legend = false)
+    subplot = 3, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "", legend = false, xticks = [])
  
   if length(y_var) == 2
     plot!(plt, res_df[(res_df[:inj_TSR] .== high_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[2], group = :scen, 
-      subplot = 4, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "",  linestyle = :dash, legend = false)
+      subplot = 4, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "",  linestyle = :dash, legend = false, 
+      xforeground_color_axis = grey_pal[10])
   end
     
    # plot the high g, low TSR scen 
   plot!(plt, res_df[(res_df[:inj_TSR] .== low_TSR_inj) & (res_df[:inj_g] .== high_g_inj), :], x_var, y_var[1], group = :scen, 
-    subplot = 5, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = y_lab[1], legend = false)
+    subplot = 5, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = y_lab[1], legend = false, xticks = [])
     
   if length(y_var) == 2
     plot!(plt, res_df[(res_df[:inj_TSR] .== low_TSR_inj) & (res_df[:inj_g] .== high_g_inj), :], x_var, y_var[2], group = :scen, 
-      subplot = 6, color = sink_col_ra, linewidth = 3, linestyle = :dash, legend = false, xlabel = x_lab, ylabel = y_lab[2])
+      subplot = 6, color = sink_col_ra, linewidth = 3, linestyle = :dash, legend = false, xlabel = x_lab, ylabel = y_lab[2], 
+      xforeground_color_axis = grey_pal[10])
   end
    
   # plot the high g, high TSR scen 
  
   plot!(plt, res_df[(res_df[:inj_TSR] .== high_TSR_inj) & (res_df[:inj_g] .== high_g_inj), :], x_var, y_var[1], group = :scen, 
-    subplot = 7, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "", legend = false)
+    subplot = 7, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "", legend = false, xticks = [])
   if length(y_var) == 2
     plot!(plt, res_df[(res_df[:inj_TSR] .== high_TSR_inj) & (res_df[:inj_g] .== high_g_inj), :], x_var, y_var[2], group = :scen, 
-      subplot = 8, color = sink_col_ra, linewidth = 3, linestyle = :dash, legend = false, xlabel = x_lab, ylabel = "")
+      subplot = 8, color = sink_col_ra, linewidth = 3, linestyle = :dash, legend = false, xlabel = x_lab, ylabel = "",
+      xforeground_color_axis = grey_pal[10])
   end
     
   # save the figure 
@@ -374,17 +378,17 @@ function dualchan_heatmap_grid(ee_empty::Array{RGB{Float64}, 2}, ee_full::Array{
   
   # bit of annotation to label regions
   ann_lab_source = Plots.PlotText("source of TSR", Plots.Font("FreeSans", 10, :hleft, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0)))
-  ann_lab_recive = Plots.PlotText("reciving area", Plots.Font("FreeSans", 10, :hleft, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0)))
+  ann_lab_recive = Plots.PlotText("receiving area", Plots.Font("FreeSans", 10, :hleft, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0)))
 
   # now make the plots 
   layout_arr = @layout [grid(2, 3) a{0.1w}]; 
     
   plt = plot(layout = layout_arr, grid = false, background_color_outside = grey_pal[10], 
     border = false, background_color = grey_pal[10],   
-    title = ["a) source exposed\n    recive exposed" "b) source naive\n    recive exposed" "c) source exposed\n    recive naive"  "d)" "e)" "f)" ""],
+    title = ["a) source exposed\n    receiving exposed" "b) source naive\n    receiving exposed" "c) source exposed\n    receiving naive"  "d)" "e)" "f)" ""],
     titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, 
     legendfont = leg_font, size = (600 * adjust_scale, 400 * adjust_scale), 
-    xlabel = ["" "" "" "time (years)" "time (years)" "tiome (years)" ""], 
+    xlabel = ["" "" "" "time (years)" "time (years)" "time (years)" ""], 
     ylabel = ["space (m)" "" "" "space (m)" "" "" z_lab]);
 
   heatmap!(plt, ee_empty, subplot = 1, annotations = [(10, 10, ann_lab_source), (10, 30, ann_lab_recive)], 
@@ -419,3 +423,6 @@ function dualchan_heatmap_grid(ee_empty::Array{RGB{Float64}, 2}, ee_full::Array{
   return nothing
 
 end
+
+
+# Implement a heat map plot of delta R0 from the natural spread experiments to get idea of fitness difference under herbicide 

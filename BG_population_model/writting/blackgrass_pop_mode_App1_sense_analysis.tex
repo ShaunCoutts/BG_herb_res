@@ -1,0 +1,142 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{setspace, graphicx, lineno, color, float}
+\usepackage{lscape}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{natbib}
+\usepackage{multirow} %connecting columns in tables
+\usepackage{multicol}
+\usepackage{longtable}
+\usepackage[retainorgcmds]{IEEEtrantools}
+%page set up
+\usepackage[left=2.5cm,top=2.5cm,right=2.5cm,bottom=2.5cm,nohead]{geometry}
+\usepackage{caption}
+\usepackage[table]{xcolor} 
+\setcounter{table}{0}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+
+\begin{document}
+\section*{Appendix 1: Parameter sanity check and sensitivity analysis}
+\subsubsection*{Parameter sanity check}
+We constrain the parameter space of the model to those parameter combinations that produce realistic population densities. We use data from 140 fields across England to define realistic population densities. These fields were visually inspected in July and August 2014, and every 20 m by 20 m grid square was assessed as being in one of four density classes; 0 (0 plants/20m$^2$), 1 (1 -- 160 plants/20m$^2$), 2 (160 -- 450 plants/20m$^2$), 3 (450 -- 1450 plants/20m$^2$) and 4 ($>$1450 plants/20m$^2$). The resistance status of each field to the three most common herbicide active ingredients was determined in a glass house trial. Seeds from 100 seed heads from 10 different locations in each field were taken post herbicide application (July -- August). These seeds were raised in a glass house and divided into three groups of 12 -- 19 plants (median 18) for each field. Each group was exposed to the herbicide 'Atlantis' (at 300 g ha$^{-1}$), 'Fenoxaprop' (at 1.25 L ha$^{-1}$) or 'Cycloxydim' (at 0.75 L ha$^{-1}$), mortality and any damage were recorded after 21 days. We assume that after 50 years of continuous herbicide use black grass population will be resistant, thus, we only included highly resistant fields, where survival to all herbicides was $>80\%$. We also only used fields that had been in winter wheat for 3 out of the last 4 years and which were winter wheat in the year of survey (2014). These restrictions left 46 fields. We use a randomization process to convert the density class of the highly resistant fields with the minimum (0.94) and maximum (4) observed mean density class into the number of of individuals per ha. 
+
+The first step of the randomization was to calculated the observed number of plants per 20m$^2$for each density class from \citealt{Quee2011}, shown in Table \ref{tab:den_lims}. These observations showed that there was a high degree of variability within density classes, and much overlap between classes. 
+
+\begin{table}[h]
+	\caption{number of plants per 20m$^2$ gird from \citealt{Quee2011}}
+	\label{tab:den_lims}
+	\centering
+\begin{tabular}{c p{2.5cm}}	\hline
+	density class & num. plants per 20m$^2$ \\
+	\hline
+	0 & 0 -- 69 \\
+	1 & 0 -- 2121 \\
+	2 & 69 -- 2900 \\
+	3 & 525 -- 7800 \\
+	4 & 1593 -- 7634 \\
+	\hline
+\end{tabular}   
+\end{table}
+
+In a further complication we only had the average density class for the 140 observed fields. To use this data to estimate the number of individuals per hectare we use a randomization within gird cells and across grid cells to make a theoretical 1ha field. We do so using the following procedure
+
+\begin{enumerate}
+	\item set a target mean density class (i.e. 0.94 or 4)
+	\item There are 25, 20m by 20m gird cells in a hectare. We randomly select a density class for each of the 25 grid cells. Record the mean density class.
+	\item Randomly change the density class of one grid cell. Take the mean density of this new set of 25 grid cells. If the new mean is closer to the target density class in step 1 than the mean density class of the old set  keep the random change.     
+	\item Repeat step 3 until the mean density class of the randomly generated set of 25 gird squares is within the acceptable error (0.02).
+	\item For each grid cell draw a number of individuals from a uniform distribution, with upper and lower limits set by the density class set in step 4 and the empirically observed number of individuals in each density class (Table \ref{tab:den_lims}). Record the number of individuals summed over all 25 grid cells.
+	\item Repeat steps 2 -- 5, 10,000 times to build a distribution of number of individuals per hectare.          
+\end{enumerate}
+
+This procedure was used to generate a distribution of possible number of individuals per hectare for fields with a mean density class of 0.94 and 4. The lower limit of our realistic population range (16,348) was the 2.5\% quantile of the distribution of individuals per hectare where the target mean density class was 0.94. The upper limit of our realistic population range (132,000) was the 97.5\% quantile of the distribution of individuals per hectare where the target mean density class was 4.      
+
+We use Latin hypercube sampling to evenly sample 24,000 parameter combinations across the parameter space. We run each set of parameters for 50 time steps with constant herbicide use, starting with an initial population of three seeds, one in each of the center three locations, with an initial frequency of the target site resistant genotype Rr, set by int$_{Rr}$. For each run we record the above ground post herbicide population after 50 time steps. Of the 24,000 parameter combinations tested 11,866 parameter produced black grass populations which fell in the acceptable range (16,348 -- 132,000 individuals per hectare).
+
+We use a Boosted Regression Tree (BRT) fit in R \citep{Rstat}, using the 'gbm' package \citep{Ridg2013}, to explore which parameter values were most important in keeping the model results inside the realistic range. We coded each parameter combination as either 1 (inside the range), or 0 (outside the range), and fit the BRT uisng 10 cross validation folds, with 10,000 trees, a learning rate of 0.05 and a maximum interaction depth of 4. This resulted in a BRT where the optimal number of trees (minimizing the error on the cross validation hold out group) was 9917. We use relative influence \citep{Frie2001, Elit2008} to determine how much influence each parameter had on the probability that a parameter set would be in the realistic range  (as determined above).    Two parameters, $f_\text{max}$ and $f_d$, have by far the most influence on whether a parameter set lead to a realistic population, with $\phi_b$ and $f_r$ having a lesser effect (Table \ref{tab:rel_inf_sanity_check}).  
+
+\begin{table}[H]
+	\caption{Relative influence of each parameter on the probability that a given parameter set will be in the realistic range. Relative influence sums to 1 over all parameters, with higher values indicating parameters that have more influence.}
+	\label{tab:rel_inf_sanity_check}
+	\centering
+		\includegraphics[height=120mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/sanity_check_rel_inf.pdf}
+\end{table}    
+
+We use partial dependence plots \citep{Elit2008} to show the marginal effect of the four most influential parameters on the probability of a given parameter set producing a realistic population. These parameters behave as expected. When $f_\text{max}$ is too low ($<$ 50) or too high ($>$ 200) the population density is unlike to fall in the realistic range. Although the exact limits are influenced by interactions with $f_d$, $\phi_b$ and $f_r$ (Figure \ref{fig:PDP_sanity_check}a, b, c). The value of $f_d$ is also important, and in general its value needs to be above 0.05 (Figure \ref{fig:PDP_sanity_check}d, e). However, this value was strongly influenced by an interaction with $f_\text{max}$. Higher values of $f_\text{max}$ required higher values of $f_d$ to produce realistic population densities (Figure \ref{fig:PDP_sanity_check}a).    
+
+\begin{figure}[H] 
+	\includegraphics[height=200mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/sanity_check_PDP.pdf}
+	\caption{Partial dependence plot of the marginal effect of the four most influential parameters on the probability of a parameter set producing a realistic population density. Pinks indicate low probability and blues indicate high probability. Each parameter is plotted in combination with all other parameters to show interactions.}
+	\label{fig:PDP_sanity_check}
+\end{figure}
+
+\subsection*{sensitivity analysis}
+We perform a global sensitivity analysis on this set of 11,866 sanity checked parameter combinations. We use a meta-modelling approach to global sensitivity analysis, where a statistical function (in this case BRTs) was used to find relationships between parameter values and salient measures of model performance \citep{Cout2014}. We use three measures of model performance, final R, survival under maximum $g$ and mean spread. Final $R$ is the proportion of all target site alleles in the population (both $r$ and $R$) that confer protection from herbicide (only $R$), after 50 time steps. 
+\begin{equation}\label{eq:fin_R}
+	\text{final R} = \frac{\left(2\int_x\int_g b(g, \text{RR}, x, t) + \int_x\int_g b(g, \text{Rr}, x, 50) \right)\text{d}x\text{d}g}{2\sum_{\forall G} \int_x\int_g b(g, G, x, 50)\text{d}x\text{d}g}
+\end{equation}
+Final $R$ indicates how much of the herbicide resistance in the population is due to target site resistance after 50 time steps. Final $R$ was also strongly correlated with how quickly the target site resistant allele ($R$) established and spread in the population.        
+
+Survival under maximum $g$ indicates how much effect quantitative herbicide resistance had in the time period when quantitative resistance score $g$ was at its highest ($g_\text{max}$).
+\begin{equation}\label{eq:sur_max_g}
+	\text{sur max g} = \frac{1}{1 + e^{-(s_0 - (\xi - \textbf{min}(\xi, \rho g_\text{max})))}}
+\end{equation}       
+Finally mean spread is the mean number of new locations with $\geq$ one seed in the seed bank at each time step. So that slow expansion due to a full landscape does not affect the estimate of spread speed the mean is only taken over time steps where $<$90\% of locations have $\geq 1$ seed in the seed bank.
+
+The interaction between these measures of population performance also gives insight into the behaviour of the model. Most runs resulted in $>$90\% of target site alleles in the population being $R$ after 50 time steps. In top row of Figure \ref{fig:hexbins} most parameter combinations result in high values of final R (dark bins only occur at high values of final R). Equally we see that the model produces many runs where survival under max $g$ is either near 0, or near 1, with many fewer runs in between these extremes (dark bins occur in the two top corners of the final R versus sur. under max $g$ plot \ref{fig:hexbins}). Is also appears that final R and survival under max $g$ interact. When survival under max $g$ is less than 0.97 final R is always near 1, and when survival under max $g$ is greater than 0.97 final R can take any value (although final R still tends to be near 1). This is because when quantitative resistance provides effective protection from herbicide (measured by survival under max $g$) there may be little selective pressure for target site resistance (measured by final R). Although even when quantitative resistance provides effective protection from herbicide there still can be selective pressure for target site resistance due to the higher cost of quantitative resistance, which is why there is the wide spread of final R at high survival under max $g$ (top-left Figure \ref{fig:hexbins}). 
+
+\begin{figure}[H] 
+	\centering
+	\includegraphics[height=170mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/model_behave_plots.pdf}
+	\caption{Three measures of model behaviour, along with time to $g_\text{max}$, plotted against each other for all 11,866 parameter combinations that passed the sanity check. The shade of each hex-bin indicates the number of parameter combinations which resulted in the model behaviour indicated by the axises. Note the different colour scales for each plot.}
+	\label{fig:hexbins}
+\end{figure}
+
+We can also see that when maximum $g$ is reached early (second column Figure \ref{fig:hexbins}) final R is always high. When quantitative resistance peaks early, rather than continuing to increase, it is because target site resistance increases quickly in the population, allowing quantitative resistance to reduce due to the fecundity cost. When target site resistance increases quickly then final R will always be high. When time to maximum $g$ is $>$ 15--20 time steps final R could take any value from 0--1.  
+
+We use BRTs to find and summarise the relationships between the parameter values and the three model outputs of interest, final R, survival under max $g$ and mean spread rate. For each measure we fit BRTs with 6-fold cross validation, 50,000 trees, a learning rate of 0.05 and a maximum interaction depth of 4. The number of trees that minimized error in held out cross validated group was 48,746 for final R, 49,958 for mean spread and 4,789 for survival under maximum $g$. As in the sanity check we use relative influence to measure how much each parameter influenced each measure of model behaviour. 
+
+\begin{table}[H]
+	\caption{Relative influence of each parameter on each measure of model behaviour.}
+	\label{tab:rel_inf_sen_al}
+	\centering
+		\includegraphics[height=120mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/sense_rel_inf_tables.pdf}
+\end{table}    
+    
+Final R is mainly influenced by the rate of decrease in fecundity with increasing quantitative resistance ($f_r$) and the protective effect of quantitative resistance score $g$ relative to the effect of herbicide ($\rho / \xi$). There is also a smaller effect of the proportion of target site resistant individuals in the initial population (int$_{Rr}$). survival under maximum $g$ is also controlled by these three parameters, although in contrast to final R, the protective effect of quantitative resistance is much more important than the fecundity cost of quantitative resistance (Table \ref{tab:rel_inf_sen_al}). Mean spread is mainly determined by the amount of long distance seed dispersal (controlled by $\omega_2$), the maximum number of seeds produced ($f_\text{max}$), with lesser contributions from seed bank survival ($\phi_b$), mean seed dispersal distance of the long distance kernel ($\mu_2$) and the strength of density dependence ($f_d$), Table \ref{tab:rel_inf_sen_al}.               
+
+\begin{figure}[H] 
+	\centering
+	\includegraphics[height=170mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/sense_PDP_fin_R.pdf}
+	\caption{Partial dependence plots of the marginal effect of the four most influential parameters on Final R. Parameters are plotted in combination with each other to show interactions. Blues indicate higher predicted values of final R, pinks indicate lower values. Note the different scales on each colour bar.}
+	\label{fig:fin_R_PDP}
+\end{figure}
+
+Unless $f_r$ is low ($f_r < 2$) final R is predicted to be near 1 (Figure \ref{fig:fin_R_PDP}a, b, c). $f_r$ also shows strong interactions with the protective effect of quantitative resistance score $g$ ($\rho / \xi$) and the initial frequency of target site Rr individuals. When the protective effect of quantitative resistance is low ($\rho / \xi < 0.5$) predicted final R is near 1 no matter the value of $f_r$. Likewise, when int$_Rr$ is  greater than 0.1 final R tends to be high regardless of the value of $f_r$. The effect of $\rho / \xi$ and $f_0$ on final R is smaller that that of $f_r$, note the colour scale of Figure \ref{fig:fin_R_PDP}e. Small values for both $f_0$ and $\rho / \xi$ lead to high values for final R, and vice versa.           
+
+\begin{figure}[H] 
+	\centering
+	\includegraphics[height=170mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/sense_PDP_max_g_sur.pdf}
+	\caption{Partial dependence plots of the marginal effect of the four most influential parameters on survival under maximum $g$. Parameters are plotted in combination with each other to show interactions. Blues indicate higher predicted values of survival under maximum $g$, pinks indicate lower values. Note the different scales on each colour bar.}
+	\label{fig:sur_mg_PDP}
+\end{figure}
+
+The protective effect of quantitative resistance ($\rho / \xi$) had by far the largest effect on survival under maximum $g$. Generally if $\rho / \xi > 0.5$ then survival under maximum $g$ was near 1, and if $\rho / \xi < 0.5$ then survival under maximum $g$ was near 0 (Figure \ref{fig:sur_mg_PDP}a,b,c). there were less interactions influencing survival under maximum $g$, although higher values of $f_r$ meant $\rho / \xi$ had to be $> 1$ for survival under maximum $g$ to be near 1 (Figure \ref{fig:sur_mg_PDP}a). The other parameters affected survival under maximum $g$ in the expected directions (Figure \ref{fig:sur_mg_PDP}d,e,f).     
+
+\begin{figure}[H] 
+	\centering
+	\includegraphics[height=170mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/sense_PDP_mean_spread.pdf}
+	\caption{Partial dependence plots of the marginal effect of the five most influential parameters on mean spread. Parameters are plotted in combination with each other to show interactions. Blues indicate higher predicted values of survival under maximum $g$, pinks indicate lower values. Note the different scales on each colour bar.}
+	\label{fig:mean_spread_PDP}
+\end{figure}
+
+Mean spread rate is mainly driven by the longer distance dispersal kernel. The long distance seed dispersal kernel is controlled by $\omega_2$, the proportion of seeds that disperse to the mean dispersal distance $\mu_2$. The effect of these parameters is shown in Figure \ref{fig:mean_spread_PDP}a,b,c,d,f,h,j). The strongest interactions are between $\omega_2$ and $f_\text{max}$, and $\omega_2$ and $\phi_b$ (Figure \ref{fig:mean_spread_PDP}a,b). In general when $\omega_2$ is lower (i.e. more seeds are dispersed further than the mean dispersal distance) mean spread rate is faster. However, this is not the case when either $f_\text{max}$ (Figure \ref{fig:mean_spread_PDP}a) or $\phi_b$ (Figure \ref{fig:mean_spread_PDP}b) is very low. There is also an interaction between mean dispersal distance, $\mu_2$, and seed survival $\phi_b$. In general mean spread rate increases with increasing seed survival (Figure \ref{fig:mean_spread_PDP}i). However, when $\mu_2$ is low mean spread rate increases much more slowly with increasing $\phi_b$ (Figure \ref{fig:mean_spread_PDP}h).         
+
+
+\bibliographystyle{/home/shauncoutts/Dropbox/shauns_paper/referencing/bes} 
+\bibliography{/home/shauncoutts/Dropbox/shauns_paper/referencing/refs}
+
+\end{document}
