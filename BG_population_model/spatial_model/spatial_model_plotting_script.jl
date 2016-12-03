@@ -402,8 +402,8 @@ function dualchan_heatmap_grid(ee_empty::Array{RGB{Float64}, 2}, ee_full::Array{
   heatmap!(plt, en_full, subplot = 6, yticks = []);
 
   leg_mat = legend_colmat(light_max, light_max + 1, z_min, z_max, 0.5, 0.5, hue_min, hue_max)
-  heatmap!(plt, leg_mat, subplot = 7, yticks = ([100, 75, 50, 25, 1], [z_min, (z_max * 0.25) + z_min, 
-    (z_max * 0.5) + z_min, (z_max * 0.75) + z_min, z_max]), xticks = [], aspect_ratio = 3.0);
+  heatmap!(plt, leg_mat, subplot = 7, yticks = ([100, 75, 50, 25, 1], round([z_min, ((z_max - z_min) * 0.25) + z_min, 
+    ((z_max - z_min) * 0.5) + z_min, ((z_max - z_min) * 0.75) + z_min, z_max], 2)), xticks = [], aspect_ratio = 3.0);
   #add line to show the source and sink
   for i in 1:6
     plot!(plt, [1, num_iter], [source_locs[end], source_locs[end]], subplot = i, label = "",
@@ -424,5 +424,3 @@ function dualchan_heatmap_grid(ee_empty::Array{RGB{Float64}, 2}, ee_full::Array{
 
 end
 
-
-# Implement a heat map plot of delta R0 from the natural spread experiments to get idea of fitness difference under herbicide 

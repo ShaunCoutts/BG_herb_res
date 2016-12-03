@@ -470,3 +470,149 @@ function sur_g_time_space(natspread_out_ls::Array{Float64, 3}, dg::Float64,
   return out
   
 end
+
+
+# it is very hard to reason about the realative advantage TSR individuals have at a given point in
+# space and time since it is the result of both fecundity (which are influenced by density) and 
+# survival functions interacting with distribution of each TSR genotype over g.
+
+function TSR_adv_time_space(natspread_out_tup, dg::Float64, g_vals::Array{Float64, 1},
+  germ_prob::Float64, fec_max::Float64, g_effect_fec::Array{Float64, 1},  
+  dd_fec::Float64, sur_tup::Tuple{Float64, Array{Float64, 1}})
+ 
+  dims = size(natspread_out_tup[1])
+  out = zeros(dims[2:3])
+  
+  fec_corrected = fec_max / 3
+  
+  for t in 1:dims[3]
+    for x in 1:dims[2]
+
+      # calculate the distribution over g that emerge for each G
+      ag_RR = natspread_out_tup[1][:, x, t] * germ_prob
+      ag_Rr = natspread_out_tup[2][:, x, t] * germ_prob
+      ag_rr = natspread_out_tup[3][:, x, t] * germ_prob
+      
+      # total number of each G
+      num_RR = sum(ag_RR) * dg
+      num_Rr = sum(ag_Rr) * dg
+      num_rr = sum(ag_rr) * dg
+      num_tot = num_RR + num_Rr + num_rr
+      
+      # seeds produced by each G
+      seeds_g = fec_corrected ./ (1 + g_effect_fec .+ dd_fec * num_tot .+ dd_fec * (g_effect_fec * num_tot))
+      seeds_RR = seeds_g .* ag_RR
+      seeds_Rr = seeds_g .* ag_Rr
+      seeds_rr = seeds_g .* ag_rr
+      
+      # expected number of seeds each TSR and TSS
+      tot_repo_rr = sum(seeds_rr .* sur_tup[2]) * dg
+      tot_repo_R = sum((seeds_Rr + seeds_RR) * sur_tup[1]) * dg
+      
+      # mean number of seeds per individual both TSR and TSS
+      if num_rr != 0.0
+	E_rr = tot_repo_rr / num_rr
+      else
+	E_rr = 0.0
+      end
+      if (num_RR + num_Rr) != 0.0
+	E_R = tot_repo_R / (num_RR + num_Rr)
+      else
+	E_R = 0.0
+      end
+      
+      if E_rr != 0.0
+	out[x, t] = E_R / E_rr
+      else
+        out[x, t] = 0.0   
+      end
+      
+    end
+  end
+ 
+  return out
+ 
+end
+
+
+
+# create a function for just the realtive cost in terms of realative seed production 
+function TSR_rel_fec_time_space(natspread_out_tup, dg::Float64, g_vals::Array{Float64, 1},
+  germ_prob::Float64, fec_max::Float64, g_effect_fec::Array{Float64, 1},  
+  dd_fec::Float64)
+ 
+  dims = size(natspread_out_tup[1])
+  out = zeros(dims[2:3])
+  
+  fec_corrected = fec_max / 3
+  
+  for t in 1:dims[3]
+    for x in 1:dims[2]
+
+      # calculate the distribution over g that emerge for each G
+      ag_RR = natspread_out_tup[1][:, x, t] * germ_prob
+      ag_Rr = natspread_out_tup[2][:, x, t] * germ_prob
+      ag_rr = natspread_out_tup[3][:, x, t] * germ_prob
+      
+      # total number of each G
+      num_RR = sum(ag_RR) * dg
+      num_Rr = sum(ag_Rr) * dg
+      num_rr = sum(ag_rr) * dg
+      num_tot = num_RR + num_Rr + num_rr
+      
+      # seeds produced by each G
+      seeds_g = fec_corrected ./ (1 + g_effect_fec .+ dd_fec * num_tot .+ dd_fec * (g_effect_fec * num_tot))
+      seeds_RR = seeds_g .* ag_RR
+      seeds_Rr = seeds_g .* ag_Rr
+      seeds_rr = seeds_g .* ag_rr
+      
+      # expected number of seeds each TSR and TSS
+      tot_fec_rr = sum(seeds_rr) * dg
+      tot_fec_R = sum((seeds_Rr + seeds_RR)) * dg
+      
+      # mean number of seeds per individual both TSR and TSS
+      if num_rr != 0.0
+	E_rr = tot_fec_rr / num_rr
+      else
+	E_rr = 0.0
+      end
+      if (num_RR + num_Rr) != 0.0
+	E_R = tot_fec_R / (num_RR + num_Rr)
+      else
+	E_R = 0.0
+      end
+      
+      if E_rr != 0.0
+	out[x, t] = E_R / E_rr
+      else
+        out[x, t] = 0.0   
+      end
+      
+    end
+  end
+ 
+  return out
+ 
+end
+
+# Function that takes the output from a natspread run and calculates a area under the surface to test 
+# how much total R there is over time and space, an index of how important TSR was under a given parameter 
+# set
+
+function AUS_proR_surg(natspread_out_tup, dg::Float64, dx::Float64,
+  g_vals::Array{Float64, 1}, herb_ef::Float64, s0::Float64, g_pro::Float64)
+
+  proR = proR_time_space(natspread_out_tup, dg)
+  sur_rr = sur_g_time_space(natspread_out_tup[3], dg, g_vals, herb_ef, s0, g_pro)
+  
+  return (sum(proR .* sur_rr) * dx) / prod(size(proR))
+
+end
+
+function AUS_proR(natspread_out_tup, dg::Float64, dx::Float64)
+
+  proR = proR_time_space(natspread_out_tup, dg)
+  
+  return (sum(proR) * dx) / prod(size(proR))
+
+end
