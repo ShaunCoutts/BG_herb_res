@@ -424,3 +424,72 @@ function dualchan_heatmap_grid(ee_empty::Array{RGB{Float64}, 2}, ee_full::Array{
 
 end
 
+# Function to make a nice plot of the parameter sweeps over 2 parameters takes dataframes
+# produces a nice heat map plot
+function par_sweep_heatmap(dat_frame::DataFrame, adjust_scale::Float64, x_var::Symbol, x_lab::String, 
+  y_var::Symbol, y_lab::String, z_vars::Array{Symbol, 1}, z_min::Float64, z_max::Float64, z_lab::Array{String, 1}, 
+  hue_min::Float64, hue_max::Float64,output_loc::String, output_name::String)
+  
+  #make a grey scale to choose some shades from 
+  grey_pal = colormap("Grays", 100);
+
+  # set up the fonts fo all the labels first 
+  ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  title_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+ 
+  # actual plotting stuff
+  x_ax = round(convert(Array{Float64, 1}, unique(dat_frame[x_var])), 2)
+  y_ax = round(convert(Array{Float64, 1}, unique(dat_frame[y_var])), 2)
+  y_ax = y_ax[end:-1:1]
+  
+  len_x = length(x_ax)
+  len_y = length(y_ax)
+  x_tick_pos = convert(Array{Int64, 1}, ceil([1, (0.25 * len_x), (0.5 * len_x), (0.75 * len_x), (len_x - 1)])) 
+  y_tick_pos = convert(Array{Int64, 1}, ceil([1, (0.25 * len_y), (0.5 * len_y), (0.75 * len_y), len_y])) 
+  
+  # mask to make the 2 channel plotter work 
+  mask = ones(length(x_ax), length(y_ax))
+ 
+  # base plot to add things 2
+  layout_arr = @layout [[grid(1, 2) a{0.1w}]; [grid(1,2) a{0.1w}]]
+  plt = plot(layout = layout_arr, grid = false, background_color_outside = grey_pal[10], 
+    border = false, background_color = grey_pal[10],   
+    title = ["a) empty" "b) full" "" "c)"  "d)" ""],
+    titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, 
+    size = (600 * adjust_scale, 550 * adjust_scale), 
+    xlabel = ["" "" "" x_lab x_lab ""], ylabel = [y_lab "" z_lab[1] y_lab "" z_lab[2]],
+    xticks = [([], []) ([], []) ([], []) (x_tick_pos, x_ax[x_tick_pos]) (x_tick_pos, x_ax[x_tick_pos]) ([], [])],
+    yticks = [(y_tick_pos, y_ax[y_tick_pos]) ([], []) ([], []) (y_tick_pos, y_ax[y_tick_pos]) ([], []) ([], [])],
+    foreground_color_axis = grey_pal[10]);
+  
+  subplot_map = [1, 2, 4, 5]
+  
+  for i in 1:4
+    num_hold = convert(Array{Float64, 2}, reshape(dat_frame[z_vars[i]], (length(x_ax), length(y_ax))))
+    # turns numbers to colors
+    colmat_hold = colmat_2channel(mask, num_hold, 1.0, 0.5, hue_min, hue_max, 
+      0.0, 1.0, z_min, z_max)
+    colmat_hold = colmat_hold[end:-1:1, :]
+    heatmap!(plt, colmat_hold, subplot = subplot_map[i])
+  end
+  
+  leg_mat = legend_colmat(1.0, 2.0, z_min, z_max, 0.5, 0.5, hue_min, hue_max)
+  heatmap!(plt, leg_mat, subplot = 3, yticks = ([100, 75, 50, 25, 1], round([z_min, ((z_max - z_min) * 0.25) + z_min, 
+    ((z_max - z_min) * 0.5) + z_min, ((z_max - z_min) * 0.75) + z_min, z_max], 2)), xticks = [], aspect_ratio = 3.0);
+    
+  leg_mat = legend_colmat(1.0, 2.0, z_min, z_max, 0.5, 0.5, hue_min, hue_max)
+  heatmap!(plt, leg_mat, subplot = 6, yticks = ([100, 75, 50, 25, 1], round([z_min, ((z_max - z_min) * 0.25) + z_min, 
+    ((z_max - z_min) * 0.5) + z_min, ((z_max - z_min) * 0.75) + z_min, z_max], 2)), xticks = [], aspect_ratio = 3.0);
+  # save the figure 
+  #get present directory top return the working folder later
+  int_file_loc = pwd()
+  #set output locaiton
+  cd(output_loc)
+  savefig(plt, output_name)
+  cd(int_file_loc)
+
+  return nothing
+  
+end

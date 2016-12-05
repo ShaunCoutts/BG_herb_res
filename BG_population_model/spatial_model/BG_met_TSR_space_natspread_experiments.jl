@@ -426,5 +426,11 @@ end
 
 # This dataframe takes quiet a bit to produce, save results so I don't need to keep re-runing the model_output
 cd(output_loc)
-writetable("gpro_fr_sweep.csv", df_gpro_fr, header = true)
-#df_gpro_fr = readtable("gpro_fr_sweep.csv", header = true)
+#writetable("gpro_fr_sweep.csv", df_gpro_fr, header = true)
+df_gpro_fr = readtable("gpro_fr_sweep.csv", header = true)
+
+par_sweep_heatmap(df_gpro_fr, 1.3, :g_pros, convert(String, L"$\rho$"), :fr, convert(String, L"$f_r$"), [:proR_AUS_empty, :proR_AUS_full, 
+  :TSR_quant_AUS_empty, :TSR_quant_AUS_full], 0.0, 1.0, ["AUC %R", "AUC %R x sur rr"], 175.05, 360.0, 
+  output_loc, "g_pro_fr_par_sweep.pdf")
+
+  
