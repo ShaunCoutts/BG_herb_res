@@ -121,31 +121,32 @@ function pop_res_4_scen(res_df::DataFrame, x_var::Symbol, y_var::Array{Symbol, 1
   
   # make a grid of 8 empty plots with all the formatting on them 
   layout_arr = @layout [grid(2, 1) grid(2, 1); grid(2, 1) grid(2, 1)]
-  plt = plot(xlim = (x_min, x_max), ylim = (y_min, y_max), layout = layout_arr, grid = false, legend = :bottomleft,
+  plt = plot(xlim = (x_min, x_max), ylim = (y_min, y_max), layout = layout_arr, grid = false, legend = :bottomright,
     title = ["a) quant. res. low, TSR low" "" "b) quant. res. low. TSR high" "" "c) quant. res. high, TSR low" "" "d) quant. res. high, TSR high" ""],
     titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, legendfont = leg_font, 
     size = (600 * adjust_scale, 400 * adjust_scale), border = false, bg_inside = grey_pal[10])
   
   # plot the low g low TSR scen
   plot!(plt, res_df[(res_df[:inj_TSR] .== low_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[1], group = :scen, 
-    subplot = 1, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = y_lab[1], 
-    label = ["empty-%R" "expos-%R" "naive-%R"], xticks = [])
+    subplot = 1, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = y_lab[1], legend = false, 
+    xticks = [])
 
   if length(y_var) == 2
     plot!(plt, res_df[(res_df[:inj_TSR] .== low_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[2], group = :scen, 
-      subplot = 2, color = sink_col_ra, linewidth = 3, linestyle = :dash, 
-      label = ["empty-sur rr" "expos-sur rr" "naive-sur rr"], ylabel = y_lab[2], xlabel = "", xforeground_color_axis = grey_pal[10])
+      subplot = 2, color = sink_col_ra, linewidth = 3, linestyle = :dash, legend = false,
+      ylabel = y_lab[2], xlabel = "", xforeground_color_axis = grey_pal[10])
   end
   
  
   # plot the low g, high TSR scen 
   plot!(plt, res_df[(res_df[:inj_TSR] .== high_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[1], group = :scen, 
-    subplot = 3, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "", legend = false, xticks = [])
+    subplot = 3, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "", label = ["empty-%R" "expos-%R" "naive-%R"],  
+    xticks = [])
  
   if length(y_var) == 2
     plot!(plt, res_df[(res_df[:inj_TSR] .== high_TSR_inj) & (res_df[:inj_g] .== low_g_inj), :], x_var, y_var[2], group = :scen, 
-      subplot = 4, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "",  linestyle = :dash, legend = false, 
-      xforeground_color_axis = grey_pal[10])
+      subplot = 4, color = sink_col_ra, linewidth = 3, xlabel = "", ylabel = "",  linestyle = :dash, 
+      label = ["empty-sur rr" "expos-sur rr" "naive-sur rr"], xforeground_color_axis = grey_pal[10])
   end
     
    # plot the high g, low TSR scen 
@@ -492,4 +493,70 @@ function par_sweep_heatmap(dat_frame::DataFrame, adjust_scale::Float64, x_var::S
 
   return nothing
   
+end
+
+# PLots for presentations, show all measures for one scenario
+
+# grid of two channel heat maps to show how populations change over time
+# pass in 6 colormatircies to plot 
+function dualchan_heatmap_3measure(proR_empty::Array{RGB{Float64}, 2}, proR_full::Array{RGB{Float64}, 2},
+  surg_empty::Array{RGB{Float64}, 2}, surg_full::Array{RGB{Float64}, 2}, both_empty::Array{RGB{Float64}, 2},
+  both_full::Array{RGB{Float64}, 2}, adjust_scale::Float64, light_max::Float64, z_min::Float64, z_max::Float64, 
+  hue_min::Float64, hue_max::Float64, output_loc::String, output_name::String)
+
+  #make a grey scale to choose some shades from 
+  grey_pal = colormap("Grays", 100);
+
+  # set up the fonts fo all the labels first 
+  ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  title_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  
+  # bit of annotation to label regions
+  ann_lab_source = Plots.PlotText("source of TSR", Plots.Font("FreeSans", 10, :hleft, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0)))
+  ann_lab_recive = Plots.PlotText("receiving area", Plots.Font("FreeSans", 10, :hleft, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0)))
+
+  # now make the plots 
+  layout_arr = @layout [grid(2, 3) a{0.1w}]; 
+    
+  plt = plot(layout = layout_arr, grid = false, background_color_outside = grey_pal[10], 
+    border = false, background_color = grey_pal[10],   
+    title = ["%R" "sur rr" "%R x sur rr" "" "" "" ""],
+    titleloc = :center, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, 
+    legendfont = leg_font, size = (600 * adjust_scale, 400 * adjust_scale), 
+    xlabel = ["" "" "" "time (years)" "time (years)" "time (years)" ""], 
+    ylabel = ["space (m)" "" "" "space (m)" "" "" ""]);
+
+  heatmap!(plt, proR_empty, subplot = 1, annotations = [(10, 10, ann_lab_source), (10, 30, ann_lab_recive)], 
+    xticks = []);
+  heatmap!(plt, proR_full, subplot = 4);
+
+  heatmap!(plt, surg_empty, subplot = 2, xticks = [], yticks = []);
+  heatmap!(plt, surg_full, subplot = 5, yticks = []);
+
+  heatmap!(plt, both_empty, subplot = 3, xticks = [], yticks = []);
+  heatmap!(plt, both_full, subplot = 6, yticks = []);
+
+  leg_mat = legend_colmat(light_max, light_max + 1, z_min, z_max, 0.5, 0.5, hue_min, hue_max)
+  heatmap!(plt, leg_mat, subplot = 7, yticks = ([100, 75, 50, 25, 1], round([z_min, ((z_max - z_min) * 0.25) + z_min, 
+    ((z_max - z_min) * 0.5) + z_min, ((z_max - z_min) * 0.75) + z_min, z_max], 2)), xticks = [], aspect_ratio = 3.0);
+  #add line to show the source and sink
+  for i in 1:6
+    plot!(plt, [1, num_iter], [source_locs[end], source_locs[end]], subplot = i, label = "",
+      linecolor = :black);
+  end
+  plot!(plt, [1, num_iter], [source_locs[end], source_locs[end]], subplot = 1, label = "",
+      linecolor = :black);
+
+  # save the figure 
+  #get present directory top return the working folder later
+  int_file_loc = pwd()
+  #set output locaiton
+  cd(output_loc)
+  savefig(plt, output_name)
+  cd(int_file_loc)
+
+  return nothing
+
 end

@@ -189,21 +189,16 @@
 \newline
 % Insert author names, affiliations and corresponding author email (do not include titles, positions, or degrees).
 \\
-Name1 Surname\textsuperscript{1,2\Yinyang},
-Name2 Surname\textsuperscript{2\Yinyang},
-Name3 Surname\textsuperscript{2,3\textcurrency},
-Name4 Surname\textsuperscript{2},
-Name5 Surname\textsuperscript{2\ddag},
-Name6 Surname\textsuperscript{2\ddag},
-Name7 Surname\textsuperscript{1,2,3*},
-with the Lorem Ipsum Consortium\textsuperscript{\textpilcrow}
+Shaun Coutts\textsuperscript{1*},
+Rob Freckelton\textsuperscript{1},
+Helen Hicks\textsuperscript{1},
+Paul Neve\textsuperscript{2},
+Dylan Childs\textsuperscript{1},
 \\
 \bigskip
-\textbf{1} Affiliation Dept/Program/Center, Institution Name, City, State, Country
+\textbf{1} Animal and Plant Sciences, University of Sheffield, Sheffield, UK
 \\
 \textbf{2} Affiliation Dept/Program/Center, Institution Name, City, State, Country
-\\
-\textbf{3} Affiliation Dept/Program/Center, Institution Name, City, State, Country
 \\
 \bigskip
 
@@ -212,22 +207,22 @@ with the Lorem Ipsum Consortium\textsuperscript{\textpilcrow}
 % Remove or comment out the author notes below if they aren't used.
 %
 % Primary Equal Contribution Note
-\Yinyang These authors contributed equally to this work.
+%\Yinyang These authors contributed equally to this work.
 
 % Additional Equal Contribution Note
 % Also use this double-dagger symbol for special authorship notes, such as senior authorship.
-\ddag These authors also contributed equally to this work.
+%\ddag These authors also contributed equally to this work.
 
 % Current address notes
-\textcurrency Current Address: Dept/Program/Center, Institution Name, City, State, Country % change symbol to "\textcurrency a" if more than one current address note
+%\textcurrency Current Address: Dept/Program/Center, Institution Name, City, State, Country % change symbol to "\textcurrency a" if more than one current address note
 % \textcurrency b Insert second current address 
 % \textcurrency c Insert third current address
 
 % Deceased author note
-\dag Deceased
+%\dag Deceased
 
 % Group/Consortium Author Note
-\textpilcrow Membership list can be found in the Acknowledgments section.
+%\textpilcrow Membership list can be found in the Acknowledgments section.
 
 % Use the asterisk to denote corresponding authorship and provide email address in note below.
 * shaun.coutts@gmail.com
@@ -247,7 +242,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur eget porta er
 \section*{Introduction}
 There is currently a global resistance crisis \cite{Serv2013, Ross2014} and important antibiotics, pesticides and herbicides are losing their efficacy \cite{Palu2001}. Together, these chemical tools are a crucial part of the worlds food productions system \cite{Duke2012}, and are used worldwide to control life threatening bacterial infections and diseases spread by insects \cite{Nkya2013}, however, evolving resistance threatens their continued use \cite{Barb2011, Nkya2013}. Economic and regulatory conditions mean that bringing new, safe, effective, compounds to market is time consuming and expensive \cite{Duke2012}. In addition, the useful life of new chemical tools can be as short as three years if their use is not well managed \cite{Palu2001, Duke2012}. To address this crisis and reduce its impact we need to understand where and when resistance will evolve, and under what conditions. 
 
-Until recently, target site resistance, conferred a single gene of large effect, has formed the basis of our understanding of resistance, and the evolution of target site resistance is well understood \cite{Neve2007}. However, evolutionary biologists have recognized a continuum in the genetic architecture underlying any given trait since the early 20th century (genetic architecture \textit{sensu} \cite{Deba2015}, the number and effect size of loci contributing to a trait). At one extreme traits are controlled by a single loci of large effect (as in the case of target site resistance), and at the other polygenic, quantitative traits, are controlled by smaller additive effects of many genes \cite{Land1989, Mack2009, Rajo2013}. There is growing evidence that within the same population, resistance can be conferred by genetic architectures at both extremes \cite{Donn2009, Bing2011, Hend2013, Oake2013, Bauc2016}. The implications for the evolution of these multi-architecture traits remains largely unexplored, and how multi-architecture traits interact over space is not well understood (see \cite{Deba2015}, \cite{Yeam2015} for exceptions). Such an understanding will be crucial to predict how target site and quantitative resistance interact to drive the evolution and spread of resistant genotypes through populations.
+Until recently, target site resistance, conferred by a single gene of large effect, has formed the basis of our understanding of resistance, and the evolution of target site resistance is well understood \cite{Neve2007}. However, evolutionary biologists have recognized a continuum in the genetic architecture underlying any given trait since the early 20th century (genetic architecture \textit{sensu} \cite{Deba2015}, the number and effect size of loci contributing to a trait). At one extreme traits are controlled by a single loci of large effect (as in the case of target site resistance), and at the other polygenic, quantitative traits, are controlled by smaller additive effects of many genes \cite{Land1989, Mack2009, Rajo2013}. There is growing evidence that within the same population, resistance can be conferred by genetic architectures at both extremes \cite{Donn2009, Bing2011, Hend2013, Oake2013, Bauc2016}. The implications for the evolution of these multi-architecture traits remains largely unexplored, and how multi-architecture traits interact over space is not well understood (see \cite{Deba2015}, \cite{Yeam2015} for exceptions). Such an understanding will be crucial to predict how target site and quantitative resistance interact to drive the evolution and spread of resistant genotypes through populations.
 
 Target site resistance typically confers very high levels of resistance, and incurs very few life history costs (i.e. reductions in survival, growth and/or fecundity). Quantitative resistance is usually achieved by metabolizing the poison, or transporting the poison away from its binding site \cite{Bauc2016} and tends to confer lower levels of resistance and incur life history costs \cite{Bauc2016}. It is currently unknown how these two genetic architectures interact in the evolution of resistance. Naively, we might expect the architecture that evolves first to reduce the selective pressure for the second architecture, and so slow its evolution. However, there is some evidence from misquote control programs that low levels of resistance conferred via an inefficient quantitative pathway can increase the rate of evolution for a much less costly target site mutation that confers high levels of resistance \cite{Vera2015}.
 
@@ -357,7 +352,9 @@ The probability that a seed produced at maternal location $x_m$ is dispersed to 
 	\Upsilon_k = \frac{\Omega_k - 1}{{\Omega_k \mu_k}^{\Omega_k}}
 \end{equation}
 \end{subequations} 
-This double Weibull dispersal kernel was found to be the best fit to \textit{A. myosuroides} seed dispersal in a majority of cases \cite{Colb2001}. $\delta_{ij}$ is the distance between locations $i$ and $j$, $\alpha$ is the proportion of seeds in the short dispersal kernel rather than the long dispersal kernel, $\mu_k$ is the distance most seeds disperse to under kernel $k \in \{1, 2\}$. The skew of kernel $k$ is controlled by $\omega_k$, the proportion of seeds that disperse up to distance $\mu_k$. This kernel ignores dispersal by farm machinery \cite{Colb2001}.    
+This double Weibull dispersal kernel was found to be the best fit to \textit{A. myosuroides} seed dispersal in a majority of cases \cite{Colb2001}. $\delta_{ij}$ is the distance between locations $i$ and $j$, $\alpha$ is the proportion of seeds in the short dispersal kernel rather than the long dispersal kernel, $\mu_k$ is the distance most seeds disperse to under kernel $k \in \{1, 2\}$. The skew of kernel $k$ is controlled by $\omega_k$, the proportion of seeds that disperse up to distance $\mu_k$. This kernel ignores dispersal by farm machinery \cite{Colb2001}.
+
+The model was implemented in Julia version 0.5.0, and code for the model and plotting is available in \nameref{S1_File}.     
 
 \subsection*{Parametrization}
 Several of the population model parameters, particularly those relating to the quantitative genetic selection model, are unknown for our study system. However, we do have field observations with estimates of above ground plant densities and susceptibility to herbicide. While we cannot directly parametrize the model with this data, perform a basic sanity check and use this data to constrain the parameter space to regions that produce sensible results. We outline this procedure in \nameref{S2_Appendix}.  
@@ -419,7 +416,7 @@ Our aim is to generate hypotheses about how the initial conditions of the invasi
 
 % Results and Discussion can be combined.
 \section*{Results}
-The ecological and genetic background against which the invasion of the resistance genotype took place had an enormous effect on how the two genetic architectures underlying resistance (target site and quantitative resistance) interacted. In both the transplant and natural spread experiments it was only when populations with small amounts of target site resistance expanded into empty landscapes that target site resistance became the dominant mode of resistance. The details of how this develops over time are best shown by examining a run of the natural spread experiment (Fig. \ref{fig:pro_R_natspr}).    When the larger part of the landscape (the receiving area in Fig. \ref{fig:pro_R_natspr}) is exposed to herbicide, and the invasion is into an empty landscape (Fig. \ref{fig:pro_R_natspr}a,b), the target site resistance allele quickly becomes prevalent in the population. This occurred because under these conditions the target site resistance allele developed in the population early, before it has completely invaded into the empty area (white regions on the left hand side of the heat maps). After target site resistance had become established in the population it spread with the population and so became established over the whole landscape. Even when the source region was not exposed to herbicides, target site resistance alleles eventually invaded back into source population, leading to high levels of target site alleles in the part of the landscape that was not exposed to herbicide. When only the smaller source region is exposed to herbicide there is not enough selective pressure to drive the target site resistance allele into the unexposed area, although seed and pollen imports from the source region mean that approximately 10\% of target site alleles are resistant in the naive area (Fig. \ref{fig:pro_R_natspr}c).            
+The ecological and genetic background against which the invasion of the resistance genotype took place had an enormous effect on how the two genetic architectures underlying resistance (target site and quantitative resistance) interacted. In both the transplant and natural spread experiments it was only when populations with small amounts of target site resistance expanded into empty landscapes that target site resistance became the dominant mode of resistance. The details of how this develops over time are best shown by examining a run of the natural spread experiment (Fig. \ref{fig:pro_R_natspr}). When the larger part of the landscape (the receiving area in Fig. \ref{fig:pro_R_natspr}) is exposed to herbicide, and the invasion is into an empty landscape (Fig. \ref{fig:pro_R_natspr}a,b), the target site resistance allele quickly becomes prevalent in the population. This occurred because under these conditions the target site resistance allele developed in the population early, before it has completely invaded into the empty area (white regions on the left hand side of the heat maps). After target site resistance had become established in the population it spread with the population and so became established over the whole landscape. Even when the source region was not exposed to herbicides, target site resistance alleles eventually invaded back into source population, leading to high levels of target site alleles in the part of the landscape that was not exposed to herbicide. When only the smaller source region is exposed to herbicide there is not enough selective pressure to drive the target site resistance allele into the unexposed area, although seed and pollen imports from the source region mean that approximately 10\% of target site alleles are resistant in the naive area (Fig. \ref{fig:pro_R_natspr}c).            
 
 \begin{figure}[!h] 
 	\includegraphics[height=80mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/pro_R_time_space.pdf}
@@ -429,7 +426,7 @@ The ecological and genetic background against which the invasion of the resistan
 
 The dynamics of the system are very different when the target site alleles are invading into an area that already has \textit{A. myosuroides}. In these cases target site alleles invade very slowly (reds and purples stay near the source region in Fig. \ref{fig:pro_R_natspr}d,f). When the receiving region was exposed to herbicide the population already there developed high levels of quantitative resistance by the time the target site resistant alleles reached that part of the landscape (\nameref{S1_Fig}). These high levels of metabolic resistance reduced the survival difference between target site resistant and target site susceptible individuals, reducing the selective pressure and slowing the spread of target site resistant alleles. This result is some what surprising since the pollen dispersal kernel is quiet flat at the scales examined in these experiments, and so target site resistant alleles could reach large parts of the receiving landscape. Target site alleles did still spread through landscapes with high levels of quantitative resistance due to the higher demographic costs of quantitative resistance, but at a much slower rate.    
 
-Populations only displayed both high levels of quantitative resistance and high frequencies of target site resistance alleles when herbicide was applied to both the source population and the receiving population, and when the target site resistance alleles were invading in to a region that already had \textit{A. myosuroides}. Even then both genetic architectures were only important in the source region that originally had target site resistance (red region in Fig. \ref{fig:both_natspr}d). This occurred because the target site resistant alleles could not invade into the receiving region, but target site resistance still built up in the source region. Meanwhile, high levels of quantitative resistance built up in the receiving area, and these high quantitative resistance genes were then imported back into the source region, increasing quantitative resistance there.        
+Populations only displayed both high levels of quantitative resistance and high frequencies of target site resistance alleles when herbicide was applied to the receiving population, and when the target site resistance alleles were invading in to a region that already had \textit{A. myosuroides} (Fig. \ref{fig:both_natspr}d,e). Even then both genetic architectures were only important at the invasion front of the target site resistant alleles(purple region in Fig. \ref{fig:both_natspr}d,e). This occurred because the target site resistant alleles could only invade slowly into the receiving region. This allowed time for levels of quantitative resistance to build up, and these high quantitative resistance genes were then imported back into the region, with high target site resistance, increasing quantitative resistance there.        
 
 \begin{figure}[!h] 
 	\includegraphics[height=80mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/sur_rr_and_proR_time_space.pdf}
@@ -437,26 +434,33 @@ Populations only displayed both high levels of quantitative resistance and high 
 \label{fig:both_natspr}
 \end{figure}
 
-The transplant experiments show that the characteristics of the source population and receiving area, and the protective effect of quantitative resistance, $\rho$, all influence the simultaneous evolution of both target site and quantitative resistance. The protective effect of quantitative resistance was found to be 
+In our model target site resistant individuals are, by definition, fitter than target site susceptible individuals under herbicide application. Target site resistant individuals have higher survival, and do not have to incur the demographic costs of high quantitative resistance. However, the demographic costs of quantitative resistance ($f_r$) are incurred whether and individual is using quantitative resistance or not. As a result the fitness difference between target site resistant individuals and target site susceptible individuals can be small to moderate in parts of the landscape where target site resistant individuals are rare (\nameref{S2_Fig}). This occurs because high levels of quantitative resistance build up in these regions, and so genotypes with high levels of quantitative resistance are very prevalent in the pollen. This swamps the pollen from the target site resistant individuals and means that their offspring also tend to have high levels of quantitative resistance. Even if that trait is not useful for them, they still incur much of the demographic cost.
+
+The sensitivity analysis showed that the protective effect of a one unit increase in the quantitative resistance trait $g$ ($\rho$) and the demographic costs of quantitative resistance ($f_f$), had the largest effect on genetic dynamics of the population (\nameref{S2_Appendix}). These parameters are crucially important for when both genetic architectures can co-exist, with co-existence only common at $f_r < 0.8$ and $\rho > 1.25$ and being more common when the  population was invading into and empty landscape (\nameref{S3_Fig}c,d)   
+
+We use transplant experiments to model situations where genes from populations with different management histories, and thus different levels of target site and quantitative resistance, invade into a new population. A situation commonly arising with long distance dispersal of propagules. These experiments show that the characteristics of the source population and receiving area, and the protective effect of quantitative resistance, $\rho$, all influence the simultaneous evolution of both target site and quantitative resistance. 
+
+Regardless of the genetic structure of the introduced seeds, if those seeds were introduced into a landscape where \textit{A. myosuroides} was already present (light and dark blue lines in Fig. \ref{fig:transloc_gpro}) target site and quantitative resistance could only co-exist over a small range of values for $\rho$. Either target site resistance dominated (solid blue lines high and dashed blue lines low) or quantitative resistance dominated (dashed blue lines high, solid blue lines low). This pattern was most pronounced when the receiving population (where target site resistance was absent) had been exposed to herbicide before target site alleles were introduced (dark blue lines). When the receiving population was naive to herbicide (light blue lines) the level of quantitative resistance in the population after 100 years still showed a threshold relationship with $\rho$, but amount target site resistance in the population reduced more slowly with increasing $\rho$. Thus, target site and quantitative resistance co-existed over a greater range of values when target site alleles were introduced to a naive population.
+
+When target site resistant alleles were introduced into an empty landscape the genotype of the source population had a large effect on how the invasion unfolded. When the source population had low quantitative resistance and a low frequency of target site resistance alleles target site resistance was always high, and quantitative resistance also became important at high values of $\rho$ (black lines Fig. \ref{fig:transloc_gpro}a). When the source populations had a high frequency of target site resistant alleles and low quantitative resistance target site resistance always dominated (black lines Fig. \ref{fig:transloc_gpro}b). When the source population had low target site resistance and high quantitative resistance, both genetic architectures could co-exist in the population, over a wide range of values for $\rho$, although at very low values of $\rho$ target site resistance dominated, and at very high values of $\rho$ quantitative resistance dominated (black lines Fig. \ref{fig:transloc_gpro}c). When the source population had both high quantitative resistance and high target site resistance, then target site resistant alleles were very preventible in the population for all the values of $\rho$ we tested. At values of $\rho > 1$ the population also had high levels of quantitative resistance (Fig. \ref{fig:transloc_gpro}d).                      
 
 \begin{figure}[!h] 
 	\includegraphics[height=90mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output/effect_g_pro_resist.pdf}
-\caption{\bf Effect of $\rho$ (protective effect of $g$) on target site and quantitative resistance in transplant experiments.} All populations had a establishment period of 20 time steps and were then exposed to herbicide for 50 time steps, after which time target site and quantitative resistance were measured. Target site resistance was measured as percentage of all alleles in the population that are $R$ (solid lines). Quantitative resistance was measured as the survival of target site susceptible individuals ($rr$) under herbicide application (dashed lines). We tested source populations with four different combinations of target site and quantitative resistance (a, b, c, d), and three different types of receiving landscape: empty--black lines, \textit{A. myosuroides} already present and naive to herbicide--light blue lines, and \textit{A. myosuroides} already present and exposed to herbicide for 20 time steps--dark blue lines.        
+\caption{\bf Effect of $\rho$ (protective effect of $g$) on target site and quantitative resistance in transplant experiments.} All populations had a establishment period of 20 time steps and were then exposed to herbicide for 100 time steps, after which time target site and quantitative resistance were measured. Target site resistance was measured as percentage of all alleles in the population that are $R$ (solid lines). Quantitative resistance was measured as the survival of target site susceptible individuals ($rr$) under herbicide application (dashed lines). We tested source populations with four different combinations of target site and quantitative resistance (a, b, c, d), and three different types of receiving landscape: empty--black lines, \textit{A. myosuroides} already present and naive to herbicide--light blue lines, and \textit{A. myosuroides} already present and exposed to herbicide for 20 time steps--dark blue lines.        
 \label{fig:transloc_gpro}
 \end{figure}
 
-
-
-last para on the protective effect of $g$, $\rho$ and the regions of parameter space where both occur, show the transplant experiment plot.
-
 \section*{Discussion}
-Nulla mi mi, venenatis sed ipsum varius, Table~\ref{table1} volutpat euismod diam. Proin rutrum vel massa non gravida. Quisque tempor sem et dignissim rutrum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi at justo vitae nulla elementum commodo eu id massa. In vitae diam ac augue semper tincidunt eu ut eros. Fusce fringilla erat porttitor lectus cursus, vel sagittis arcu lobortis. Aliquam in enim semper, aliquam massa id, cursus neque. Praesent faucibus semper libero~\cite{bib3}.
+We find that the ecological and historical context surrounding the invasion of target site resistance into a new area can have an enormous effect on how that invasion unfolds and which genetic architecture dominates. The invasion of target site resistance alleles was much slower when the invasion was into an area that already contained \textit{A. myosuroides}. In addition the frequency of target site resistance and amount of quantitative resistance changed very quickly over space, and on the target site resistance invasion front both architectures co-existed for long periods of time. This occurred even though target site resistance conferred perfect resistance with no demographic costs, giving target site resistant individuals a competitive advantage over those individuals with only quantitative resistance. When the invasion occurred into an empty landscape its dynamics were determined the genetic architecture of the source population. Depending on the architecture of the source population all resistance in a population could be target site, it could be target site or quantitative depending on how effective quantitative resistance was, or high levels of both target site and quantitative resistance could coexist. Given this variability we might expect to see different architectures predominate in different regions of a landscape. To date there is little evidence to either support or refute this hypothesis because the prevalence and type of resistance has not typically been studied at landscape scales [SOME REVIEW REF].
+
+Co-existence of both target site and quantitative resistance occurred across the whole population when the invasion occurred into an empty landscape. This suggests that co-existence will be most common at the leading edge of an invasion, where expanding nascent population foci are common \cite{Mooy1988}.
+
+From a management perspective target site and quantitative resistance mean different things. Target site resistance typically provides very high levels of protection from the poison and incurs few demographic costs \cite{Bauc2016}. This means that once it is established in a population it will be present in the genome over the long term, even after the poison is no longer used [REF]. However, target site resistance often only protects against a single chemical family, and so strategies like compound cycling can delay the evolution of target site resistance \cite{Rex2013}. The continuous nature of quantitative resistance means that there is always some variation for selection to act on, and it does not rely on de novo mutation or gene importation, and so it can build up earlier. Quantitative resistance uses more general mechanisms such as metabolizing the poison and transporting it, and so can also give cross resistance between compounds \cite{Bauc2016, Neve2007}. On the other hand, it provides less protection from the poison and does incur some (although often small) demographic costs \cite{Bauc2016}. Places where both architectures co-exist may experience the worst of both worlds, resistance that develops very quickly, with very high levels of resistance to existing compounds \cite{Vera2015}, and cross resistance to novel compounds when they are introduced \cite{Neve2007}.   
+                         
+Because we assume target site resistance is both more effective and less costly than quantitative resistance, under constant selection all resistance in the population will eventually be target site resistance. However, quantitative resistance can occur for long periods of time when it has a low demographic cost, and has a strong protective effect. In our model these quantities were fixed parameters. In reality both the protective effect of quantitative resistance, and the demographic costs it incurs will also be under selection. Over time the metabolic pathways and other mechanisms of quantitative resistance that provide the most protection for the least demographic cost, will predominate. This gives reason to believe that quantitative resistance can be highly effective and have a low demographic costs.    
 
 \section*{Conclusion}
-
-CO$_2$ Maecenas convallis mauris sit amet sem ultrices gravida. Etiam eget sapien nibh. Sed ac ipsum eget enim egestas ullamcorper nec euismod ligula. Curabitur fringilla pulvinar lectus consectetur pellentesque. Quisque augue sem, tincidunt sit amet feugiat eget, ullamcorper sed velit. 
-
-Sed non aliquet felis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris commodo justo ac dui pretium imperdiet. Sed suscipit iaculis mi at feugiat. Ut neque ipsum, luctus id lacus ut, laoreet scelerisque urna. Phasellus venenatis, tortor nec vestibulum mattis, massa tortor interdum felis, nec pellentesque metus tortor nec nisl. Ut ornare mauris tellus, vel dapibus arcu suscipit sed. Nam condimentum sem eget mollis euismod. Nullam dui urna, gravida venenatis dui et, tincidunt sodales ex. Nunc est dui, sodales sed mauris nec, auctor sagittis leo. Aliquam tincidunt, ex in facilisis elementum, libero lectus luctus est, non vulputate nisl augue at dolor. For more information, see \nameref{S1_Appendix}.
+Resistance affects food production systems and human health across the global. Our results suggest that quantitative resistance can greatly slow the invasion of target site resistance, and the evolutionary dynamics within nascent population foci on the invasion front can result in a different genetic architectures dominating or co-existing. As a result we should expect the genetic architecture underlying resistance to be heterogeneous at both local and landscape scales. It follows from this that the effectiveness of different resistance management strategies, like compound cycling and very high doses, may also vary over space, as these different strategies exploit weaknesses in different genetic architectures \cite{Rex2013}. Our model is a first step in generating hypothesis on how the different genetic architectures that underlie resistance will interact across space. It is imperative that this work is followed by empirical observations and experimental tests. A logical starting point would be spatially extensive surveys of resistant populations to see where and when target site and quantitative resistance dominate or co-exist.
 
 \section*{Supporting Information}
 
@@ -467,32 +471,27 @@ Sed non aliquet felis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
 
 \paragraph*{S2 Fig.}
 \label{S2_Fig}
-{\bf Lorem Ipsum.} Maecenas convallis mauris sit amet sem ultrices gravida. Etiam eget sapien nibh. Sed ac ipsum eget enim egestas ullamcorper nec euismod ligula. Curabitur fringilla pulvinar lectus consectetur pellentesque.
+{\bf Relative difference in life time fitness between target site resistant and target site susceptible individuals.} Heat maps (over time and space) of the ratio of target site resistant lifetime fitness to target site susceptible life time fitness. 
+
+\paragraph*{S3 Fig.}
+\label{S3_Fig}
+{\bf The frequency of target site resistant alleles (\%R) and the amount of target site and quantitative resistance coexistence, over $f_r$ and $\rho$ parameter space.} 
 
 \paragraph*{S1 File.}
 \label{S1_File}
-{\bf Lorem Ipsum.}  Maecenas convallis mauris sit amet sem ultrices gravida. Etiam eget sapien nibh. Sed ac ipsum eget enim egestas ullamcorper nec euismod ligula. Curabitur fringilla pulvinar lectus consectetur pellentesque.
-
-\paragraph*{S1 Video.}
-\label{S1_Video}
-{\bf Lorem Ipsum.}  Maecenas convallis mauris sit amet sem ultrices gravida. Etiam eget sapien nibh. Sed ac ipsum eget enim egestas ullamcorper nec euismod ligula. Curabitur fringilla pulvinar lectus consectetur pellentesque.
+{\bf Julia implementation of model and plotting code}  
 
 \paragraph*{S1 Appendix.}
 \label{S1_Appendix}
 {\bf Target site mixing function.} 
 Expanded explanation and worked example of the target site mixing function $Q(G, G_m, G_p)$.
 
-\paragraph*{S2 Appendix.}
+\paragraph*{S1 Appendix.}
 \label{S2_Appendix}
-{\bf Parametrization and sensitivity analysis.} 
-Parametrization and sensitivity analysis of the population model. 
-
-\paragraph*{S1 Table.}
-\label{S1_Table}
-{\bf Lorem Ipsum.} Maecenas convallis mauris sit amet sem ultrices gravida. Etiam eget sapien nibh. Sed ac ipsum eget enim egestas ullamcorper nec euismod ligula. Curabitur fringilla pulvinar lectus consectetur pellentesque.
+{\bf Parameter sanity check and sensitivity analysis} 
 
 \section*{Acknowledgments}
-Cras egestas velit mauris, eu mollis turpis pellentesque sit amet. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nam id pretium nisi. Sed ac quam id nisi malesuada congue. Sed interdum aliquet augue, at pellentesque quam rhoncus vitae.
+We thank some people for some things
 
 \nolinenumbers
 

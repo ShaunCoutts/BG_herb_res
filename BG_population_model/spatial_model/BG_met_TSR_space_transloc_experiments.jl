@@ -37,30 +37,30 @@ dg = 0.5;
 int_mean_g = 0.0;
 int_sd_g = 1.4142;
 
-x_dim = 500; # number of spatial evaluation points, actual landscape size is x_dim * dx
+x_dim = 250; # number of spatial evaluation points, actual landscape size is x_dim * dx
 dx = 1.0;
 
 int_num_RR = 0.0;
 int_num_Rr = 0.0;
 int_num_rr = 10.0; # number of intial seeds at each location for each genoptype, assume only TS susceptible
 burnin = 20;
-num_iter = 50;
+num_iter = 100;
 
-seed_pro_short = 0.4; 
-seed_mean_dist_short = 0.5; 
-pro_seeds_to_mean_short = 0.4; 
-seed_mean_dist_long = 1.5; 
-pro_seeds_to_mean_long = 0.4;
+seed_pro_short = 0.48; 
+seed_mean_dist_short = 0.58; 
+pro_seeds_to_mean_short = 0.44; 
+seed_mean_dist_long = 1.65; 
+pro_seeds_to_mean_long = 0.39;
 scale_pollen = 32.0;
-shape_pollen = 3.23; 
+shape_pollen = 3.32; 
 offspring_sd = 1.0;
-fec_max = 45.0;
-fec0 = 10.0;
-fec_cost = 1.0;
+fec_max = 60.0;
+fec0 = 4.0;
+fec_cost = 0.5;
 dd_fec = 0.15;
 base_sur = 10.0; 
-herb_effect = 20.0; 
-g_prot = 2.5; 
+herb_effect = 14.0; 
+g_prot = 1.5; 
 pro_exposed = 0.8;
 seed_sur = 0.45;
 germ_prob = 0.52;
@@ -138,7 +138,7 @@ threshold = 0.95
 
 # build a parameter list with 1 variable that changes between entries
 # start with g_protection
-g_prot_var = collect(0 : 0.1 : 4)
+g_prot_var = collect(0 : 0.1 : 3)
 g_pro_rep = repmat(g_prot_var, 4)
 #use the function below t make a matrix with all the combinations I want
 TSR_reps = repeat([int_TSR_low, int_TSR_high], inner = length(g_prot_var) * 2)
