@@ -118,21 +118,23 @@ end
 # one for exposed plants
 # be aware that pop_at_x and g_vals need to match up, that s one element in pop
 # should corospond to a element of g_vals 
-function survival_pre_calc(base_sur::Float64, g_vals::Array{Float64, 1}, herb_effect::Float64, 
-  g_prot::Float64, pro_exposed::Float64)
+function survival_pre_calc(base_surW::Float64, base_surA::Float64, 
+  g_vals::Array{Float64, 1}, herb_effect::Float64, g_prot::Float64, pro_exposed::Float64)
   
-  sur_non_exposed = 1 / (1 + exp(-base_sur))
+  sur_non_exposedW = 1 / (1 + exp(-base_surW))
+  sur_exposedW = (pro_exposed ./ (1 + exp(-(base_surW - (herb_effect - min(herb_effect, g_vals * g_prot))))))
   
-  sur_exposed = (pro_exposed ./ (1 + exp(-(base_sur - (herb_effect - min(herb_effect, g_vals * g_prot))))))
+  sur_non_exposedA = 1 / (1 + exp(-base_surA))
+  sur_exposedA = (pro_exposed ./ (1 + exp(-(base_surA - (herb_effect - min(herb_effect, g_vals * g_prot))))))
   
-  return (sur_non_exposed, sur_exposed)
+  return ((sur_non_exposedW, sur_exposedW), (sur_non_exposedA, sur_exposedA))
    
 end
 
 # takes a population and applies herbicide survival to it
 # herb_application determines how many times herbicide is 
 # applied, can be 0 
-function survival_herb!(pop::Array{Float64, 1}, resist_G::Array{String, 1}, G::String, 
+function survival_herb!(pop::Array{Float64, 1}, G::String, 
   herb_application::Int64, sur_tup::Tuple{Float64, Array{Float64, 1}})
   
   #base sur the whole population is exposed to 
@@ -168,17 +170,17 @@ end
 function state_update(state::Tuple{{Float64, 1}, Float64, Float64, Float64}, pop_sd::Float64,
   g_vals::Array{Float64, 1}, g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, 
   g_effect_fec::Array{Float64, 1}, seed_sur::Float64, germ::Float64, fec_max_corr::Float64, 
-  sur_tup::Tuple{Float64, Array{Float64, 1}}, resist_G::Array{String, 1}, G::String, 
+  sur_tup_act::Tuple{Float64, Array{Float64, 1}}, G::String, 
   herb_application::Int64, spot_con::Bool, spot_mort::Float64, dd_fec::Float64, dg::Float64)
 
   # unpack the state variable, 
-  pro_RR = state[3]
-  pro_Rr = (1 - state[3]) * state[4]
+  pro_RR = state[S_pRR]
+  pro_Rr = (1 - state[S_pRR]) * state[S_pRr]
   pro_rr = 1 - pro_RR - pro_Rr
   # state[2] is total pop 
-  RR_sb = pdf(Normal(state[1][1], pop_sd), g_vals) * pro_RR * state[2] 
-  Rr_sb = pdf(Normal(state[1][2], pop_sd), g_vals) * pro_Rr * state[2] 
-  rr_sb = pdf(Normal(state[1][3], pop_sd), g_vals) * pro_rr * state[2] 
+  RR_sb = pdf(Normal(state[S_g][S_gRR], pop_sd), g_vals) * pro_RR * state[S_N] 
+  Rr_sb = pdf(Normal(state[S_g][S_gRr], pop_sd), g_vals) * pro_Rr * state[S_N] 
+  rr_sb = pdf(Normal(state[S_g][S_grr], pop_sd), g_vals) * pro_rr * state[S_N] 
   # array to temp hold new seeds before they are dvided amoung G
   tot_newseed = zeros(size(RR_sb)[1])
   
@@ -193,9 +195,9 @@ function state_update(state::Tuple{{Float64, 1}, Float64, Float64, Float64}, pop
   rr_mat = new_plants(rr_sb, germ)
   
   # above ground survival 
-  survival_herb!(RR_mat, resist_G, "RR", herb_application, sur_tup)
-  survival_herb!(Rr_mat, resist_G, "Rr", herb_application, sur_tup)
-  survival_herb!(rr_mat, resist_G, "rr", herb_application, sur_tup)
+  survival_herb!(RR_mat, resist_G, "RR", herb_application, sur_tup_act)
+  survival_herb!(Rr_mat, resist_G, "Rr", herb_application, sur_tup_act)
+  survival_herb!(rr_mat, resist_G, "rr", herb_application, sur_tup_act)
   
   tot_ab_post_herb = (sum(RR_mat) + sum(Rr_mat) + sum(rr_mat)) * dg
   
@@ -221,13 +223,13 @@ function state_update_fallow(state::Tuple{{Float64, 1}, Float64, Float64, Float6
   g_vals::Array{Float64, 1}, seed_sur::Float64, germ::Float64)
 
   # unpack the state variable, 
-  pro_RR = state[3]
-  pro_Rr = (1 - state[3]) * state[4]
+  pro_RR = state[S_pRR]
+  pro_Rr = (1 - state[S_pRR]) * state[S_pRr]
   pro_rr = 1 - pro_RR - pro_Rr
   # state[2] is total pop 
-  RR_sb = pdf(Normal(state[1][1], pop_sd), g_vals) * pro_RR * state[2] 
-  Rr_sb = pdf(Normal(state[1][2], pop_sd), g_vals) * pro_Rr * state[2] 
-  rr_sb = pdf(Normal(state[1][3], pop_sd), g_vals) * pro_rr * state[2] 
+  RR_sb = pdf(Normal(state[S_g][S_gRR], pop_sd), g_vals) * pro_RR * state[S_N] 
+  Rr_sb = pdf(Normal(state[S_g][S_gRr], pop_sd), g_vals) * pro_Rr * state[S_N] 
+  rr_sb = pdf(Normal(state[S_g][S_grr], pop_sd), g_vals) * pro_rr * state[S_N] 
   
   # seed survial
   RR_sb *= seed_sur
