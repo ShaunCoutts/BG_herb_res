@@ -560,3 +560,60 @@ function dualchan_heatmap_3measure(proR_empty::Array{RGB{Float64}, 2}, proR_full
   return nothing
 
 end
+
+
+function dualchan_heatmap_2measure(m1_empty::Array{RGB{Float64}, 2}, m1_full::Array{RGB{Float64}, 2},
+  m2_empty::Array{RGB{Float64}, 2}, m2_full::Array{RGB{Float64}, 2}, adjust_scale::Float64, light_max::Float64, 
+  z_min::Float64, z_max::Float64, hue_min::Float64, hue_max::Float64, output_loc::String, output_name::String)
+
+  #make a grey scale to choose some shades from 
+  grey_pal = colormap("Grays", 100);
+
+  # set up the fonts fo all the labels first 
+  ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  title_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+  
+  # bit of annotation to label regions
+  ann_lab_source = Plots.PlotText("source of TSR", Plots.Font("FreeSans", 10, :hleft, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0)))
+  ann_lab_recive = Plots.PlotText("receiving area", Plots.Font("FreeSans", 10, :hleft, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0)))
+
+  # now make the plots 
+  layout_arr = @layout [grid(2, 2) a{0.1w}]; 
+    
+  plt = plot(layout = layout_arr, grid = false, background_color_outside = grey_pal[10], 
+    border = false, background_color = grey_pal[10],   
+    title = ["a)                          %R" "b)                    %R x Sur rr" "c)" "d)" ""],
+    titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, 
+    legendfont = leg_font, size = (450 * adjust_scale, 400 * adjust_scale), 
+    xlabel = ["" "" "time (years)" "time (years)" ""], 
+    ylabel = ["space (m)" "" "space (m)" "" ""]);
+
+  heatmap!(plt, m1_empty, subplot = 1, annotations = [(10, 10, ann_lab_source), (10, 30, ann_lab_recive)], 
+    xticks = []);
+  heatmap!(plt, m1_full, subplot = 3);
+
+  heatmap!(plt, m2_empty, subplot = 2, xticks = [], yticks = []);
+  heatmap!(plt, m2_full, subplot = 4, yticks = []);
+
+  leg_mat = legend_colmat(light_max, light_max + 1, z_min, z_max, 0.5, 0.5, hue_min, hue_max)
+  heatmap!(plt, leg_mat, subplot = 5, yticks = ([100, 75, 50, 25, 1], round([z_min, ((z_max - z_min) * 0.25) + z_min, 
+    ((z_max - z_min) * 0.5) + z_min, ((z_max - z_min) * 0.75) + z_min, z_max], 2)), xticks = [], aspect_ratio = 3.0);
+  #add line to show the source and sink
+  for i in 1:4
+    plot!(plt, [1, num_iter], [source_locs[end], source_locs[end]], subplot = i, label = "",
+      linecolor = :black);
+  end
+
+  # save the figure 
+  #get present directory top return the working folder later
+  int_file_loc = pwd()
+  #set output locaiton
+  cd(output_loc)
+  savefig(plt, output_name)
+  cd(int_file_loc)
+
+  return nothing
+
+end

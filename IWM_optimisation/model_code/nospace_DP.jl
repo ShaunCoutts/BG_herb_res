@@ -27,7 +27,9 @@ const S_pRr = 4;
 # DOMINANCE OF TSR
 const resist_G = ["RR", "Rr"];
 
-
+# parameters 
+seed_sur_base = 0.5;
+seed_sur_act = 0.4;
 
 
 
@@ -38,3 +40,6 @@ sub_actions = [[NO_H, ONE_H, MUL_H],
   [NO_SB, YS_SB]];
   
 action_space = build_action_space();
+
+# action effects 
+action_effect = ([0, 1, 2], [false, true], [WHEAT, ALT], [seed_sur_base, seed_sur_act])

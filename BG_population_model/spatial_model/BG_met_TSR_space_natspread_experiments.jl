@@ -42,7 +42,7 @@ shape_pollen = 3.32;
 offspring_sd = 1.0;
 fec_max = 60.0;
 fec0 = 4.0;
-fec_cost = 0.5;  # when fec0 = 5 and fec_cost = 0.8 fecundity is fec_max*0.62 at g = 5
+fec_cost = 0.5;  # when fec0 = 4 and fec_cost = 0.5 fecundity is fec_max*0.82 at g = 5
 dd_fec = 0.15;
 base_sur = 10.0; 
 herb_effect = 14.0; # herbicide kills 98% of suceptable plants
@@ -453,4 +453,83 @@ dualchan_heatmap_3measure(colmat_pR_empty, colmat_pR_full,
   colmat_srr_empty, colmat_srr_full, colmat_both_empty,
   colmat_both_full, 1.9, 1.0, 0.0, 1.0, 
   175.05, 360.0, output_loc, "exposed_empty_3metrics.pdf")
+
+# grid of 4 plots with %R and %R x sur rr for the scenario when the whole population is exposed to herbicide
+colmat_pR_empty = colmat_2channel(totnum_ee_empty, proR_ee_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_pR_full = colmat_2channel(totnum_ee_full, proR_ee_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_both_empty = colmat_2channel(totnum_ee_empty,  proR_ee_empty .* surg_ee_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+colmat_both_full = colmat_2channel(totnum_ee_full,  proR_ee_full .* surg_ee_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, totnum_max, 0.0, 1.0);
+
+dualchan_heatmap_2measure(colmat_pR_empty, colmat_pR_full, colmat_both_empty, colmat_both_full, 1.9, 1.0, 
+  0.0, 1.0, 175.05, 360.0, output_loc, "all_exposed_TSR_and_bySURrr.pdf")
+
+
   
+# use these same runs to plot the relative lifetime fecundity of TSR over TSS
+# masks to make part of plit white
+TSR_adv_ee_empty = TSR_adv_time_space(herb_ee_ls_empty, dg, g_vals, germ_prob, fec_max,
+  g_effect_fec, dd_fec, sur_tup);
+mask_ee_empty = ones(size(TSR_adv_ee_empty));
+mask_ee_empty[TSR_adv_ee_empty .== 0.0] = 0.0;
+mask_ee_empty[totnum_ee_empty .< 1.0] = 0.0;
+TSR_adv_ee_empty[TSR_adv_ee_empty .== 0.0] = 1.0;
+
+TSR_adv_ee_full = TSR_adv_time_space(herb_ee_ls_full, dg, g_vals, germ_prob, fec_max,
+  g_effect_fec, dd_fec, sur_tup);
+mask_ee_full = ones(size(TSR_adv_ee_full));
+mask_ee_full[TSR_adv_ee_full .== 0.0] = 0.0;
+mask_ee_full[totnum_ee_full .< 1.0] = 0.0;
+TSR_adv_ee_full[TSR_adv_ee_full .== 0.0] = 1.0;
+  
+
+colmat_TSRad_full = colmat_2channel(mask_ee_full, TSR_adv_ee_full, 1.0, 0.5, 175.05, 360.0, 
+  0.0, 1.0, TSR_adv_min, TSR_adv_max);
+  
+colmat_TSRad_empty = colmat_2channel(mask_ee_empty, TSR_adv_ee_empty, 1.0, 0.5, 175.05, 360.0, 
+  0.0, 1.0, TSR_adv_min, TSR_adv_max);
+
+#make a grey scale to choose some shades from 
+grey_pal = colormap("Grays", 100);
+
+# set up the fonts fo all the labels first 
+ax_font = Plots.Font("FreeSans", 12, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+title_font = Plots.Font("FreeSans", 14, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+leg_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+tic_font = Plots.Font("FreeSans", 10, :hcenter, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0));
+
+# bit of annotation to label regions
+ann_lab_source = Plots.PlotText("source of TSR", Plots.Font("FreeSans", 10, :hleft, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0)))
+ann_lab_recive = Plots.PlotText("receiving area", Plots.Font("FreeSans", 10, :hleft, :vcenter, 0.0, RGB{U8}(0.0, 0.0, 0.0)))
+
+# now make the plots 
+layout_arr = @layout [grid(2, 1) a{0.1w}]; 
+  
+plt = plot(layout = layout_arr, grid = false, background_color_outside = grey_pal[10], 
+  border = false, background_color = grey_pal[10],   
+  title = ["a)" "b)" ""],
+  titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, 
+  legendfont = leg_font, size = (500, 800), 
+  xlabel = ["" "time (years)" ""], 
+  ylabel = ["space (m)" "space (m)" "TSR advantage (K)"]);
+
+heatmap!(plt, colmat_TSRad_empty, subplot = 1, annotations = [(10, 10, ann_lab_source), (10, 30, ann_lab_recive)], 
+  xticks = []);
+heatmap!(plt, colmat_TSRad_full, subplot = 2);
+
+leg_mat = legend_colmat(maximum(totnum_ee_full), maximum(totnum_ee_full) + 1, TSR_adv_min, TSR_adv_max, 0.5, 0.5, 175.05, 360.0);
+heatmap!(plt, leg_mat, subplot = 3, yticks = ([100, 75, 50, 25, 1], round([TSR_adv_min, ((TSR_adv_max - TSR_adv_min) * 0.25) + TSR_adv_min, 
+  ((TSR_adv_max - TSR_adv_min) * 0.5) + TSR_adv_min, ((TSR_adv_max - TSR_adv_min) * 0.75) + TSR_adv_min, TSR_adv_max], 2)), xticks = [], aspect_ratio = 6.0);
+#add line to show the source and sink
+for i in 1:2
+  plot!(plt, [1, num_iter], [source_locs[end], source_locs[end]], subplot = i, label = "",
+    linecolor = :black);
+end
+
+int_file_loc = pwd()
+cd(output_loc)
+savefig(plt, "TSR_adv_ee.pdf")
+cd(int_file_loc)

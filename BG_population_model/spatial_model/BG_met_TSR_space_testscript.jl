@@ -102,9 +102,9 @@ rr_newseed = zeros(length(g_vals), convert(Int32, (landscape_size / dx) + 1));
 g_effect_fec = exp(-(fec0 - g_vals * 0.0)); #first test assume that there is no fec cost and no effect of density
 
 #work out how many seeds we expect from each G
-expect_RR_seeds = sum(ag_plants * 0.1 .* ((fec_max / 3) ./ (1 + g_effect_fec)), 1) * dg;
-expect_Rr_seeds = sum(ag_plants * 0.2 .* ((fec_max / 3) ./ (1 + g_effect_fec)), 1) * dg;
-expect_rr_seeds = sum(ag_plants .* ((fec_max / 3) ./ (1 + g_effect_fec)), 1) * dg;
+expect_RR_seeds = sum(ag_plants * 0.1 .* ((fec_max) ./ (1 + g_effect_fec)), 1) * dg;
+expect_Rr_seeds = sum(ag_plants * 0.2 .* ((fec_max) ./ (1 + g_effect_fec)), 1) * dg;
+expect_rr_seeds = sum(ag_plants .* ((fec_max) ./ (1 + g_effect_fec)), 1) * dg;
 
 new_seeds_at_t!(RR_newseed, Rr_newseed, rr_newseed, ag_plants * 0.1, ag_plants * 0.2, ag_plants,
   pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index, g_effect_fec,

@@ -53,7 +53,7 @@ function new_seeds_at_t!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float6
   new_seeds = zeros(length(g_effect_fec)) #generic holder vector to hold total seeds when they get split between G
   
   #divid fec_max by 3 since each maternal type will produce 3 seeds for each one that should exist, see why draw out all the combinations
-  fec_corrected = fec_max / 3
+  fec_corrected = fec_max
   # hard code the G corsses, there is only 9 and and they will have fixed proportions: 
   for x in 1:size(RR_newseed)[2]
     
@@ -125,7 +125,7 @@ function new_seeds_at_t_mm!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Flo
   new_seeds = zeros(size(RR_newseed)[1], size(RR_newseed)[2]) #generic holder vector to hold total seeds when they get split between G
   
   #divid fec_max by 3 since each maternal type will produce 3 seeds for each one that should exist, see why draw out all the combinations
-  fec_corrected = fec_max / 3
+  fec_corrected = fec_max
   # hard code the G corsses, there is only 9 and and they will have fixed proportions: 
     
   num_at_x = (sum(RR_mat, 1) + sum(Rr_mat, 1) + sum(rr_mat, 1)) * dg

@@ -22,7 +22,7 @@ function state_action2reward(state::Tuple{{Float64, 1}, Float64, Float64, Float6
   # state update
   if(action[CROP] != FAL) # for winter wheat or alternative crop
   
-    state_update(state, pop_sd, g_vals, g_mixing_kernel, g_mixing_index, 
+    new_pop = state_update(state, pop_sd, g_vals, g_mixing_kernel, g_mixing_index, 
       g_effect_fec, action_effect[BANK][action[BANK]], germ, fec_max_corr, 
       sur_tup[CROP], G, action_effect[HERB][action[HERB]], action_effect[SPOT][action[SPOT]], 
       spot_mort, dd_fec, dg)
@@ -30,15 +30,12 @@ function state_action2reward(state::Tuple{{Float64, 1}, Float64, Float64, Float6
   
   else # for fallow
   
-    state_update_fallow(state, pop_sd, g_vals, action_effect[BANK][action[BANK]], germ)
+    new_pop = state_update_fallow(state, pop_sd, g_vals, action_effect[BANK][action[BANK]], germ)
   
   end
   
   
   # these come from action state
-  seed_sur::Float64, germ::Float64,  
-  sur_tup::Tuple{Float64, Array{Float64, 1}},  G::String, 
-  herb_application::Int64, spot_con::Bool, spot_mort::Float64, )
 
 end
 
