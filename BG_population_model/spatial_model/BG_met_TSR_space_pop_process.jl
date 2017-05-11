@@ -110,6 +110,13 @@ function new_seeds_at_t!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float6
   
 end
 
+# density effect 
+function density_effect(f_d::Float64, tot_pop::Float64)
+  
+  return 1 / (1 + fd * tot_pop)
+
+end
+
 #TODO: test a matrix multiplication version of this 
 function new_seeds_at_t_mm!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float64, 2},
   rr_newseed::Array{Float64, 2},
