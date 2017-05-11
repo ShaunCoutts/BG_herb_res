@@ -284,7 +284,7 @@ Where $s_0$ is survival (in logits) without the effect of herbicide, $\varsigma$
 
 The effects of density and the demographic costs of resistance are applied to the distribution of survivors. These effects could affect survival or reproduction, or both. In a discreet time model of an annual plant a reduction in fecundity is equivalent to a reduction in survival, as both affect the number of seeds that enter the seed bank. We define the effective reproductive population ($n''_G(g, x, t)$) as the population after herbicide application, incorporating the demographic costs of resistance and effects of density. 
 \begin{equation}\label{eq:effect_pop}
-	n''_G(g, x, t) = \frac{n'_G(g, x, t)}{1 + \text{exp}(f_c^0 - f_c|g|)}\cdot\frac{1}{1 + f_d\sum_{\forall G} \int_g n'_G(g, x, t)\text{d}g}
+	n''_G(g, x, t) = \frac{n'_G(g, x, t)}{1 + \text{exp}(-(f_c^0 - f_c|g|))}\cdot\frac{1}{1 + f_d\sum_{\forall G} \int_g n'_G(g, x, t)\text{d}g}
 \end{equation} 
 where $f_c^0$ is the cost of demographic cost of quantitative resistance when its breeding value $g = 0$ (in logits), $|g|$ is the absolute value of value $g$ and $f_c$ is the cost of resistance in terms of in terms of the logit reduction in effective population size for every one unit increase in the breeding value of $g$. Density dependence is controlled by $f_d$, with $1/f_d$ the population density where individuals start to interfere with each other. The summation and integration give the number of above ground individuals that survive until flowering at location $x$. Because total population is calculates at each location independently we are implicitly assuming that only plants very close to each other affect fecundity (i.e. only plants within $\text{d}x / 2$ of location $x$). 
 

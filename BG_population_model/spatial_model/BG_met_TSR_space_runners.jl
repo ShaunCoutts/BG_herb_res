@@ -55,6 +55,8 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
   Rr_ab_pop = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
   rr_ab_pop = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
 
+  ## create the RR_eff_pop and do the pre calc effect of resist costs
+  
   # a set of matrices to hold the total amount of pollen that arrives are each location for each metabolic 
   # resitance score for each genotype
   pollen_RR = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
@@ -85,6 +87,11 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
     survival_at_t!(RR_ab_pop, resist_G, "RR", herb_application, sur_tup)
     survival_at_t!(Rr_ab_pop, resist_G, "Rr", herb_application, sur_tup)
     survival_at_t!(rr_ab_pop, resist_G, "rr", herb_application, sur_tup)
+    
+    
+    ## make effective pop by mult actual pop by resist and density effects
+    ## replace RR_ab_pop with RR_eff_pop below 
+    
     
     ## pollen at arrived each location for each g from all other locations  
     pollen_RR[:, :] = RR_ab_pop * pollen_disp_mat

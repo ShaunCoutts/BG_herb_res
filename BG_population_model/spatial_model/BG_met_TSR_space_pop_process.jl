@@ -43,27 +43,21 @@ function new_seeds_at_t!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float6
   rr_newseed::Array{Float64, 2},
   RR_mat::Array{Float64, 2}, Rr_mat::Array{Float64, 2}, rr_mat::Array{Float64, 2},
   RR_pollen::Array{Float64, 2}, Rr_pollen::Array{Float64, 2}, rr_pollen::Array{Float64, 2},
-  g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, g_effect_fec::Array{Float64, 1},
-  fec_max = 100.0, dd_fec = 0.004, dg = 1.0)
+  g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, fec_max = 100.0, dg = 1.0)
   
   #holding array for density of new seeds new seeds before division
-  RR_seeds = zeros(length(g_effect_fec))
-  Rr_seeds = zeros(length(g_effect_fec))
-  rr_seeds = zeros(length(g_effect_fec))
-  new_seeds = zeros(length(g_effect_fec)) #generic holder vector to hold total seeds when they get split between G
+  RR_seeds = zeros(size(RR_mat)[1])
+  Rr_seeds = zeros(size(RR_mat)[1])
+  rr_seeds = zeros(size(RR_mat)[1])
+  new_seeds = zeros(size(RR_mat)[1]) #generic holder vector to hold total seeds when they get split between G
   
-  #divid fec_max by 3 since each maternal type will produce 3 seeds for each one that should exist, see why draw out all the combinations
-  fec_corrected = fec_max
   # hard code the G corsses, there is only 9 and and they will have fixed proportions: 
   for x in 1:size(RR_newseed)[2]
     
-    num_at_x = (sum(RR_mat[:, x]) + sum(Rr_mat[:, x]) + sum(rr_mat[:, x])) * dg
-    
-    seeds_at_x = fec_corrected ./ (1 + g_effect_fec + dd_fec * num_at_x + dd_fec * num_at_x * g_effect_fec)
     #calcu numner of seeds for each G
-    rr_seeds[:] = rr_mat[:, x] .* seeds_at_x
-    Rr_seeds[:] = Rr_mat[:, x] .* seeds_at_x
-    RR_seeds[:] = RR_mat[:, x] .* seeds_at_x
+    rr_seeds[:] = rr_mat[:, x] * fec_max
+    Rr_seeds[:] = Rr_mat[:, x] * fec_max
+    RR_seeds[:] = RR_mat[:, x] * fec_max
     
     # RR x RR seeds only produce RR seeds    
     RR_newseed[:, x] = g_mixing_kernel * 
@@ -111,19 +105,30 @@ function new_seeds_at_t!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float6
 end
 
 # density effect 
-function density_effect(f_d::Float64, tot_pop::Float64)
+function density_effect(f_d::Float64, dg::Float64, RR_mat::Array{Float64, 2}, Rr_mat::Array{Float64, 2}, 
+  rr_mat::Array{Float64, 2})
   
-  return 1 / (1 + fd * tot_pop)
+  num_at_x = (sum(RR_mat, 1) + sum(Rr_mat, 1) + sum(rr_mat, 1)) * dg
+  
+  return 1 ./ (1 + f_d * num_at_x)
 
 end
+
+# pre-calc resistance cost 
+function resist_cost_pre_calc(f0::Float64, f_cost::Float64, g_vals::Array{Float64, 1})
+
+  return 1 ./ (1 + exp(-(f0 - f_cost * abs(g_vals)))) 
+
+end
+
 
 #TODO: test a matrix multiplication version of this 
 function new_seeds_at_t_mm!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float64, 2},
   rr_newseed::Array{Float64, 2},
   RR_mat::Array{Float64, 2}, Rr_mat::Array{Float64, 2}, rr_mat::Array{Float64, 2},
   RR_pollen::Array{Float64, 2}, Rr_pollen::Array{Float64, 2}, rr_pollen::Array{Float64, 2},
-  g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, g_effect_fec::Array{Float64, 1},
-  fec_max = 100.0, dd_fec = 0.004, dg = 1.0)
+  g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, 
+  fec_max::Float64, dg::Float64)
   
   #holding array for density of new seeds new seeds before division
   RR_seeds = zeros(size(RR_newseed)[1], size(RR_newseed)[2])
@@ -131,18 +136,12 @@ function new_seeds_at_t_mm!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Flo
   rr_seeds = zeros(size(rr_newseed)[1], size(rr_newseed)[2])
   new_seeds = zeros(size(RR_newseed)[1], size(RR_newseed)[2]) #generic holder vector to hold total seeds when they get split between G
   
-  #divid fec_max by 3 since each maternal type will produce 3 seeds for each one that should exist, see why draw out all the combinations
-  fec_corrected = fec_max
   # hard code the G corsses, there is only 9 and and they will have fixed proportions: 
-    
-  num_at_x = (sum(RR_mat, 1) + sum(Rr_mat, 1) + sum(rr_mat, 1)) * dg
-  
-  seeds_at_x = fec_corrected ./ (1 + g_effect_fec .+ dd_fec * num_at_x .+ dd_fec * (g_effect_fec * num_at_x))	
   
   #calcu numner of seeds for each G
-  rr_seeds[:, :] = rr_mat .* seeds_at_x
-  Rr_seeds[:, :] = Rr_mat .* seeds_at_x
-  RR_seeds[:, :] = RR_mat .* seeds_at_x
+  rr_seeds[:, :] = rr_mat * fec_max
+  Rr_seeds[:, :] = Rr_mat * fec_max
+  RR_seeds[:, :] = RR_mat * fec_max
     
   # RR x RR seeds only produce RR seeds    
   RR_newseed[:, :] = g_mixing_kernel * 
