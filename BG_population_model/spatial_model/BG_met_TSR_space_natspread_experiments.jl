@@ -22,7 +22,7 @@ dg = 0.5;
 int_mean_g = 0.0;
 int_sd_g = 1.4142;
 
-x_dim = 150; # number of spatial evaluation points, actual landscape size is x_dim * dx
+x_dim = 300; # number of spatial evaluation points, actual landscape size is x_dim * dx
 dx = 1.0;
 source_locs = 1:20 # source population locations, at edge of landscape
 recive_locs = 21:x_dim
@@ -30,7 +30,7 @@ recive_locs = 21:x_dim
 int_num_RR = 0.1;
 int_num_Rr = 0.0;
 int_num_rr = 10.0; # number of intial seeds at each location for each genoptype, assume only TS susceptible
-num_iter = 150;
+num_iter = 300;
 
 seed_pro_short = 0.48; 
 seed_mean_dist_short = 0.58; 
@@ -42,7 +42,7 @@ shape_pollen = 3.32;
 offspring_sd = 1.0;
 fec_max = 60.0;
 fec0 = 4.0;
-fec_cost = 0.5;  # when fec0 = 4 and fec_cost = 0.5 fecundity is fec_max*0.82 at g = 5
+fec_cost = 0.45;  # when fec0 = 4 and fec_cost = 0.45 fecundity is fec_max*0.85 at g = 5
 dd_fec = 0.15;
 base_sur = 10.0; 
 herb_effect = 14.0; # herbicide kills 98% of suceptable plants
@@ -64,7 +64,7 @@ pollen_disp_mat = zeros(x_dim, x_dim);
 pollen_disp_mat_builder_1D!(pollen_disp_mat, res = dx, a = scale_pollen, c = shape_pollen);
 
 # effect of g on survival and fecundity
-g_effect_fec = exp(-(fec0 - abs(g_vals) * fec_cost));
+g_effect_fec = resist_cost_pre_calc(fec0, fec_cost, g_vals);
 sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed);
 
 # set up the different source/reciving configurations
@@ -465,7 +465,7 @@ colmat_both_full = colmat_2channel(totnum_ee_full,  proR_ee_full .* surg_ee_full
   0.0, totnum_max, 0.0, 1.0);
 
 dualchan_heatmap_2measure(colmat_pR_empty, colmat_pR_full, colmat_both_empty, colmat_both_full, 1.9, 1.0, 
-  0.0, 1.0, 175.05, 360.0, output_loc, "all_exposed_TSR_and_bySURrr.pdf")
+  0.0, 1.0, 175.05, 360.0, output_loc, "all_exposed_TSR_and_bySURrr_test.pdf")
 
 
   

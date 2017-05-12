@@ -17,7 +17,8 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
   seed_mean_dist_short::Float64, pro_seeds_to_mean_short::Float64, seed_mean_dist_long::Float64, 
   pro_seeds_to_mean_long::Float64)
 
-    
+   
+  # pre-calc the dispersal kernels for pollen and seed 
   seed_disp_mat_1D = zeros(convert(Int32, (landscape_size / dx) + 1), 
     convert(Int32, (landscape_size / dx) + 1))
   seed_disp_mat_builder_1D!(seed_disp_mat_1D, dx, seed_pro_short, seed_mean_dist_short, 
@@ -26,7 +27,7 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
   pollen_disp_mat = zeros(convert(Int32, (landscape_size / dx) + 1), 
     convert(Int32, (landscape_size / dx) + 1))
   pollen_disp_mat_builder_1D!(pollen_disp_mat, res = dx, a = scale_pollen, c = shape_pollen)
-   
+  
   #set aside a chunck of memory for the landscapes for each genotype 
   RR_landscape = Array{Array{Float64, 2}, 1}(num_iter)
   Rr_landscape = Array{Array{Float64, 2}, 1}(num_iter)
@@ -56,6 +57,10 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
   rr_ab_pop = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
 
   ## create the RR_eff_pop and do the pre calc effect of resist costs
+  RR_eff_pop = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
+  Rr_eff_pop = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
+  rr_eff_pop = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
+  eff_pop_holder = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
   
   # a set of matrices to hold the total amount of pollen that arrives are each location for each metabolic 
   # resitance score for each genotype
@@ -69,8 +74,7 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
   Rr_newseed = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
   rr_newseed = zeros(length(g_vals), size(seed_disp_mat_1D)[1])
   
-  
- # iterate through the timesteps
+  # iterate through the timesteps
   for t in 2:num_iter
     
     #move seeds to the next timestep, killing as we do so
@@ -88,15 +92,17 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
     survival_at_t!(Rr_ab_pop, resist_G, "Rr", herb_application, sur_tup)
     survival_at_t!(rr_ab_pop, resist_G, "rr", herb_application, sur_tup)
     
-    
     ## make effective pop by mult actual pop by resist and density effects
-    ## replace RR_ab_pop with RR_eff_pop below 
-    
+    num_at_x = (sum(RR_ab_pop, 1) + sum(Rr_ab_pop, 1) + sum(rr_ab_pop, 1)) * dg
+    eff_pop_holder[:, :] = density_effect(dd_fec, num_at_x) .* g_effect_fec
+    RR_eff_pop[:, :] = RR_ab_pop .* eff_pop_holder   
+    Rr_eff_pop[:, :] = Rr_ab_pop .* eff_pop_holder   
+    rr_eff_pop[:, :] = rr_ab_pop .* eff_pop_holder   
     
     ## pollen at arrived each location for each g from all other locations  
-    pollen_RR[:, :] = RR_ab_pop * pollen_disp_mat
-    pollen_Rr[:, :] = Rr_ab_pop * pollen_disp_mat
-    pollen_rr[:, :] = rr_ab_pop * pollen_disp_mat
+    pollen_RR[:, :] = RR_eff_pop * pollen_disp_mat
+    pollen_Rr[:, :] = Rr_eff_pop * pollen_disp_mat
+    pollen_rr[:, :] = rr_eff_pop * pollen_disp_mat
     total_pollen[:] = sum(pollen_RR, 1) + sum(pollen_Rr, 1) + sum(pollen_rr, 1)
     #normalise the pollen counts, double intergration across g, intergration across x already done is building dispersal matrix
     pollen_RR[:, :] = pollen_RR ./ transpose(total_pollen * dg)
@@ -104,9 +110,9 @@ function multi_iter_1D(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64,
     pollen_rr[:, :] = pollen_rr ./ transpose(total_pollen * dg)
     
     #create new seeds
-    new_seeds_at_t_mm!(RR_newseed, Rr_newseed, rr_newseed, RR_ab_pop, Rr_ab_pop,
-      rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index,   
-      g_effect_fec, fec_max, dd_fec, dg)
+    new_seeds_at_t_mm!(RR_newseed, Rr_newseed, rr_newseed, RR_eff_pop, Rr_eff_pop,
+      rr_eff_pop, pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index,   
+      fec_max, dg)
     
     # disperse the seeds
     RR_landscape[t][:, :] = RR_landscape[t]  + (RR_newseed * seed_disp_mat_1D)

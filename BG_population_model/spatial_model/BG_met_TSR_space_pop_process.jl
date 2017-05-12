@@ -43,7 +43,7 @@ function new_seeds_at_t!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float6
   rr_newseed::Array{Float64, 2},
   RR_mat::Array{Float64, 2}, Rr_mat::Array{Float64, 2}, rr_mat::Array{Float64, 2},
   RR_pollen::Array{Float64, 2}, Rr_pollen::Array{Float64, 2}, rr_pollen::Array{Float64, 2},
-  g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, fec_max = 100.0, dg = 1.0)
+  g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, fec_max::Float64, dg::Float64)
   
   #holding array for density of new seeds new seeds before division
   RR_seeds = zeros(size(RR_mat)[1])
@@ -105,10 +105,7 @@ function new_seeds_at_t!(RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float6
 end
 
 # density effect 
-function density_effect(f_d::Float64, dg::Float64, RR_mat::Array{Float64, 2}, Rr_mat::Array{Float64, 2}, 
-  rr_mat::Array{Float64, 2})
-  
-  num_at_x = (sum(RR_mat, 1) + sum(Rr_mat, 1) + sum(rr_mat, 1)) * dg
+function density_effect(f_d::Float64, num_at_x::Array{Float64, 2})
   
   return 1 ./ (1 + f_d * num_at_x)
 

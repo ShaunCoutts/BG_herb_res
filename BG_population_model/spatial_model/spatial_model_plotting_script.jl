@@ -583,8 +583,8 @@ function dualchan_heatmap_2measure(m1_empty::Array{RGB{Float64}, 2}, m1_full::Ar
   layout_arr = @layout [grid(2, 2) a{0.1w}]; 
     
   plt = plot(layout = layout_arr, grid = false, background_color_outside = grey_pal[10], 
-    border = false, background_color = grey_pal[10],   
-    title = ["a)                          %R" "b)                    %R x Sur rr" "c)" "d)" ""],
+    border = false, background_color = grey_pal[10], aspect_ratio = 1.0,  usetex = true, 
+    title = [L"a)                          $\%R_T$" L"b)                    $\%R_T$ x $Sur_{rr}$" "c)" "d)" ""],
     titleloc = :left, titlefont = title_font, guidefont = ax_font, tickfont = tic_font, 
     legendfont = leg_font, size = (450 * adjust_scale, 400 * adjust_scale), 
     xlabel = ["" "" "time (years)" "time (years)" ""], 

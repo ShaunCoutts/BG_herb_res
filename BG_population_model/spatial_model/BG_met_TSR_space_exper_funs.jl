@@ -5,12 +5,12 @@
 # the function takes the landscapes as references to arrays that can be modified in place (the xx_ls arrays), it all so takes a 
 # set of holding arrays (xx_ab_pop, total_pollen, pollen_xx, xx_newseed, so these don't have to be built allocated every function call)
 
-function one_step_foward!(next_t::Int64, RR_ls::Array{Float64, 3},  Rr_ls::Array{Float64, 3},
-   rr_ls::Array{Float64, 3}, RR_ab_pop::Array{Float64, 2}, Rr_ab_pop::Array{Float64, 2}, 
-   rr_ab_pop::Array{Float64, 2}, pollen_RR::Array{Float64, 2}, pollen_Rr::Array{Float64, 2},
-   pollen_rr::Array{Float64, 2}, total_pollen::Array{Float64, 1}, RR_newseed::Array{Float64, 2}, 
-   Rr_newseed::Array{Float64, 2}, rr_newseed::Array{Float64, 2}, dg::Float64, seed_sur::Float64, 
-   germ_prob::Float64, sur_tup::Tuple{Float64, Array{Float64, 1}}, resist_G::Array{String, 1},
+function one_step_foward!(next_t::Int64, RR_ls::Array{Float64, 3},  Rr_ls::Array{Float64, 3}, rr_ls::Array{Float64, 3}, 
+  RR_ab_pop::Array{Float64, 2}, Rr_ab_pop::Array{Float64, 2}, rr_ab_pop::Array{Float64, 2}, 
+  RR_eff_pop::Array{Float64, 2}, Rr_eff_pop::Array{Float64, 2}, rr_eff_pop::Array{Float64, 2}, eff_pop_holder::Array{Float64, 2},
+  pollen_RR::Array{Float64, 2}, pollen_Rr::Array{Float64, 2}, pollen_rr::Array{Float64, 2}, total_pollen::Array{Float64, 1}, 
+  RR_newseed::Array{Float64, 2}, Rr_newseed::Array{Float64, 2}, rr_newseed::Array{Float64, 2}, 
+  dg::Float64, seed_sur::Float64, germ_prob::Float64, sur_tup::Tuple{Float64, Array{Float64, 1}}, resist_G::Array{String, 1},
    herb_application::Array{Int64, 1}, pollen_disp_mat::Array{Float64, 2}, seed_disp_mat_1D::Array{Float64, 2}, 
    fec_max::Float64, dd_fec::Float64, g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, 
    g_effect_fec::Array{Float64, 1})
@@ -30,10 +30,17 @@ function one_step_foward!(next_t::Int64, RR_ls::Array{Float64, 3},  Rr_ls::Array
   survival_at_t!(Rr_ab_pop, resist_G, "Rr", herb_application, sur_tup)
   survival_at_t!(rr_ab_pop, resist_G, "rr", herb_application, sur_tup)
   
+  ## make effective pop by mult actual pop by resist and density effects
+  num_at_x = (sum(RR_ab_pop, 1) + sum(Rr_ab_pop, 1) + sum(rr_ab_pop, 1)) * dg
+  eff_pop_holder[:, :] = density_effect(dd_fec, num_at_x) .* g_effect_fec
+  RR_eff_pop[:, :] = RR_ab_pop .* eff_pop_holder   
+  Rr_eff_pop[:, :] = Rr_ab_pop .* eff_pop_holder   
+  rr_eff_pop[:, :] = rr_ab_pop .* eff_pop_holder   
+  
   ## pollen at arrived each location for each g from all other locations  
-  pollen_RR[:, :] = RR_ab_pop * pollen_disp_mat
-  pollen_Rr[:, :] = Rr_ab_pop * pollen_disp_mat
-  pollen_rr[:, :] = rr_ab_pop * pollen_disp_mat
+  pollen_RR[:, :] = RR_eff_pop * pollen_disp_mat
+  pollen_Rr[:, :] = Rr_eff_pop * pollen_disp_mat
+  pollen_rr[:, :] = rr_eff_pop * pollen_disp_mat
   total_pollen[:] = sum(pollen_RR, 1) + sum(pollen_Rr, 1) + sum(pollen_rr, 1)
   #normalise the pollen counts, double intergration across g, intergration across x already done in building dispersal matrix
   pollen_RR[:, :] = pollen_RR ./ transpose(total_pollen * dg)
@@ -41,9 +48,9 @@ function one_step_foward!(next_t::Int64, RR_ls::Array{Float64, 3},  Rr_ls::Array
   pollen_rr[:, :] = pollen_rr ./ transpose(total_pollen * dg)
   
   #create new seeds
-  new_seeds_at_t_mm!(RR_newseed, Rr_newseed, rr_newseed, RR_ab_pop, Rr_ab_pop,
-    rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index,   
-    g_effect_fec, fec_max, dd_fec, dg)
+  new_seeds_at_t_mm!(RR_newseed, Rr_newseed, rr_newseed, RR_eff_pop, Rr_eff_pop,
+    rr_eff_pop, pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index,   
+    fec_max, dg)
   
   # disperse the seeds
   RR_ls[:, :, next_t] = RR_ls[:, :, next_t] + (RR_newseed * seed_disp_mat_1D)
@@ -137,6 +144,12 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
   Rr_ab_pop = zeros(length(g_vals), x_dim)
   rr_ab_pop = zeros(length(g_vals), x_dim)
 
+  ## create the RR_eff_pop and do the pre calc effect of resist costs
+  RR_eff_pop = zeros(length(g_vals), x_dim)
+  Rr_eff_pop = zeros(length(g_vals), x_dim)
+  rr_eff_pop = zeros(length(g_vals), x_dim)
+  eff_pop_holder = zeros(length(g_vals), x_dim)
+  
   # a set of matrices to hold the total amount of pollen that arrives are each location for each metabolic 
   # resitance score for each genotype
   pollen_RR = zeros(length(g_vals), x_dim)
@@ -198,17 +211,23 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
   for t in 2:burnin
   
     # step through the naive population, letting it develope
-    one_step_foward!(t, RR_naive,  Rr_naive, rr_naive, RR_ab_pop, Rr_ab_pop, 
-      rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
-      Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
-      herb_app_naive, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+    one_step_foward!(t, RR_naive,  Rr_naive, rr_naive, 
+      RR_ab_pop, Rr_ab_pop, rr_ab_pop, 
+      RR_eff_pop, Rr_eff_pop, rr_eff_pop, eff_pop_holder, 
+      pollen_RR, pollen_Rr, pollen_rr, total_pollen, 
+      RR_newseed, Rr_newseed, rr_newseed, 
+      dg, seed_sur, germ_prob, sur_tup, resist_G, herb_app_naive, 
+      pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
       g_mixing_kernel, g_mixing_index, g_effect_fec)
       
     # step through the exposed population letting it develope
-    one_step_foward!(t, RR_expos,  Rr_expos, rr_expos, RR_ab_pop, Rr_ab_pop, 
-      rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
-      Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
-      herb_app_expos, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+    one_step_foward!(t, RR_expos,  Rr_expos, rr_expos,  
+      RR_ab_pop, Rr_ab_pop, rr_ab_pop, 
+      RR_eff_pop, Rr_eff_pop, rr_eff_pop, eff_pop_holder, 
+      pollen_RR, pollen_Rr, pollen_rr, total_pollen, 
+      RR_newseed, Rr_newseed, rr_newseed, 
+      dg, seed_sur, germ_prob, sur_tup, resist_G, herb_app_expos, 
+      pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
       g_mixing_kernel, g_mixing_index, g_effect_fec)
       
   end
@@ -226,24 +245,33 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
   for t in (burnin + 1):(num_iter + burnin)
   
     # step through the naive population
-    one_step_foward!(t, RR_naive,  Rr_naive, rr_naive, RR_ab_pop, Rr_ab_pop, 
-      rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
-      Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
-      herb_app_expos, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+    one_step_foward!(t, RR_naive,  Rr_naive, rr_naive, 
+      RR_ab_pop, Rr_ab_pop, rr_ab_pop, 
+      RR_eff_pop, Rr_eff_pop, rr_eff_pop, eff_pop_holder, 
+      pollen_RR, pollen_Rr, pollen_rr, total_pollen, 
+      RR_newseed, Rr_newseed, rr_newseed, 
+      dg, seed_sur, germ_prob, sur_tup, resist_G, herb_app_expos, 
+      pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
       g_mixing_kernel, g_mixing_index, g_effect_fec)
       
     # step through the exposed population
-    one_step_foward!(t, RR_expos,  Rr_expos, rr_expos, RR_ab_pop, Rr_ab_pop, 
-      rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
-      Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
-      herb_app_expos, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec,
+    one_step_foward!(t, RR_expos,  Rr_expos, rr_expos, 
+      RR_ab_pop, Rr_ab_pop, rr_ab_pop, 
+      RR_eff_pop, Rr_eff_pop, rr_eff_pop, eff_pop_holder, 
+      pollen_RR, pollen_Rr, pollen_rr, total_pollen, 
+      RR_newseed, Rr_newseed, rr_newseed, 
+      dg, seed_sur, germ_prob, sur_tup, resist_G, herb_app_expos, 
+      pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
       g_mixing_kernel, g_mixing_index, g_effect_fec)
-     
+      
     # step through the empty population
-    one_step_foward!(t, RR_empty,  Rr_empty, rr_empty, RR_ab_pop, Rr_ab_pop, 
-      rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
-      Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
-      herb_app_expos, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+    one_step_foward!(t, RR_empty,  Rr_empty, rr_empty, 
+      RR_ab_pop, Rr_ab_pop, rr_ab_pop, 
+      RR_eff_pop, Rr_eff_pop, rr_eff_pop, eff_pop_holder, 
+      pollen_RR, pollen_Rr, pollen_rr, total_pollen, 
+      RR_newseed, Rr_newseed, rr_newseed, 
+      dg, seed_sur, germ_prob, sur_tup, resist_G, herb_app_expos, 
+      pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
       g_mixing_kernel, g_mixing_index, g_effect_fec)
       
   end
@@ -368,6 +396,12 @@ function run_natspread(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64,
   RR_ab_pop = zeros(length(g_vals), x_dim)
   Rr_ab_pop = zeros(length(g_vals), x_dim)
   rr_ab_pop = zeros(length(g_vals), x_dim)
+  
+  ## create the RR_eff_pop and do the pre calc effect of resist costs
+  RR_eff_pop = zeros(length(g_vals), x_dim)
+  Rr_eff_pop = zeros(length(g_vals), x_dim)
+  rr_eff_pop = zeros(length(g_vals), x_dim)
+  eff_pop_holder = zeros(length(g_vals), x_dim)
 
   # a set of matrices to hold the total amount of pollen that arrives are each location for each metabolic 
   # resitance score for each genotype
@@ -404,12 +438,15 @@ function run_natspread(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64,
     
   # run the model
   for t in 2:num_iter
-     
+  
     # step through the exposed population letting it develope
-    one_step_foward!(t, RR_ls,  Rr_ls, rr_ls, RR_ab_pop, Rr_ab_pop, 
-      rr_ab_pop, pollen_RR, pollen_Rr, pollen_rr, total_pollen, RR_newseed, 
-      Rr_newseed, rr_newseed, dg, seed_sur, germ_prob, sur_tup, resist_G,
-      herb_app, pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+    one_step_foward!(t, RR_ls,  Rr_ls, rr_ls, 
+      RR_ab_pop, Rr_ab_pop, rr_ab_pop, 
+      RR_eff_pop, Rr_eff_pop, rr_eff_pop, eff_pop_holder, 
+      pollen_RR, pollen_Rr, pollen_rr, total_pollen, 
+      RR_newseed, Rr_newseed, rr_newseed, 
+      dg, seed_sur, germ_prob, sur_tup, resist_G, herb_app, 
+      pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
       g_mixing_kernel, g_mixing_index, g_effect_fec)
       
   end
