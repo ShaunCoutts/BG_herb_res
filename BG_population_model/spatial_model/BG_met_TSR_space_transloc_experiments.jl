@@ -172,7 +172,7 @@ df_g_pro = readtable("g_pro_prerun.csv", header = true)
 
 #plot these scenarios
 pop_res_4_scen(df_g_pro, :g_pro, [:pro_R, :sur_g], sink_col, 
-  output_loc, "effect_g_pro_resist.pdf", 1.9, convert(String, L"$\rho$"), ["%R", "survival rr"], int_TSR_low, 
+  output_loc, "effect_g_pro_resist.pdf", 1.9, convert(String, L"$\rho$"), [convert(String, L"$\%R_{100}$"), convert(String, L"$Sur_{rr}$")], int_TSR_low, 
   inject_g_low, int_TSR_high, inject_g_high)
 
   

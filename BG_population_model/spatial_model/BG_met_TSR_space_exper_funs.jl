@@ -176,8 +176,9 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
   g_mixing_kernel = zeros(length(g_vals), length(g_vals) ^ 2)
   fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
   g_mixing_index = generate_index_pairs(g_vals)
+  
   # give the effect of herb as a function of g, make it symetrical stabilising function, centered on 0
-  g_effect_fec = exp(-(fec0 - abs(g_vals) * fec_cost))
+  g_effect_fec = resist_cost_pre_calc(fec0, fec_cost, g_vals);
 
   # set up the survival vectors 
   sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
