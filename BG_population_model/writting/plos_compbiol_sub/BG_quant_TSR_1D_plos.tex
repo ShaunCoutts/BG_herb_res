@@ -253,9 +253,9 @@ We develop a spatially explicit, density dependent population models of the evol
 \section*{Materials and Methods}
 % For figure citations, please use "Fig" instead of "Figure".
 \subsection*{model}
-We model the invasion of a single locus that confers perfect resistance with no fitness costs (perfect target site resistance) in a population of \textit{A. myosuroides} that harbours additive genetic variance for an independent, costly, quantitative resistance trait. \textit{A. myosuroides} is an annual, diploid, out-crossing grass. We use a discrete time, continuous space, modelling framework that can track the evolution of both continuous (quantitative resistance) and discrete (target site resistance) state variables.     
+We model the invasion of a single locus that confers perfect resistance with no fitness costs (perfect target site resistance) in an annual, diploid plant population that harbours additive genetic variance for an independent, costly, quantitative resistance trait. We begin with a spatially implicit model and then develop spatial model where the population exists on a 1D landscape. We use a discrete time, continuous space, modelling framework that can track the evolution of both continuous (quantitative resistance) and discrete (target site resistance) state variables.     
 
-We model a population of \textit{A. myosuroides} on a 1D landscape using an annual projection interval, starting at the beginning of the growing season before any seeds have emerged from the seed bank. Once seeds germinate they are either exposed to herbicide or not. Survival under herbicide is conferred by two types of resistance, quantitative and target site. Quantitative resistance is determined by the breeding value $g$. Quantitative resistance is modelled assuming the infinitesimal model of inheritance \cite{Fish1918}. We assume target site resistance is controlled by a single locus, with Mendelian inheritance. We assume no mutations in the target site resistance locus. We denote the resistant allele $R$ and the susceptible allele $r$. Those individuals that survive then flower and spread pollen. Finally, survivors disperse their seeds into the seed bank. See Fig. \ref{fig:schematic} for a description of the life cycle.  
+Our annual projection interval starts at the beginning of the growing season before any seeds have emerged from the seed bank. Once seeds germinate they are either exposed to herbicide or not. Survival under herbicide is conferred by two types of resistance, quantitative and target site. Quantitative resistance is determined by the breeding value $g$. Quantitative resistance is modelled assuming the infinitesimal model of inheritance \cite{Fish1918}. We assume target site resistance is controlled by a single locus, with Mendelian inheritance. We assume no mutations in the target site resistance locus. We denote the resistant allele $R$ and the susceptible allele $r$. Those individuals that survive then flower and spread pollen. Finally, survivors disperse their seeds into the seed bank. See Fig. \ref{fig:schematic} for a description of the life cycle.  
 
 \begin{figure}[!h]
 	\centering
@@ -354,6 +354,10 @@ The model was implemented in Julia version 0.5.0, and code for the model and plo
 %\end{figure}
 
 \subsection*{Parametrization}
+of \textit{A. myosuroides}
+of \textit{A. myosuroides} 
+\textit{A. myosuroides} is an annual, diploid, out-crossing grass. 
+
 Several of the population model parameters, particularly those relating to the quantitative genetic selection model, are unknown for our study system. We used field-derived estimates of population density to calibrate the model. While we cannot directly parametrize the model with this data, we could use it to calibrate the model and constrain sets of parameter values to those that predicted population sizes in the range of observed population sizes. We outline this procedure in \nameref{S2_Appendix}. Estimates and sources for each parameter are given in Table \ref{tab:parameters}.          
 
 \begin{table}[!ht]

@@ -1,0 +1,105 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{setspace, graphicx, lineno, color, float}
+\usepackage{lscape}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{natbib}
+\usepackage{multirow} %connecting columns in tables
+\usepackage{multicol}
+\usepackage{longtable}
+\usepackage[retainorgcmds]{IEEEtrantools}
+%page set up
+\usepackage[left=2.5cm,top=2.5cm,right=2.5cm,bottom=2.5cm,nohead]{geometry}
+\usepackage{caption}
+\usepackage[table]{xcolor} 
+\setcounter{table}{0}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+
+\begin{document}
+\section*{Spatial version of model}
+The 1D spatial model is similar to the non-spatial version except we introduce the state variable $x$ to denote the location. We also have pollen (Eq. \ref{eq:pollen_disp}) and seed (Eq. \ref{eq:seed_disp}) to move genes around the landscape. 
+
+The number of individuals of target site genotype $G$ that emerge from the seed bank and establish at location $x$ is 
+\begin{equation}\label{eq:above_ground}
+	n_G(g, x, t) = b_G(g, x, t)\phi_e,
+\end{equation}
+where $\phi_e$ is the probability that a seed germinates. The distribution of surviving individuals is 
+\begin{equation}\label{eq:abg_sur}
+	n'_G(g, x, t) = n_G(g, x, t)s_G(g, h_x) 
+\end{equation}
+where survival at location $x$ is a function on the target site genotype, $G$, quantitative resistance, $g$, and location dependent application index $h_x \in \{0, 1\}$.   
+\begin{equation}\label{eq:sur_G}
+	s_G(g, h_x) = \begin{cases} 
+		\frac{1}{1 + e^{-s_0}} &\text{~if~} G \in \{RR, Rr\} \\
+		\frac{(1 - \varsigma)}{1 + e^{-s_0}} + \frac{\varsigma}{1 + e^{-\left(s_0 - h_x\left(\xi - \textbf{min}(\xi, \rho g) \right)\right)}} &\text{~otherwise~} 		
+	\end{cases} 
+\end{equation}  
+Where $s_0$ is survival (in logits) without the effect of herbicide, $\varsigma$ is the proportion of the population that is exposed to herbicide, $\xi$ is the reduction of survival (in logits) due to herbicide and $\rho$ is the protective effect a one unit increase in $g$ has against herbicide (in logits).   
+
+The effects of density and the demographic costs of resistance are applied to the distribution of survivors. These effects could affect survival or reproduction, or both. In a discreet time model of an annual plant a reduction in fecundity is equivalent to a reduction in survival, as both affect the number of seeds that enter the seed bank. We define the effective reproductive population ($n''_G(g, x, t)$) as the population after herbicide application, incorporating the demographic costs of resistance and effects of density. 
+\begin{equation}\label{eq:effect_pop}
+	n''_G(g, x, t) = \frac{n'_G(g, x, t)}{1 + \text{exp}(-(f_c^0 - f_c|g|))}\cdot\frac{1}{1 + f_d\sum_{\forall G} \int_g n'_G(g, x, t)\text{d}g}
+\end{equation} 
+where $f_c^0$ is the cost of demographic cost of quantitative resistance when its breeding value $g = 0$ (in logits), $|g|$ is the absolute value of value $g$ and $f_c$ is the cost of resistance in terms of in terms of the logit reduction in effective population size for every one unit increase in the breeding value of $g$. Density dependence is controlled by $f_d$, with $1/f_d$ the population density where individuals start to interfere with each other. The summation and integration give the number of above ground individuals that survive until flowering at location $x$. Because total population is calculates at each location independently we are implicitly assuming that only plants very close to each other affect fecundity (i.e. only plants within $\text{d}x / 2$ of location $x$). 
+
+Since \textit{A. myosuroides} is monoecious, $n''_G(g, x, t)$ is both the maternal and paternal parent distributions. Following herbicide selection, natural mortality, and demographic costs and density effects have been incorporated into the effective reproductive population, individuals flower and produce pollen. We assume that the supply of pollen never limits seed production (i.e. pollen is always very abundant). The probability density function of pollen arriving at location $x$ with quantitative resistance $g$ and target site genotype $G$ is 
+\begin{equation}\label{eq:pollen_func}
+\gamma_G(g, x, t) = \frac{\int_{x_p} n''_G(g, x_p, t)d_p(x_p, x)\text{d}x_p} {\sum_{\forall G_p}\int_{x_p}\int_{g_p} n''_{G_p}(g_p, x, t) d_p(x_p, x)\text{d}g_p \text{d}x_p}, 
+\end{equation}
+The numerator of Eq. \ref{eq:pollen_func} is the density of pollen that arrives at location $x$ with quantitative resistance $g$ and target site resistance genotype $G$, from all locations in the landscape, $x_p$. The denominator is the total density of pollen that arrives at location $x$, from all locations ($x_p$), across all values for quantitative resistance $g_p$ and all target site resistance genotypes, $G_p$. Pollen is dispersed via the dispersal kernel  
+\begin{equation}\label{eq:pollen_disp}
+	d_p(x, x_p) = \frac{c}{a^{2/c}\Gamma\left(\dfrac{2}{c} \right)\Gamma\left(1 - \dfrac{2}{c} \right)}{\left( 1 + \dfrac{\delta(x, x_p)^c}{a} \right)}^{-1} 
+\end{equation} 
+which gives the density of pollen originating in location $x_p$ that moves to location $x$. We used a fat-tailed logistic kernel, which was found to be the one of the best fitting pollen dispersal kernels for oil seed rape \cite{Klei2006}. This is a two parameter kernel with a scale, $a$, and shape, $c$, parameter, where $\delta(x,x_p)$ is the distance between locations $x$ and $x_p$. 
+
+Once pollen has been dispersed the fertilized seeds are produced and dispersed around the landscape. The distribution over $g$ of seeds produced at location $x$ will depend on both the paternal and maternal parent distribution. This means we must calculate the distribution of seeds over $g$ produced at site $x$ for each $G_m \times G_p$ cross, 
+\begin{align}
+\label{eq:fec_GG}
+\begin{split}
+	\eta_{G_p}^{G_m}(g, x, t) = \int_{g_m}\int_{g_p} N(g|0.5 g_m + 0.5 g_p, 2V_A)f_\text{max} n''_{G_m}&(g_m, x, t) \cdot \\
+	&\gamma_{G_p}(g_p, x, t)\text{d}g_p\text{d}g_m
+\end{split}
+\end{align}          
+$G_p$ and $G_m$ denote the paternal and maternal target site genotypes respectively. Similarly, the maternal and paternal quantitative resistance breeding value are denoted $g_m$ and $g_p$. The offspring produced by every pair of $g_m$:$g_p$ values are assumed to be normally distributed with a mean of $0.5g_m + 0.5g_p$ and standard deviation of $2V_A$ (twice the additive variance) \cite{Ture1994}. Thus, the probability of a seed with breeding value $g$ is $\text{N}(g|0.5 g_m + 0.5 g_p, 2V_A)$. The maternal parent distribution is the effective reproductive population at location $x$ ($n''_{G}(g, x, t)$; Eq. \ref{eq:effect_pop}). The paternal parent distribution is comprised of the pollen that arrives at location $x$ from all over the landscape, and is given by function $\gamma_{G}(g, x, t)$ (Eq. \ref{eq:pollen_func}). Finally, $f_\text{max}$ is the maximum possible number of seeds per individual, when both density and quantitative resistance are 0.
+
+To get the distribution of seeds over $g$, at each location, for each target site genotype, $G$, $f_{G}(g, x, t)$, we must sum the distributions of seeds from each $G_m \times G_p$ cross, weighting the distributions by the proportion of seeds of genotype $G$ each cross will produce. 
+\begin{subequations}
+\label{eq:fec_G}
+\begin{equation}
+	f_{RR}(g, x, t) = \eta_{RR}^{RR}(g, x, t) + \eta_{RR}^{Rr}(g, x, t)0.5 + \eta_{Rr}^{RR}(g, x, t)0.5 + \eta_{Rr}^{Rr}(g, x, t)0.25
+\end{equation}  
+\begin{equation}
+\begin{split}
+	f_{Rr}(g, x, t) = \eta&_{RR}^{Rr}(g, x, t)0.5 + \eta_{Rr}^{RR}(g, x, t)0.5 + \eta_{RR}^{rr}(g, x, t) +\\
+	&\eta_{Rr}^{Rr}(g, x, t)0.5 + \eta_{Rr}^{rr}(g, x, t)0.5 + \eta_{rr}^{RR}(g, x, t) + \eta_{rr}^{Rr}(g, x, t)0.5
+\end{split}
+\end{equation}
+\begin{equation}
+	f_{rr}(g, x, t) = \eta_{rr}^{rr}(g, x, t) + \eta_{rr}^{Rr}(g, x, t)0.5 + \eta_{Rr}^{rr}(g, x, t)0.5 + \eta_{Rr}^{Rr}(g, x, t)0.25
+\end{equation}  
+\end{subequations}  
+
+We close the life cycle by dispersing the seeds produced during time step $t$, across the entire landscape (intergration over $x_m$), that arrive at location $x$, to the seed bank there (Eq. \ref{eq:above_ground}) so that 
+\begin{equation}
+	b_G(g, x, t + 1) = b_G(g, x, t)(1 - \phi_e)\phi_b + \int_{x_m}f_G(g, x_m, t)d_m(x, x_m)\text{d}x.  
+\end{equation}
+Where $(1 - \phi_e)$ is the proportion of seeds that did not germinate $\phi_b$ is the probability that a seed in the seed bank, $b_G(g, x, t)$, survives one year. The probability that a seed produced at maternal location $x_m$ is dispersed to location $x$ is 
+\begin{subequations}\label{eq:seed_disp}
+\begin{equation}\label{eq:seed_kern}
+\begin{split}
+	d_m(x, x_m) = {\alpha \Upsilon_1 \Omega_1 \delta(x, x_m)}^{\Omega_1 - 2} &\text{exp}(-\Upsilon_1 \delta(x, x_m)^{\Omega_1}) +\\ &{(1 - \alpha) \Upsilon_2 \Omega_2 \delta(x, x_m)}^{\Omega_2 - 2} \text{exp}(-\Upsilon_2 \delta(x, x_m)^{\Omega_2})
+\end{split}  
+\end{equation}
+\begin{equation}\label{eq:shape}
+	\Omega_k = \frac{1}{1 + \text{ln}(1 - \omega_k)}
+\end{equation}
+\begin{equation}\label{eq:scale}
+	\Upsilon_k = \frac{\Omega_k - 1}{{\Omega_k \mu_k}^{\Omega_k}}
+\end{equation}
+\end{subequations} 
+This double Weibull dispersal kernel was found to be the best fit to \textit{A. myosuroides} seed dispersal in a majority of cases \cite{Colb2001}. $\delta(x, x_m)$ is the distance between locations $x$ and $x_m$, $\alpha$ is the proportion of seeds in the short dispersal kernel, $\mu_k$ is the distance most seeds disperse to under kernel $k \in \{1, 2\}$. The skew of kernel $k$ is controlled by $\omega_k$, the proportion of seeds that disperse up to distance $\mu_k$. This kernel ignores dispersal by farm machinery \cite{Colb2001}.
+
+\end{document}
