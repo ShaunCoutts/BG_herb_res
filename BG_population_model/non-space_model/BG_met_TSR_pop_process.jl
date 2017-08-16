@@ -39,12 +39,10 @@ end
 # mext three are the maternal distirbution i.e. survivours at x, for each G
 # next three is the pollen dist that arrived at x
 # followed by the mixing kernel for g, and the indicies to apply to the parent dists for that mixing 
-function new_seeds_at_t!(RR_newseed::Array{Float64, 1}, Rr_newseed::Array{Float64, 1},
-  rr_newseed::Array{Float64, 1},
+function new_seeds_at_t!(RR_newseed::Array{Float64, 1}, Rr_newseed::Array{Float64, 1}, rr_newseed::Array{Float64, 1},
   RR_mat::Array{Float64, 1}, Rr_mat::Array{Float64, 1}, rr_mat::Array{Float64, 1},
   RR_pollen::Array{Float64, 1}, Rr_pollen::Array{Float64, 1}, rr_pollen::Array{Float64, 1},
   g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, fec_max::Float64, dg::Float64)
-  
   
   # hard code the G corsses, there is only 9 and and they will have fixed proportions: 
     
