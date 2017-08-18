@@ -20,25 +20,24 @@ end
 
 # need to run each source scenario three times, once in a empty landscape, one in an exposed population
 # and one in a herbicide exposed population (can pre calculate all these so don't need to re-caclulate each time 
-@everywhere file_loc_func_p = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model" 
+@everywhere file_loc_func_p = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/non-space_model" 
+output_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output" 
+
 @everywhere cd(file_loc_func_p)
-@everywhere include("BG_met_TSR_space_exper_funs.jl")
-@everywhere include("BG_met_TSR_space_pop_process.jl")
-@everywhere include("BG_met_TSR_space_dispersal_functions.jl")
-include("spatial_model_plotting_script.jl")
+@everywhere include("BG_met_TSR_pop_process.jl")
+@everywhere include("BG_met_TSR_runners.jl")
+# include("spatial_model_plotting_script.jl")
+# @everywhere include("BG_met_TSR_exper_funs.jl")
   
 
 ###################################################################################################
 # script to run the translocation experiments
 # parameter values
-upper_g = 10;
-lower_g = -10;
+upper_g = 20.0;
+lower_g = -20.0;
 dg = 0.5;
 int_mean_g = 0.0;
 int_sd_g = 1.4142;
-
-x_dim = 250; # number of spatial evaluation points, actual landscape size is x_dim * dx
-dx = 1.0;
 
 int_num_RR = 0.0;
 int_num_Rr = 0.0;
@@ -46,18 +45,11 @@ int_num_rr = 10.0; # number of intial seeds at each location for each genoptype,
 burnin = 20;
 num_iter = 100;
 
-seed_pro_short = 0.48; 
-seed_mean_dist_short = 0.58; 
-pro_seeds_to_mean_short = 0.44; 
-seed_mean_dist_long = 1.65; 
-pro_seeds_to_mean_long = 0.39;
-scale_pollen = 32.0;
-shape_pollen = 3.32; 
 offspring_sd = 1.0;
 fec_max = 60.0;
 fec0 = 4.0;
 fec_cost = 0.45;
-dd_fec = 0.15;
+dd_fec = 0.005;
 base_sur = 10.0; 
 herb_effect = 14.0; 
 g_prot = 1.5; 
@@ -65,14 +57,131 @@ pro_exposed = 0.8;
 seed_sur = 0.45;
 germ_prob = 0.52;
 resist_G = ["RR", "Rr"];
+herb_app = 1;
 
 # set up the evaluation points for quantitative resistance
 g_vals = collect(lower_g : dg : upper_g);   
 
-# set up the plotting color palettes and plotting output locations
-sink_col = [HSL(0, 0, 0) HSL(180, 1.0, 0.5) HSL(220, 1.0, 0.5)]
-G_col = [HSL(0, 1, 0.7) HSL(280, 1, 0.7) HSL(125, 1, 0.7)] 
-output_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output" 
+par_vals = [int_num_RR, int_num_Rr, int_num_rr, germ_prob, fec0, fec_cost, fec_max, 
+  dd_fec, herb_effect, g_prot, seed_sur, pro_exposed, base_sur, offspring_sd];
+  
+  
+test = model_run(par_vals, int_mean_g, int_sd_g, num_iter, lower_g, upper_g, offspring_sd, dg, 
+  base_sur, resist_G, herb_app)
+
+
+  
+test_out = run_wrapper(par_vals, int_mean_g, int_sd_g, num_iter, lower_g, upper_g, dg, 
+  resist_G, herb_app, "no TSR", 1)
+  
+  
+  
+
+plot(get_mean_g(test[3], g_vals, dg))
+plot(get_var_g(test[3], g_vals, dg))
+
+
+sur_test = survival_pre_calc(base_sur, g_vals, herb_effect, 
+  g_prot, pro_exposed)
+  
+plot(get_post_herb_pop(test[1], test[2], test[3], dg, sur_test, germ_prob))
+
+plot(get_pop_size(test[1], test[2], test[3], dg))
+
+
+
+# set up a data frame to hold the results 
+var_names = ["int_mean_g", "int_sd_g", "intRR", "intRr", "intrr", "germ_prob", "fec0", "fec_cost", 
+  "fec_max", "dd_fec", "herb_effect", "g_pro", "seed_sur", "pro_exposed", "s0", "off_sd", "scen", "rep_ID", "measure"]
+all_names = vcat(var_names, [string("t", i) for i = 1:num_iter])
+
+first_row = vec([zeros(length(par_vals) + 2); ["none", "none"]; 0; zeros(num_iter)])
+
+res_df = DataFrame(reshape(first_row, 1, length(first_row)))
+names!(res_df, convert(Array{Symbol}, all_names)) 
+
+new_df = DataFrame(test_out)
+names!(new_df, convert(Array{Symbol}, all_names))
+
+
+res_df = vcat(res_df, new_df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # The set up the set of seeds added after the burnin period
 # Four different source populations: low mean_g and low %R, low mean_g and high %R, 

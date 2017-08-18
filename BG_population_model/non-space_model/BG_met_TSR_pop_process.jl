@@ -130,7 +130,7 @@ end
 # uses in place mutation. Note herb_application should be the same length as size(pop_at_t)[2] 
 # and and g_vals should be the same length as size(pop_at_t)[1]
 function survival_at_t!(pop_at_t::Array{Float64, 1}, resist_G::Array{String, 1}, G::String, 
-  herb_application::Array{Int64, 1}, sur_tup::Tuple{Float64, Array{Float64, 1}})
+  herb_application::Int64, sur_tup::Tuple{Float64, Array{Float64, 1}})
   
   if G in resist_G
       
@@ -138,7 +138,7 @@ function survival_at_t!(pop_at_t::Array{Float64, 1}, resist_G::Array{String, 1},
     
   else
     
-    pop_at_t[:] = pop_at_t[:] .* sur_tup[herb_application[x]] 
+    pop_at_t[:] = pop_at_t[:] .* sur_tup[herb_application] 
     
   end
   
@@ -147,9 +147,9 @@ function survival_at_t!(pop_at_t::Array{Float64, 1}, resist_G::Array{String, 1},
 end
 
 # moves seeds to the next time step, kills the seeds in the process 
-function seedbank_update!(seedbank_next::Array{Float64, 1}, seedbank_now::Array{Float64, 1}, seed_sur::Float64)
+function seedbank_update!(seedbank_next::Array{Float64, 2}, seedbank_now::Array{Float64, 2}, t::Int64, seed_sur::Float64)
 
-  seedbank_next[:] = seedbank_now * seed_sur
+  seedbank_next[:, t] = seedbank_now[:, t - 1] * seed_sur
   
 end
 
