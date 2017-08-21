@@ -4,21 +4,6 @@
 
 using DataFrames
 
-# make a thin wrapper to pass to pmap that unpacks the parameter values 
-@everywhere function runner_wrapper(pars::Array{Any, 1})
-
-  #unpack the parameter vlaues 
-  run_res = run_scene_trans(pars[1], pars[2], pars[3], pars[4], pars[5], pars[6], pars[7], pars[8],
-    pars[9], pars[10], pars[11], pars[12], pars[13], pars[14], pars[15], pars[16], pars[17], pars[18], 
-    pars[19], pars[20], pars[21], pars[22], pars[23], pars[24], pars[25], pars[26], pars[27], pars[28], 
-    pars[29], pars[30], pars[31], pars[32], pars[33])
-    
-    final_pop = trans_ex_snapshot(run_res, convert(Float64, pars[2]), pars[34], pars[6])
-    pars_block = vcat(fill(transpose([pars[8:9]; pars[15:16]; pars[18:32]]), 3) ...)
-    return hcat(pars_block, final_pop) 
-    
-end
-
 # need to run each source scenario three times, once in a empty landscape, one in an exposed population
 # and one in a herbicide exposed population (can pre calculate all these so don't need to re-caclulate each time 
 @everywhere file_loc_func_p = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/non-space_model" 
@@ -68,6 +53,7 @@ g_pro = [1.0, 1.5, 2.0];
 herb_eff = [12.0, 14.0, 16.0];
 fec_cost = [0.35, 0.45, 0.55];
 fec0 = [3.0, 4.0, 5.0];
+offspring_sd = [0.5, 1.0, 1.5];
 
 par_list = [];
 rep_count = 1.0;
@@ -75,12 +61,14 @@ for i in g_pro
   for j in herb_eff
     for k in fec_cost
       for l in fec0
+	for osd in offspring_sd
       
-	push!(par_list, [int_num_RR, int_num_Rr, int_num_rr, germ_prob, l, k, fec_max, 
-	  dd_fec, j, i, seed_sur, pro_exposed, base_sur, offspring_sd, rep_count]);
-	 
-	rep_count += 1;
-	
+	  push!(par_list, [int_num_RR, int_num_Rr, int_num_rr, germ_prob, l, k, fec_max, 
+	    dd_fec, j, i, seed_sur, pro_exposed, base_sur, osd, rep_count]);
+	  
+	  rep_count += 1;
+	  
+	end
       end
     end
   end

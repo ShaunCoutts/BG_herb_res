@@ -170,7 +170,8 @@ function run_wrapper(param::Array{Float64, 1}, int_g::Float64, int_sd::Float64, 
   
   # fill in the different measures
   out[1, length(param) + 4] = "sur_rr"
-  out[1, (length(param) + 5):end] = get_sur_rr(pop_run[3], sur_pre, dg)
+  out[1, (length(param) + 5):end] = get_sur_rr(pop_run[3], param[13], param[9], param[10], 
+  g_vals , dg)
   
   out[2, length(param) + 4] = "pro_R"
   out[2, (length(param) + 5):end] = get_pro_R(pop_run[1], pop_run[2], pop_run[3], dg) 
@@ -307,9 +308,11 @@ function get_pop_sur(RR_pop::Array{Float64, 2}, Rr_pop::Array{Float64, 2}, rr_po
 end
 
 # single time step
-function get_sur_rr(rr_pop::Array{Float64, 1}, sur_tup::Tuple{Float64, Array{Float64, 1}}, dg::Float64)
+function get_sur_rr(rr_pop::Array{Float64, 1}, base_sur::Float64, h_eff::Float64, g_pro::Float64, 
+  g_vals::Array{Float64, 1} , dg::Float64)
 
-  num_sur = sum(rr_pop .* sur_tup[2]) * dg
+  sur_vec = 1 ./ (1 + exp(-(base_sur - (h_eff - min(h_eff, g_vals * g_pro)))))
+  num_sur = sum(rr_pop .* sur_vec) * dg
   
   num_pre = sum(rr_pop) * dg
  
@@ -317,9 +320,11 @@ function get_sur_rr(rr_pop::Array{Float64, 1}, sur_tup::Tuple{Float64, Array{Flo
 
 end
 # all time steps
-function get_sur_rr(rr_pop::Array{Float64, 2}, sur_tup::Tuple{Float64, Array{Float64, 1}}, dg::Float64)
+function get_sur_rr(rr_pop::Array{Float64, 2}, base_sur::Float64, h_eff::Float64, g_pro::Float64, 
+  g_vals::Array{Float64, 1} , dg::Float64)
 
-  num_sur = vec(sum(rr_pop .* sur_tup[2], 1) * dg)
+  sur_vec = 1 ./ (1 + exp(-(base_sur - (h_eff - min(h_eff, g_vals * g_pro)))))
+  num_sur = vec(sum(rr_pop .* sur_vec, 1) * dg)
   
   num_pre = vec(sum(rr_pop, 1) * dg)
  
