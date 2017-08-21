@@ -149,43 +149,41 @@ end
 # wrapper function to take the results of the herbicide run and make some populaton summaries for plotting 
 # output a list of parameters, and then a set of measures over the number of time steps
 function run_wrapper(param::Array{Float64, 1}, int_g::Float64, int_sd::Float64, num_iter::Int64,  
-  lower_g::Float64, upper_g::Float64, dg::Float64, resist_G::Array{String, 1}, herb_app::Int64, 
-  scen_lab::String, rep_ID::Int64)
+  g_vals::Array{Float64, 1}, dg::Float64, resist_G::Array{String, 1}, herb_app::Int64, 
+  scen_lab::String)
   
-  g_vals = collect(lower_g : dg : upper_g)
- 
   pop_run = model_run(param, int_g, int_sd, num_iter, g_vals, dg, resist_G, herb_app)
     
-  out = Array{Any, 2}(5, length(param) + 5 + num_iter)
+  out = Array{Any, 2}(5, length(param) + 4 + num_iter)
 
   # fill in parameter values and scenario
   for i in 1:size(out)[1]
   
     out[i, 1:2] = [int_g, int_sd]
-    out[i, 3:(length(param) + 2)] = param
-    out[i, length(param) + 3] = scen_lab
-    out[i, length(param) + 4] = rep_ID
+    out[i, 3:(length(param) + 1)] = param[1:14]
+    out[i, length(param) + 2] = scen_lab
+    out[i, length(param) + 3] = param[15]
   
   end
   
   sur_pre = survival_pre_calc(param[13], g_vals, param[9], param[10], param[12])
   
   # fill in the different measures
-  out[1, length(param) + 5] = "sur_rr"
-  out[1, (length(param) + 6):end] = get_sur_rr(pop_run[3], sur_pre, dg)
+  out[1, length(param) + 4] = "sur_rr"
+  out[1, (length(param) + 5):end] = get_sur_rr(pop_run[3], sur_pre, dg)
   
-  out[2, length(param) + 5] = "pro_R"
-  out[2, (length(param) + 6):end] = get_pro_R(pop_run[1], pop_run[2], pop_run[3], dg) 
+  out[2, length(param) + 4] = "pro_R"
+  out[2, (length(param) + 5):end] = get_pro_R(pop_run[1], pop_run[2], pop_run[3], dg) 
   
-  out[3, length(param) + 5] = "pop_sur"
-  out[3, (length(param) + 6):end] = get_pop_sur(pop_run[1], pop_run[2], pop_run[3], dg,
+  out[3, length(param) + 4] = "pop_sur"
+  out[3, (length(param) + 5):end] = get_pop_sur(pop_run[1], pop_run[2], pop_run[3], dg,
     sur_pre)
   
-  out[4, length(param) + 5] = "pop_size"
-  out[4, length(param) + 6:end] = get_pop_size(pop_run[1], pop_run[2], pop_run[3], dg)
+  out[4, length(param) + 4] = "pop_size"
+  out[4, (length(param) + 5):end] = get_pop_size(pop_run[1], pop_run[2], pop_run[3], dg)
   
-  out[5, length(param) + 5] = "ab_sur_pop"
-  out[5, length(param) + 6:end] = get_post_herb_pop(pop_run[1], pop_run[2], pop_run[3], dg,
+  out[5, length(param) + 4] = "ab_sur_pop"
+  out[5, (length(param) + 5):end] = get_post_herb_pop(pop_run[1], pop_run[2], pop_run[3], dg,
     sur_pre, param[4])
   
   return out

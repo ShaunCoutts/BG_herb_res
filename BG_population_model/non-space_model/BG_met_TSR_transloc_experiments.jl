@@ -1,5 +1,6 @@
 # simulation experiments for the TSR and NTSR joint evolution
 # to test how TSR can invade into a population with NTSR
+@everywhere using DistributedArrays
 
 using DataFrames
 
@@ -49,7 +50,7 @@ offspring_sd = 1.0;
 fec_max = 60.0;
 fec0 = 4.0;
 fec_cost = 0.45;
-dd_fec = 0.005;
+dd_fec = 0.001;
 base_sur = 10.0; 
 herb_effect = 14.0; 
 g_prot = 1.5; 
@@ -57,25 +58,122 @@ pro_exposed = 0.8;
 seed_sur = 0.45;
 germ_prob = 0.52;
 resist_G = ["RR", "Rr"];
-herb_app = 1;
+herb_app = 2;
 
 # set up the evaluation points for quantitative resistance
 g_vals = collect(lower_g : dg : upper_g);   
 
+# set a up a limited parameter to find a nice region of parameter space to work in
+g_pro = [1.0, 1.5, 2.0];
+herb_eff = [12.0, 14.0, 16.0];
+fec_cost = [0.35, 0.45, 0.55];
+fec0 = [3.0, 4.0, 5.0];
+
+par_list = [];
+rep_count = 1.0;
+for i in g_pro
+  for j in herb_eff
+    for k in fec_cost
+      for l in fec0
+      
+	push!(par_list, [int_num_RR, int_num_Rr, int_num_rr, germ_prob, l, k, fec_max, 
+	  dd_fec, j, i, seed_sur, pro_exposed, base_sur, offspring_sd, rep_count]);
+	 
+	rep_count += 1;
+	
+      end
+    end
+  end
+end
+
+# copy that list to all the  workers 
+@eval @everywhere par_list = $par_list
+
+# define the other needed inputs on all workers
+@everywhere upper_g = 20.0;
+@everywhere lower_g = -20.0;
+@everywhere dg = 0.5;
+@everywhere int_mean_g = 0.0;
+@everywhere int_sd_g = 1.4142;
+@everywhere num_iter = 100;
+@everywhere resist_G = ["RR", "Rr"];
+@everywhere herb_app = 2;
+@everywhere g_vals = collect(lower_g : dg : upper_g);   
+
+
+@time out = @DArray [run_wrapper(par_list[x], int_mean_g, int_sd_g, num_iter, g_vals, dg, 
+  resist_G, herb_app, "no TSR") for x = 1:length(par_list)];
+
+
+var_names = ["int_mean_g", "int_sd_g", "intRR", "intRr", "intrr", "germ_prob", "fec0", "fec_cost", 
+  "fec_max", "dd_fec", "herb_effect", "g_pro", "seed_sur", "pro_exposed", "s0", "off_sd", "scen", "rep_ID", "measure"];
+all_names = vcat(var_names, [string("t", i) for i = 1:num_iter]);
+
+res_df = DataFrame(vcat(out...));
+names!(res_df, convert(Array{Symbol}, all_names));
+
+# write the parameter sweep to a .csv file so an R plotting script can be used
+cd(output_loc);
+writetable("limited_par_sweep_nonspace.csv", res_df);
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
 par_vals = [int_num_RR, int_num_Rr, int_num_rr, germ_prob, fec0, fec_cost, fec_max, 
-  dd_fec, herb_effect, g_prot, seed_sur, pro_exposed, base_sur, offspring_sd];
+  dd_fec, herb_effect, g_prot, seed_sur, pro_exposed, base_sur, offspring_sd, 1.0];
   
-  
-test = model_run(par_vals, int_mean_g, int_sd_g, num_iter, lower_g, upper_g, offspring_sd, dg, 
-  base_sur, resist_G, herb_app)
-
-
   
 test_out = run_wrapper(par_vals, int_mean_g, int_sd_g, num_iter, lower_g, upper_g, dg, 
-  resist_G, herb_app, "no TSR", 1)
+  resist_G, herb_app, "no TSR")
   
   
-  
+
+par_list_g_pro = []
+for i in 1:size(inj_scens)[1]
+  push!(par_list_g_pro, [g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, inj_scens[i, 2],
+    inj_scens[i, 3], inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
+    resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, inj_scens[i, 1], pro_exposed, 
+    seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
+    pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd, threshold])
+end
+
+out = pmap(runner_wrapper, par_list_g_pro, batch_size = 55)
+
+
+
+# survial curve and fec cure plots to visulise the tradeoff
+function sur_fun(s0::Float64, h::Float64, gp::Float64, g_vals::Array{Float64, 1})
+
+  return 1 ./ (1 + exp(-(s0 - (h - min(h, gp * g_vals)))))
+
+end
+
+plt = plot(g_vals, sur_fun(base_sur, herb_effect, g_prot, g_vals))
+plt = plot!(plt, g_vals, resist_cost_pre_calc(3.0, fec_cost, g_vals))
+
+sur = sur_fun(base_sur, herb_effect, 1.5, g_vals)
+fec = resist_cost_pre_calc(fec0, fec_cost, g_vals)
+
+sur[g_vals .== 5]
+fec[g_vals .== 5]
+
+
+
 
 plot(get_mean_g(test[3], g_vals, dg))
 plot(get_var_g(test[3], g_vals, dg))
@@ -95,7 +193,7 @@ var_names = ["int_mean_g", "int_sd_g", "intRR", "intRr", "intrr", "germ_prob", "
   "fec_max", "dd_fec", "herb_effect", "g_pro", "seed_sur", "pro_exposed", "s0", "off_sd", "scen", "rep_ID", "measure"]
 all_names = vcat(var_names, [string("t", i) for i = 1:num_iter])
 
-first_row = vec([zeros(length(par_vals) + 2); ["none", "none"]; 0; zeros(num_iter)])
+first_row = vec([zeros(length(par_vals) + 2); "none"; 0; "none"; zeros(num_iter)])
 
 res_df = DataFrame(reshape(first_row, 1, length(first_row)))
 names!(res_df, convert(Array{Symbol}, all_names)) 
