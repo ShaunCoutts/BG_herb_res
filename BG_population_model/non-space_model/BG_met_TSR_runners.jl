@@ -154,7 +154,7 @@ function run_wrapper(param::Array{Float64, 1}, int_g::Float64, int_sd::Float64, 
   
   pop_run = model_run(param, int_g, int_sd, num_iter, g_vals, dg, resist_G, herb_app)
     
-  out = Array{Any, 2}(5, length(param) + 4 + num_iter)
+  out = Array{Any, 2}(7, length(param) + 4 + num_iter)
 
   # fill in parameter values and scenario
   for i in 1:size(out)[1]
@@ -186,6 +186,12 @@ function run_wrapper(param::Array{Float64, 1}, int_g::Float64, int_sd::Float64, 
   out[5, length(param) + 4] = "ab_sur_pop"
   out[5, (length(param) + 5):end] = get_post_herb_pop(pop_run[1], pop_run[2], pop_run[3], dg,
     sur_pre, param[4])
+    
+  out[6, length(param) + 4] = "mean_g_rr"
+  out[6, (length(param) + 5):end] = get_mean_g(pop_run[3], g_vals, dg) 
+  
+  out[7, length(param) + 4] = "var_g_rr"
+  out[7, (length(param) + 5):end] = get_var_g(pop_run[3], g_vals, dg) 
   
   return out
   

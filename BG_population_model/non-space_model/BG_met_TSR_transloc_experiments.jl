@@ -37,7 +37,7 @@ fec0 = 4.0;
 fec_cost = 0.45;
 dd_fec = 0.001;
 base_sur = 10.0; 
-herb_effect = 14.0; 
+herb_effect = 16.0; 
 g_prot = 1.5; 
 pro_exposed = 0.8;
 seed_sur = 0.45;
@@ -50,27 +50,18 @@ g_vals = collect(lower_g : dg : upper_g);
 
 # set a up a limited parameter to find a nice region of parameter space to work in
 g_pro = [1.0, 1.5, 2.0];
-herb_eff = [12.0, 14.0, 16.0];
-fec_cost = [0.35, 0.45, 0.55];
-fec0 = [3.0, 4.0, 5.0];
-offspring_sd = [0.5, 1.0, 1.5];
+Va = [0.5, 1.0, 1.5]; # addative variance, take sqrt() to standard deviation, which is the julia parameterisation
 
 par_list = [];
 rep_count = 1.0;
-for i in g_pro
-  for j in herb_eff
-    for k in fec_cost
-      for l in fec0
-	for osd in offspring_sd
-      
-	  push!(par_list, [int_num_RR, int_num_Rr, int_num_rr, germ_prob, l, k, fec_max, 
-	    dd_fec, j, i, seed_sur, pro_exposed, base_sur, osd, rep_count]);
-	  
-	  rep_count += 1;
-	  
-	end
-      end
-    end
+for gp in g_pro
+  for osv in Va
+
+    push!(par_list, [int_num_RR, int_num_Rr, int_num_rr, germ_prob, fec0, fec_cost, fec_max, 
+      dd_fec, herb_effect, gp, seed_sur, pro_exposed, base_sur, sqrt(osv), rep_count]);
+    
+    rep_count += 1;
+    
   end
 end
 
@@ -102,7 +93,7 @@ names!(res_df, convert(Array{Symbol}, all_names));
 
 # write the parameter sweep to a .csv file so an R plotting script can be used
 cd(output_loc);
-writetable("limited_par_sweep_nonspace.csv", res_df);
+writetable("rho_Va_par_sweep_nonspace.csv", res_df);
   
   
   
