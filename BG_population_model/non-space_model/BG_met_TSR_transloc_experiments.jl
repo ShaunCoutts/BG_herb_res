@@ -28,8 +28,8 @@ int_sd_g = 1.4142;
 int_num_RR = 0.0;
 int_num_Rr = 0.0;
 int_num_rr = 10.0; # number of intial seeds at each location for each genoptype, assume only TS susceptible
-burnin = 20;
 num_iter = 100;
+int_run = 20;
 
 offspring_sd = 1.0;
 fec_max = 60.0;
@@ -96,7 +96,61 @@ cd(output_loc);
 writetable("rho_Va_par_sweep_nonspace.csv", res_df);
   
   
-  
+## NOW RUN WITH TSR   
+int_num_RR = 0.0;
+int_num_Rr = 0.0;
+int_num_rr = 9.0; # number of intial seeds at each location for each genoptype, assume only TS susceptible
+
+# set a up a limited parameter to find a nice region of parameter space to work in
+g_pro = [1.0, 1.2, 1.5];
+Va = [0.5, 1.0, 1.5]; # addative variance, take sqrt() to standard deviation, which is the julia parameterisation
+int_RR = [0.001, 0.01, 0.1, 1];
+# set up the source ans sink scenarios
+int_rr = [10.0, ];
+
+par_list = [];
+rep_count = 1.0;
+for gp in g_pro
+  for osv in Va
+    for RR in intRR
+
+    push!(par_list, [RR, int_num_Rr, 10.0 - RR, germ_prob, fec0, fec_cost, fec_max, 
+      dd_fec, herb_effect, gp, seed_sur, pro_exposed, base_sur, sqrt(osv), rep_count]);
+    
+    rep_count += 1;
+    
+  end
+end
+
+# copy that list to all the  workers 
+@eval @everywhere par_list = $par_list
+
+# define the other needed inputs on all workers
+@everywhere upper_g = 20.0;
+@everywhere lower_g = -20.0;
+@everywhere dg = 0.5;
+@everywhere int_mean_g = 0.0;
+@everywhere int_sd_g = 1.4142;
+@everywhere num_iter = 100;
+@everywhere resist_G = ["RR", "Rr"];
+@everywhere herb_app = 2;
+@everywhere g_vals = collect(lower_g : dg : upper_g);   
+
+
+@time out = @DArray [run_wrapper(par_list[x], int_mean_g, int_sd_g, num_iter, g_vals, dg, 
+  resist_G, herb_app, "no TSR") for x = 1:length(par_list)];
+
+
+var_names = ["int_mean_g", "int_sd_g", "intRR", "intRr", "intrr", "germ_prob", "fec0", "fec_cost", 
+  "fec_max", "dd_fec", "herb_effect", "g_pro", "seed_sur", "pro_exposed", "s0", "off_sd", "scen", "rep_ID", "measure"];
+all_names = vcat(var_names, [string("t", i) for i = 1:num_iter]);
+
+res_df = DataFrame(vcat(out...));
+names!(res_df, convert(Array{Symbol}, all_names));
+
+# write the parameter sweep to a .csv file so an R plotting script can be used
+cd(output_loc);
+writetable("rho_Va_par_sweep_nonspace.csv", res_df);
   
   
   

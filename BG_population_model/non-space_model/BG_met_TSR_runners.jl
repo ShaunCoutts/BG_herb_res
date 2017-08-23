@@ -66,27 +66,33 @@ function multi_iter(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64, 1}
     
     ## make effective pop by mult actual pop by resist and density effects
     num_at_t = (sum(RR_ab_pop) + sum(Rr_ab_pop) + sum(rr_ab_pop)) * dg
-    eff_pop_holder[:] = density_effect(dd_fec, num_at_t) * g_effect_fec
-    RR_eff_pop[:] = RR_ab_pop .* eff_pop_holder   
-    Rr_eff_pop[:] = Rr_ab_pop .* eff_pop_holder   
-    rr_eff_pop[:] = rr_ab_pop .* eff_pop_holder   
     
-    ## pollen for each g, normalise the pollen counts  
-    total_pollen = (sum(RR_eff_pop) + sum(Rr_eff_pop) + sum(rr_eff_pop)) * dg
-    pollen_RR[:] = RR_eff_pop / total_pollen
-    pollen_Rr[:] = Rr_eff_pop / total_pollen
-    pollen_rr[:] = rr_eff_pop / total_pollen
+    if num_at_t > 0.0 # if there are some individuals alive above ground create seeds, other wise don't bother
+      
+      eff_pop_holder[:] = density_effect(dd_fec, num_at_t) * g_effect_fec
+      RR_eff_pop[:] = RR_ab_pop .* eff_pop_holder   
+      Rr_eff_pop[:] = Rr_ab_pop .* eff_pop_holder   
+      rr_eff_pop[:] = rr_ab_pop .* eff_pop_holder   
+      
+      ## pollen for each g, normalise the pollen counts  
+      total_pollen = (sum(RR_eff_pop) + sum(Rr_eff_pop) + sum(rr_eff_pop)) * dg
+      
+      pollen_RR[:] = RR_eff_pop / total_pollen
+      pollen_Rr[:] = Rr_eff_pop / total_pollen
+      pollen_rr[:] = rr_eff_pop / total_pollen
     
-    #create new seeds
-    new_seeds_at_t!(RR_newseed, Rr_newseed, rr_newseed, RR_eff_pop, Rr_eff_pop,
-      rr_eff_pop, pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index,   
-      fec_max, dg)
+      #create new seeds
+      new_seeds_at_t!(RR_newseed, Rr_newseed, rr_newseed, RR_eff_pop, Rr_eff_pop,
+	rr_eff_pop, pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index,   
+	fec_max, dg)
+      
+      # add new seeds to the seed bank
+      RR_landscape[:, t] = RR_landscape[:, t]  + RR_newseed 
+      Rr_landscape[:, t] = Rr_landscape[:, t]  + Rr_newseed
+      rr_landscape[:, t] = rr_landscape[:, t]  + rr_newseed
     
-    # add new seeds to the seed bank
-    RR_landscape[:, t] = RR_landscape[:, t]  + RR_newseed 
-    Rr_landscape[:, t] = Rr_landscape[:, t]  + Rr_newseed
-    rr_landscape[:, t] = rr_landscape[:, t]  + rr_newseed
-    
+    end
+ 
   end
   
   return (RR_landscape, Rr_landscape, rr_landscape)
@@ -121,6 +127,45 @@ function model_run(param::Array{Float64, 1}, int_g::Float64, int_sd::Float64, nu
   base_sur = param[13]
   offspring_sd = param[14]
 
+  #intial populations at each intial location
+  int_pop_RR = pdf(Normal(int_g, int_sd), g_vals) * int_num_RR
+  int_pop_Rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_Rr
+  int_pop_rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_rr
+  
+  # build the mixing kernel for metabolic resistance score every row is a offspring score
+  # every coloum is a g_m x g_p combination, so every coloumn is a normal dist with
+  # a mean of g_m*g_p and sd of offspring sd
+  g_mixing_kernel = zeros(length(g_vals), length(g_vals) ^ 2)
+  fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
+  g_mixing_index = generate_index_pairs(g_vals)
+  
+  # give the effect of herb as a function of g, make it symetrical stabilising function, centered on 0
+  g_effect_fec = 1 ./ (1 + exp(-(fec0 - abs(g_vals) * fec_cost)))
+  
+  #set up the survival vectors 
+  sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
+  
+  herb_run = multi_iter(int_pop_RR, int_pop_Rr, int_pop_rr, g_mixing_kernel, g_mixing_index, g_effect_fec, 
+    sur_tup, seed_sur, g_vals, resist_G, num_iter, germ_prob, fec_max, dd_fec, dg, herb_app)
+  
+  return herb_run 
+  
+end
+
+
+## TODO: IMPLEMENT A SEED INJECTION VERSION OF MULTI-ITER FOR THE TRANSLOCATION EXPERIMENTS
+
+# version of the function that takes indidual parameter values rahter than a list, this version offers more flexibility 
+# in terms of how parmeters are varied independently
+function model_run_hot_seed_injection(int_num_RR::Float64, int_num_Rr::Float64, int_num_rr::Float64, 
+  inj_num_RR::Float64, inj_num_Rr::Float64, inj_num_rr::Float64, 
+  germ_prob::Float64, fec0::Float64, fec_cost::Float64, fec_max::Float64, dd_fec::Float64, 
+  herb_effect::Float64, 
+  
+  g_prot::Float64, seed_sur::Float64, pro_exposed::Float64, base_sur::Float64, offspring_sd::Float64,
+  int_g::Float64, int_sd::Float64, num_iter::Int64, g_vals::Array{Float64, 1}, dg::Float64, 
+  resist_G::Array{String, 1}, herb_app::Int64)
+ 
   #intial populations at each intial location
   int_pop_RR = pdf(Normal(int_g, int_sd), g_vals) * int_num_RR
   int_pop_Rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_Rr
@@ -198,6 +243,70 @@ function run_wrapper(param::Array{Float64, 1}, int_g::Float64, int_sd::Float64, 
 end
 
 
+# wrapper function to take the results of the herbicide run and make some populaton summaries for plotting 
+# output a list of parameters, and then a set of measures over the number of time steps
+function run_wrapper_hot_seed_injection(int_num_RR::Float64, int_num_Rr::Float64, int_num_rr::Float64, germ_prob::Float64, 
+  fec0::Float64, fec_cost::Float64, fec_max::Float64, dd_fec::Float64, herb_effect::Float64, g_prot::Float64, 
+  seed_sur::Float64, pro_exposed::Float64, base_sur::Float64, offspring_sd::Float64, int_g::Float64, int_sd::Float64, 
+  inject_g::Float64, inject_sd, num_iter::Int64, num_iter_est::Int64,  
+  g_vals::Array{Float64, 1}, dg::Float64, resist_G::Array{String, 1}, herb_app_int::Int64, 
+  scen_lab::String)
+ 
+  # pre TSR establishment period 
+  pre_seed_inj = model_run(param, int_g, int_sd, num_iter_est, g_vals, dg, resist_G, herb_app)
+ 
+ #get the sink population caracteristics 
+  
+  pop_run = model_run(param, int_g, int_sd, num_iter, g_vals, dg, resist_G, herb_app)
+  
+  RR_pop = hcat(pre_seed_inj[1], pop_run[1])
+  Rr_pop = hcat(pre_seed_inj[2], pop_run[2])
+  rr_pop = hcat(pre_seed_inj[3], pop_run[3])
+    
+  out = Array{Any, 2}(7, length(param) + 4 + num_iter)
+
+  # fill in parameter values and scenario
+  for i in 1:size(out)[1]
+  
+    out[i, 1:2] = [int_g, int_sd]
+    out[i, 3:(length(param) + 1)] = param[1:14]
+    out[i, length(param) + 2] = scen_lab
+    out[i, length(param) + 3] = param[15]
+  
+  end
+  
+  sur_pre = survival_pre_calc(param[13], g_vals, param[9], param[10], param[12])
+  
+  # fill in the different measures
+  out[1, length(param) + 4] = "sur_rr"
+  out[1, (length(param) + 5):end] = get_sur_rr(rr_pop, param[13], param[9], param[10], 
+  g_vals , dg)
+  
+  out[2, length(param) + 4] = "pro_R"
+  out[2, (length(param) + 5):end] = get_pro_R(RR_pop, Rr_pop, rr_pop, dg) 
+  
+  out[3, length(param) + 4] = "pop_sur"
+  out[3, (length(param) + 5):end] = get_pop_sur(RR_pop, Rr_pop, rr_pop, dg,
+    sur_pre)
+  
+  out[4, length(param) + 4] = "pop_size"
+  out[4, (length(param) + 5):end] = get_pop_size(RR_pop, Rr_pop, rr_pop, dg)
+  
+  out[5, length(param) + 4] = "ab_sur_pop"
+  out[5, (length(param) + 5):end] = get_post_herb_pop(RR_pop, Rr_pop, rr_pop, dg,
+    sur_pre, param[4])
+    
+  out[6, length(param) + 4] = "mean_g_rr"
+  out[6, (length(param) + 5):end] = get_mean_g(rr_pop, g_vals, dg) 
+  
+  out[7, length(param) + 4] = "var_g_rr"
+  out[7, (length(param) + 5):end] = get_var_g(rr_pop, g_vals, dg) 
+  
+  return out
+  
+end
+
+
 
 # functions to make summaries of the distributions
 # single time slice
@@ -253,7 +362,17 @@ function get_pro_R(RR_pop::Array{Float64, 1}, Rr_pop::Array{Float64, 1}, rr_pop:
   Rr_tot = sum(Rr_pop) * dg
   rr_tot = sum(rr_pop) * dg
   
-  return (2 * RR_tot + Rr_tot) / (RR_tot + Rr_tot + rr_tot)
+  tot_pop = RR_tot + Rr_tot + rr_tot
+  
+  if tot_pop > 0.0
+  
+    return (2 * RR_tot + Rr_tot) / tot_pop
+  
+  else
+    
+    return 0.0
+  
+  end
 
 end
 # all time steps
@@ -263,7 +382,20 @@ function get_pro_R(RR_pop::Array{Float64, 2}, Rr_pop::Array{Float64, 2}, rr_pop:
   Rr_tot = sum(Rr_pop, 1) * dg
   rr_tot = sum(rr_pop, 1) * dg
   
-  return vec((2 * RR_tot + Rr_tot) ./ (RR_tot + Rr_tot + rr_tot))
+  tot_pop = RR_tot + Rr_tot + rr_tot
+  
+  out = zeros(length(tot_pop))
+ 
+  for t in 1:length(tot_pop)
+    
+    if tot_pop[t] > 0
+    
+      out[t] = (2 * RR_tot[t] + Rr_tot[t]) / tot_pop[t]
+    
+    end
+  end
+  
+  return out
 
 end
 
@@ -293,8 +425,16 @@ function get_pop_sur(RR_pop::Array{Float64, 1}, Rr_pop::Array{Float64, 1}, rr_po
   
   post_herb_pop = get_pop_size(RR_post, Rr_post, rr_post, dg)
   
-  return post_herb_pop / pre_herb_pop
-
+  if pre_herb_pop > 0.0
+  
+    return post_herb_pop / pre_herb_pop
+  
+  else 
+  
+    return 0.0
+    
+  end
+    
 end
 # all time steps
 function get_pop_sur(RR_pop::Array{Float64, 2}, Rr_pop::Array{Float64, 2}, rr_pop::Array{Float64, 2}, dg::Float64,
@@ -309,7 +449,19 @@ function get_pop_sur(RR_pop::Array{Float64, 2}, Rr_pop::Array{Float64, 2}, rr_po
   
   post_herb_pop = get_pop_size(RR_post, Rr_post, rr_post, dg)
   
-  return vec(post_herb_pop ./ pre_herb_pop)
+  out = zeros(post_herb_pop)
+  
+  for t in 1:length(pre_herb_pop)
+    
+    if pre_herb_pop[t] > 0.0
+    
+      out[t] = post_herb_pop[t] / pre_herb_pop[t]
+      
+    end
+  
+  end
+  
+  return out
 
 end
 
@@ -321,9 +473,17 @@ function get_sur_rr(rr_pop::Array{Float64, 1}, base_sur::Float64, h_eff::Float64
   num_sur = sum(rr_pop .* sur_vec) * dg
   
   num_pre = sum(rr_pop) * dg
- 
-  return num_sur / num_pre
 
+  if num_pre > 0.0 
+    
+    return num_sur / num_pre
+
+  else
+  
+    return 0.0
+  
+  end
+    
 end
 # all time steps
 function get_sur_rr(rr_pop::Array{Float64, 2}, base_sur::Float64, h_eff::Float64, g_pro::Float64, 
@@ -333,8 +493,20 @@ function get_sur_rr(rr_pop::Array{Float64, 2}, base_sur::Float64, h_eff::Float64
   num_sur = vec(sum(rr_pop .* sur_vec, 1) * dg)
   
   num_pre = vec(sum(rr_pop, 1) * dg)
- 
-  return num_sur ./ num_pre
+  
+  out = zeros(length(num_pre))
+  
+  for t in 1:length(num_pre)
+  
+    if num_pre[t] > 0.0
+    
+      out[t] num_sur[t] / num_pre[t]
+    
+    end
+    
+  end
+      
+  return out
 
 end
 
@@ -392,4 +564,11 @@ function get_post_herb_pop(RR_pop::Array{Float64, 2}, Rr_pop::Array{Float64, 2},
   return out
   
 end  
+
+# find the value of g that implies a given survival
+function get_g_at_sur(targ_sur::Float64, base_sur::Float64, h_eff::Float64, g_pro::Float64)
+
+  return (-log((1 / targ_sur) - 1) - base_sur + h_eff) / g_pro
+
+end
   
