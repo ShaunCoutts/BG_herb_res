@@ -99,58 +99,74 @@ writetable("rho_Va_par_sweep_nonspace.csv", res_df);
 ## NOW RUN WITH TSR   
 int_num_RR = 0.0;
 int_num_Rr = 0.0;
-int_num_rr = 9.0; # number of intial seeds at each location for each genoptype, assume only TS susceptible
+int_num_rr = 10.0; # number of intial seeds at each location for each genoptype, assume only TS susceptible
 
 # set a up a limited parameter to find a nice region of parameter space to work in
 g_pro = [1.0, 1.2, 1.5];
 Va = [0.5, 1.0, 1.5]; # addative variance, take sqrt() to standard deviation, which is the julia parameterisation
 int_RR = [0.001, 0.01, 0.1, 1];
 # set up the source ans sink scenarios
-int_rr = [10.0, ];
+int_rr = [0.0, 1000.0, 1000.0];
+sink_mean_g = [0.0, 0.0, ];
 
-par_list = [];
-rep_count = 1.0;
-for gp in g_pro
-  for osv in Va
-    for RR in intRR
 
-    push!(par_list, [RR, int_num_Rr, 10.0 - RR, germ_prob, fec0, fec_cost, fec_max, 
-      dd_fec, herb_effect, gp, seed_sur, pro_exposed, base_sur, sqrt(osv), rep_count]);
-    
-    rep_count += 1;
-    
-  end
-end
-
-# copy that list to all the  workers 
-@eval @everywhere par_list = $par_list
 
 # define the other needed inputs on all workers
-@everywhere upper_g = 20.0;
-@everywhere lower_g = -20.0;
-@everywhere dg = 0.5;
-@everywhere int_mean_g = 0.0;
-@everywhere int_sd_g = 1.4142;
-@everywhere num_iter = 100;
-@everywhere resist_G = ["RR", "Rr"];
-@everywhere herb_app = 2;
-@everywhere g_vals = collect(lower_g : dg : upper_g);   
+upper_g = 20.0;
+lower_g = -20.0;
+dg = 0.5;
+num_est = 20;
+num_iter = 100;
+resist_G = ["RR", "Rr"];
+g_vals = collect(lower_g : dg : upper_g);   
 
+fec_max = 60.0;
+fec0 = 4.0;
+fec_cost = 0.45;
+dd_fec = 0.0005;
+base_sur = 10.0; 
+herb_effect = 16.0; 
+g_prot = [1.0, 1.2, 1.5]; 
+pro_exposed = 0.8;
+seed_sur = 0.45;
+germ_prob = 0.52;
+resist_G = ["RR", "Rr"];
 
-@time out = @DArray [run_wrapper(par_list[x], int_mean_g, int_sd_g, num_iter, g_vals, dg, 
-  resist_G, herb_app, "no TSR") for x = 1:length(par_list)];
+Va = [0.5, 1.0, 1.5]; # addative variance, take sqrt() to standard deviation, which is the julia parameterisation
+herb_app1 = [1, 1, 2];
+herb_app2 = 2;
 
+int_num_RR = 0.0;
+int_num_Rr = 0.0;
+int_num_rr = [0.0, 1000.0, 1000.0];
+int_g = [0.0, 0.0, get_g_at_sur(0.5, base_sur, herb_effect, g_prot[1]);
+int_sd = [1.4142, 1.4142, 1.0];
 
-var_names = ["int_mean_g", "int_sd_g", "intRR", "intRr", "intrr", "germ_prob", "fec0", "fec_cost", 
-  "fec_max", "dd_fec", "herb_effect", "g_pro", "seed_sur", "pro_exposed", "s0", "off_sd", "scen", "rep_ID", "measure"];
-all_names = vcat(var_names, [string("t", i) for i = 1:num_iter]);
+inj_num_RR = [0.01, 0.1, 1.0, 10.0];
+inj_num_Rr = 0.0;
+inj_num_rr = 10.0 - inj_num_RR;
+inj_sd = [1.4142, 1.0, 1.0];
+s_sur_rr = [0.01, 0.5, 0.97]; # target survival for source population   
+  
+@time out = [run_wrapper_hot_seed_injection(int_num_RR, int_num_Rr, int_num_rr[tscen], 
+  inj_num_RR, inj_num_Rr, inj_num_rr, int_g[tscen], int_sd[tscen], 
+  get_g_at_sur(s_sur_rr[sg], base_sur, herb_effect, g_prot[rho]), inj_sd, num_est, num_iter, 
+  herb_app1[tscen], herb_app2, germ_prob, fec0, fec_cost, fec_max, dd_fec, herb_effect, g_prot[rho], 
+  seed_sur, pro_exposed, base_sur, sqrt(Va[v]), g_vals, dg, resist_G) for 
+  v = 1:length(Va), rho = 1:length(g_prot), tscen = 1:length(herb_app1), 
+  inj_R = 1:length(inj_num_RR), sg = 1:length(s_sur_rr)]
+  
+var_names = ["intRR", "intRr", "intrr", "injRR", "injRr", "injrr", "int_g", "int_sd", "inj_g", "inj_sd", "herb1", "herb2",
+  "germ_prob", "fec0", "fec_cost", "fec_max", "dd_fec", "herb_effect", "g_pro", "seed_sur", "pro_exposed", "s0", 
+  "off_sd", "est_period", "measure"];
+all_names = vcat(var_names, [string("t", i) for i = 1:(num_est + num_iter)]);
 
 res_df = DataFrame(vcat(out...));
 names!(res_df, convert(Array{Symbol}, all_names));
 
 # write the parameter sweep to a .csv file so an R plotting script can be used
 cd(output_loc);
-writetable("rho_Va_par_sweep_nonspace.csv", res_df);
+writetable("rho_Va_trans_expr.csv", res_df);
   
   
   
@@ -158,94 +174,6 @@ writetable("rho_Va_par_sweep_nonspace.csv", res_df);
   
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-
-par_vals = [int_num_RR, int_num_Rr, int_num_rr, germ_prob, fec0, fec_cost, fec_max, 
-  dd_fec, herb_effect, g_prot, seed_sur, pro_exposed, base_sur, offspring_sd, 1.0];
-  
-  
-test_out = run_wrapper(par_vals, int_mean_g, int_sd_g, num_iter, lower_g, upper_g, dg, 
-  resist_G, herb_app, "no TSR")
-  
-  
-
-par_list_g_pro = []
-for i in 1:size(inj_scens)[1]
-  push!(par_list_g_pro, [g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, inj_scens[i, 2],
-    inj_scens[i, 3], inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
-    resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, inj_scens[i, 1], pro_exposed, 
-    seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
-    pro_seeds_to_mean_long, scale_pollen, shape_pollen, offspring_sd, threshold])
-end
-
-out = pmap(runner_wrapper, par_list_g_pro, batch_size = 55)
-
-
-
-# survial curve and fec cure plots to visulise the tradeoff
-function sur_fun(s0::Float64, h::Float64, gp::Float64, g_vals::Array{Float64, 1})
-
-  return 1 ./ (1 + exp(-(s0 - (h - min(h, gp * g_vals)))))
-
-end
-
-plt = plot(g_vals, sur_fun(base_sur, herb_effect, g_prot, g_vals))
-plt = plot!(plt, g_vals, resist_cost_pre_calc(3.0, fec_cost, g_vals))
-
-sur = sur_fun(base_sur, herb_effect, 1.5, g_vals)
-fec = resist_cost_pre_calc(fec0, fec_cost, g_vals)
-
-sur[g_vals .== 5]
-fec[g_vals .== 5]
-
-
-
-
-plot(get_mean_g(test[3], g_vals, dg))
-plot(get_var_g(test[3], g_vals, dg))
-
-
-sur_test = survival_pre_calc(base_sur, g_vals, herb_effect, 
-  g_prot, pro_exposed)
-  
-plot(get_post_herb_pop(test[1], test[2], test[3], dg, sur_test, germ_prob))
-
-plot(get_pop_size(test[1], test[2], test[3], dg))
-
-
-
-# set up a data frame to hold the results 
-var_names = ["int_mean_g", "int_sd_g", "intRR", "intRr", "intrr", "germ_prob", "fec0", "fec_cost", 
-  "fec_max", "dd_fec", "herb_effect", "g_pro", "seed_sur", "pro_exposed", "s0", "off_sd", "scen", "rep_ID", "measure"]
-all_names = vcat(var_names, [string("t", i) for i = 1:num_iter])
-
-first_row = vec([zeros(length(par_vals) + 2); "none"; 0; "none"; zeros(num_iter)])
-
-res_df = DataFrame(reshape(first_row, 1, length(first_row)))
-names!(res_df, convert(Array{Symbol}, all_names)) 
-
-new_df = DataFrame(test_out)
-names!(new_df, convert(Array{Symbol}, all_names))
-
-
-res_df = vcat(res_df, new_df)
-
-
-
-
-
-
-
-
-
-
 
 
 
