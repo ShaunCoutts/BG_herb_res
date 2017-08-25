@@ -371,7 +371,7 @@ function run_wrapper_hot_seed_injection(int_num_RR::Float64, int_num_Rr::Float64
   
   end
   
-  sur_pre = survival_pre_calc(seed_sur, g_vals, herb_effect, g_prot, pro_exposed)
+  sur_pre = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
   
   # fill in the different measures
   out[1, length(param) + 1] = "sur_rr"

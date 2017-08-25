@@ -11,6 +11,14 @@ library(cowplot)
 data_loc = '/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output'
 output_loc = '/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/'
 
+# helper function to get survival from g
+g_2_sur = function(g, rho, s0, hef){
+
+  return(1 / (1 + exp(-(s0 - (hef - g * rho)))))
+
+}
+
+
 setwd(data_loc)
 par_sweep = read.csv('limited_par_sweep_nonspace.csv', header = TRUE, stringsAsFactors = FALSE)
 
@@ -116,4 +124,161 @@ rho_pretty = paste0('rho = ', g_pro))
 pop_plt = ggplot(df_sur_pop, aes(x = ts, y = metric, colour = measure)) + 
   geom_line(aes(linetype = Va_pretty)) +
   facet_grid(pretty_measure ~ rho_pretty, scales = 'free_y')
+
+####################################################################################################################
+# look at the seed translocation experements
+setwd(data_loc)
+trans_expr = read.csv('rho_Va_trans_expr.csv', header = TRUE, stringsAsFactors = FALSE)
+
+# turn the dataframe into long form
+df_expr = gather(trans_expr, t_lab, metric, t1:t120)
+
+df_expr = mutate(df_expr, ts = as.numeric(sapply(strsplit(t_lab, 't'), FUN = function(x) x[2])),
+  ts_inj = ts - est_period, inj_sur_rr = g_2_sur(inj_g, g_pro, s0, herb_effect), 
+  inj_rr_pretty = paste0('survival rr inj. = ', round(inj_sur_rr, 2)), inj_R_pretty = paste0('%R inj. = ', injRR / 10), 
+  targ_scen = ifelse(intrr == 0, 'empty', ifelse(intrr > 0 & herb1 == 1, 'naive', 'exposed')),
+  Va_pretty = paste0('Offspring var = ', off_sd ^ 2))
+
+# select some of the parameter space to plot
+df_plot = filter(df_expr, g_pro == 1.5, measure == "sur_rr" | measure == "pro_R",
+  inj_R_pretty == '%R inj. = 0.1', ts >= est_period)
+
+df_plot = mutate(df_plot, pretty_metric = ifelse(measure == 'sur_rr', 'survival rr', '%R'))
+  
+  
+trans_expr_plt = ggplot(df_plot, aes(x = ts_inj, y = metric * 100, colour = Va_pretty)) +
+  geom_line(aes(linetype = pretty_metric), size = 1.3) + labs(x = 'time step', y = 'percent (%)') + 
+  annotate('text', label = paste0(letters[1:9], ')'), size = 5, x = 0, y = 100) + 
+  theme(legend.position = c(0.8, 0.5), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) +
+  facet_grid(targ_scen ~ inj_rr_pretty)
+
+setwd(output_loc)
+pdf('TSR_rho1.5_injRR01.pdf', width = 12, height = 12)
+
+  trans_expr_plt
+
+dev.off()
+
+## look at the effect of rho on evoloution of TSR in a population
+# look at the seed translocation experements
+setwd(data_loc)
+trans_expr = read.csv('rho_Va_trans_expr.csv', header = TRUE, stringsAsFactors = FALSE)
+
+# turn the dataframe into long form
+df_expr = gather(trans_expr, t_lab, metric, t1:t120)
+
+# take a time slice and two metrics to plot
+df_rho = filter(df_expr, t_lab == paste0('t', est_period + 100),
+  measure == "sur_rr" | measure == "pro_R")
+
+df_rho = mutate(df_rho, ts = as.numeric(sapply(strsplit(t_lab, 't'), FUN = function(x) x[2])),
+  ts_inj = ts - est_period, inj_sur_rr = g_2_sur(inj_g, g_pro, s0, herb_effect), 
+  inj_rr_pretty = paste0('survival rr inj. = ', round(inj_sur_rr, 2)), inj_R_pretty = paste0('%R inj. = ', injRR / 10), 
+  targ_scen = ifelse(intrr == 0, 'empty', ifelse(intrr > 0 & herb1 == 1, 'naive', 'exposed')),
+  Va_pretty = paste0('Offspring var = ', off_sd ^ 2), pretty_metric = ifelse(measure == 'sur_rr', 'survival rr', '%R'))
+
+df_rho = filter(df_rho, inj_R_pretty == '%R inj. = 0.1')
+  
+rho_plt = ggplot(df_rho, aes(x = g_pro, y = metric * 100, colour = Va_pretty)) + 
+  geom_line(aes(linetype = pretty_metric), size = 1.3) +  labs(x = expression(rho), y = 'percent (%)') + 
+  annotate('text', label = paste0(letters[1:9], ')'), size = 5, x = 1, y = 100) + 
+  theme(legend.position = c(0.15, 0.85), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) +
+  facet_grid(targ_scen ~ inj_rr_pretty)
+
+setwd(output_loc)
+pdf('TSR_quant_rho_injRR01.pdf', width = 12, height = 12)
+
+  rho_plt
+
+dev.off()
+  
+## a run with no-TSR, just shows the evolution of quantitative resistance 
+setwd(data_loc)
+noTSR = read.csv("rho_Va_noTSR.csv", header = TRUE, stringsAsFactors = FALSE)
+
+# turn the dataframe into long form
+df_noTSR = gather(noTSR, t_lab, metric, t1:t120)
+
+df_noTSR = mutate(df_noTSR, ts = as.numeric(sapply(strsplit(t_lab, 't'), FUN = function(x) x[2])),
+  ts_inj = ts - est_period, inj_sur_rr = g_2_sur(inj_g, g_pro, s0, herb_effect), 
+  inj_rr_pretty = paste0('survival rr inj. = ', round(inj_sur_rr, 2)),
+  Va_pretty = paste0('Offspring var = ', off_sd ^ 2))
+
+df_noTSR = filter(df_noTSR, g_pro == 1.5, measure == "sur_rr" | measure == "pop_size" | measure == 'ab_sur_pop',
+  ts >= est_period, inj_rr_pretty == 'survival rr inj. = 0.01')
+
+df_noTSR = mutate(df_noTSR, pretty_measure = sapply(measure, function(x){
+  
+  if(x == 'sur_rr'){
+  
+    return('survival rr')
+    
+  }else{
+    
+    return('population size')
+    
+  }
+}),
+pretty_metric = sapply(measure, function(x){
+  
+  if(x == 'sur_rr'){
+  
+    return('survival rr')
+    
+  }else{if(x == 'pop_size'){
+  
+    return('seed bank')
+  
+  }else{
+  
+    return('above ground pop.')
+  
+  }}
+}))
+ 
+noTSR_plt = ggplot(df_noTSR, aes(x = ts_inj, y = metric, colour = pretty_metric)) +
+  geom_line(aes(linetype = Va_pretty)) +
+  labs(x = 'time step', y = 'proportion surviving                                                           population') + 
+  theme(legend.position = c(0.8, 0.15), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) + 
+  facet_grid(pretty_measure ~ ., scales = 'free_y') 
+  
+setwd(output_loc)
+pdf('noTSR_rho1.5_injrrg01.pdf', width = 7, height = 10)
+  noTSR_plt
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
