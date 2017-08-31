@@ -240,8 +240,8 @@ pretty_metric = sapply(measure, function(x){
   }}
 }))
  
-noTSR_plt = ggplot(df_noTSR, aes(x = ts_inj, y = metric, colour = pretty_metric)) +
-  geom_line(aes(linetype = Va_pretty)) +
+noTSR_plt = ggplot(df_noTSR, aes(x = ts_inj, y = metric, colour = Va_pretty)) +
+  geom_line(aes(linetype = pretty_metric)) +
   labs(x = 'time step', y = 'proportion surviving                                                           population') + 
   theme(legend.position = c(0.8, 0.15), panel.background = element_rect(fill = grey(0.95)),
     panel.grid.major = element_line(colour = grey(1)),
@@ -249,7 +249,7 @@ noTSR_plt = ggplot(df_noTSR, aes(x = ts_inj, y = metric, colour = pretty_metric)
   facet_grid(pretty_measure ~ ., scales = 'free_y') 
   
 setwd(output_loc)
-pdf('noTSR_rho1.5_injrrg01.pdf', width = 7, height = 10)
+pdf('noTSR_rho15_injrrg01.pdf', width = 7, height = 10)
   noTSR_plt
 dev.off()
 

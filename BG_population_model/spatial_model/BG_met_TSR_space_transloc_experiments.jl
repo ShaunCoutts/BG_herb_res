@@ -23,6 +23,7 @@ end
 @everywhere file_loc_func_p = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/spatial_model" 
 @everywhere cd(file_loc_func_p)
 @everywhere include("BG_met_TSR_space_exper_funs.jl")
+@everywhere include("BG_met_TSR_space_runners.jl")
 @everywhere include("BG_met_TSR_space_pop_process.jl")
 @everywhere include("BG_met_TSR_space_dispersal_functions.jl")
 include("spatial_model_plotting_script.jl")
@@ -297,7 +298,117 @@ colormats_2D(df_ghigh_TSRhigh, :g_pro, :prob_herb_eff, :sur_g, output_loc,
   "herb_eff_g_pro_highg_highTSR_surg.pdf", 1.9, "protective effect g (logits)", "survival suceptable", 
   "sur_rr", "quant. res. high, TSR low")
   
+#######€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ 
+### Different plot for the spatial version of the non-spatial  
+
+# make a thin wrapper to pass to pmap that unpacks the parameter values 
+@everywhere function space_time_wrapper(pars::Array{Any, 1})
+
+  #unpack the parameter vlaues 
+  run_res = run_scene_trans_space_exp(pars[1], pars[2], pars[3], pars[4], pars[5], pars[6], pars[7], pars[8],
+    pars[9], pars[10], pars[11], pars[12], pars[13], pars[14], pars[15], pars[16], pars[17], pars[18], 
+    pars[19], pars[20], pars[21], pars[22], pars[23], pars[24], pars[25], pars[26], pars[27], pars[28], 
+    pars[29], pars[30], pars[31], pars[32], pars[33])
+   
+    n_met = size(run_res[1])[1]
+    res_block = hcat(repeat(["empty", "naive", "exposed"], inner = n_met), vcat(run_res[1], run_res[2], run_res[3]))
+    pars_block = vcat(fill(transpose([pars[8:9]; pars[15:16]; pars[18:32]]), size(res_block)[1]) ...)
+    return hcat(pars_block, res_block) 
+    
+end
+
+upper_g = 20;
+lower_g = -20;
+dg = 0.5;
+int_mean_g = 0.0;
+int_sd_g = 1.4142;
+
+x_dim = 200; # number of spatial evaluation points, actual landscape size is x_dim * dx
+dx = 1.0;
+
+int_num_rr = 10.0; # number of intial seeds at each location for each genoptype, assume only TS susceptible
+burnin = 20;
+num_iter = 100;
+
+seed_pro_short = 0.48; 
+seed_mean_dist_short = 0.58; 
+pro_seeds_to_mean_short = 0.44; 
+seed_mean_dist_long = 1.65; 
+pro_seeds_to_mean_long = 0.39;
+scale_pollen = 32.0;
+shape_pollen = 3.32; 
+offspring_sd = 1.0;
+fec_max = 60.0;
+fec0 = 4.0;
+fec_cost = 0.45;
+dd_fec = 0.15;
+base_sur = 10.0; 
+herb_effect = 16.0; 
+g_prot = 1.5; 
+pro_exposed = 0.8;
+seed_sur = 0.45;
+germ_prob = 0.52;
+resist_G = ["RR", "Rr"];
+
+# set a threshold after which we do not bother to calculate spread
+threshold = 0.95
+
+# set up the evaluation points for quantitative resistance
+g_vals = collect(lower_g : dg : upper_g);   
+
+# The set up the set of seeds added after the burnin period
+# Four different source populations: low mean_g and low %R, low mean_g and high %R, 
+# high mean_g and low %R, high mean_g and high %R
+
+# inject scenario
+inject_sd_g = 1.0;
+
+inj_TSR = 0.1;
+num_inject = 10.0;
+inject_locs = [convert(Int64, x_dim / 2)];
+
+# set up some parameters to run the model over 
+inject_g = [sur_2_g(0.01, herb_effect, base_sur, g_prot), sur_2_g(0.5, herb_effect, base_sur, g_prot), 
+  sur_2_g(0.97, herb_effect, base_sur, g_prot)]; 
+off_var = [0.5, 1.0, 1.5];
+g_prot = [1.0, 1.2, 1.5]; 
+
+# create the parameter list
+par_list = [];
+for ov in off_var
+  for ig in inject_g
+    for gp in g_prot
+
+      push!(par_list, [g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, inj_TSR,
+	ig, inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
+	resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, gp, pro_exposed, 
+	seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
+	pro_seeds_to_mean_long, scale_pollen, shape_pollen, sqrt(ov), threshold])
+      
+    end
+  end
+end
+
+
+
+out = pmap(space_time_wrapper, par_list, batch_size = 7)
  
+mat_out = vcat(out ...)
+df_TSR = DataFrame(mat_out)
+###########Make the labels properly, add in scen, metric, ts and location x1:x_dim to labels
+names!(df_TSR, convert(Array{Symbol}, vcat(["inj_TSR", "inj_g", "seed_sur", "germ_prob", "fec_max", "dd_fec", "fec0", "fec_cost",
+  "s0", "herb_effect", "g_pro", "pro_expo", "P_s_seed", "mds_seed", "P_mds_seed", "mdl_seed", "P_mdl_seed", 
+  "scale_pollen", "shape_pollen", "scen", "metric", "ts"],  [string("x", i) for i = 1:(x_dim)])))
+  
+cd(output_loc);
+writetable("rho_Va_TSR_space.csv", res_df);
+  
+  
+  
+  
+  
+  
+  
   
   
   
