@@ -6,7 +6,7 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(cowplot)
-
+library(RColorBrewer)
 
 data_loc = '/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output'
 output_loc = '/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/'
@@ -253,7 +253,41 @@ pdf('noTSR_rho15_injrrg01.pdf', width = 7, height = 10)
   noTSR_plt
 dev.off()
 
+#######################################################################################################################################################################
+# spatial model
+setwd(data_loc)
+TSR_space = read.csv("rho_Va_TSR_space.csv", header = TRUE, stringsAsFactors = FALSE)
 
+# find the first index that have a non-zero value of num_RR at center cell to get introduction time
+inj_t = which(TSR_space$x100 > 0)[1]
+
+# turn the dataframe into long form
+df_TSR_space = gather(TSR_space, loc_lab, value, x1:x200)
+
+# add a few pretty labels and change some coloumns to numeric
+df_TSR_space = mutate(df_TSR_space, loc = as.numeric(sapply(strsplit(loc_lab, 'x'), FUN = function(x) x[2])),
+  ts_inj = ts - inj_t, inj_sur_rr = g_2_sur(inj_g, g_pro, s0, herb_effect),
+  inj_rr_pretty = paste0('survival rr inj. = ', round(inj_sur_rr, 2)),
+  Va_pretty = paste0('Offspring var = ', off_sd ^ 2))
+
+# define some parameter space to plot over and select some time periods to look at 
+# since we are plotting over space and looking at time slices, also take a couple of
+# metrics %R and sur_rr
+plot_df = filter(df_TSR_space, inj_rr_pretty == 'survival rr inj. = 0.5', 
+  ts_inj == 5 | ts_inj == 25 | ts_inj == 50 | ts_inj == 75 | ts_inj == 100,
+  metric == 'pro_R', g_pro == 1.5)
+
+# make the colour pallet for plot with custom limits
+my_blues = brewer.pal(n = 7, "Blues")[3:7]
+  
+  
+TSR_space_plt = ggplot(plot_df, aes(x = loc, y = value * 100, colour = as.factor(ts_inj))) + 
+  geom_line() +   labs(x = 'location', y = '%R') + 
+  theme(legend.position = c(0.1, 0.70), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) + 
+    annotate('text', label = paste0(letters[1:9], ')'), size = 5, x = 1, y = 100) + 
+ scale_colour_manual(values = my_blues) + facet_grid(scen ~ Va_pretty)
 
 
 

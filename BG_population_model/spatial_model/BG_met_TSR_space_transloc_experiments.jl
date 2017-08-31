@@ -312,7 +312,7 @@ colormats_2D(df_ghigh_TSRhigh, :g_pro, :prob_herb_eff, :sur_g, output_loc,
    
     n_met = size(run_res[1])[1]
     res_block = hcat(repeat(["empty", "naive", "exposed"], inner = n_met), vcat(run_res[1], run_res[2], run_res[3]))
-    pars_block = vcat(fill(transpose([pars[8:9]; pars[15:16]; pars[18:32]]), size(res_block)[1]) ...)
+    pars_block = vcat(fill(transpose([pars[8:9]; pars[15:16]; pars[18:33]]), size(res_block)[1]) ...)
     return hcat(pars_block, res_block) 
     
 end
@@ -368,40 +368,39 @@ num_inject = 10.0;
 inject_locs = [convert(Int64, x_dim / 2)];
 
 # set up some parameters to run the model over 
-inject_g = [sur_2_g(0.01, herb_effect, base_sur, g_prot), sur_2_g(0.5, herb_effect, base_sur, g_prot), 
-  sur_2_g(0.97, herb_effect, base_sur, g_prot)]; 
+targ_sur_rr = [0.01, 0.5, 0.97]; 
 off_var = [0.5, 1.0, 1.5];
 g_prot = [1.0, 1.2, 1.5]; 
 
 # create the parameter list
 par_list = [];
 for ov in off_var
-  for ig in inject_g
+  for ig in targ_sur_rr
     for gp in g_prot
 
       push!(par_list, [g_vals, x_dim, dg, dx, num_iter, burnin, num_inject, inj_TSR,
-	ig, inject_sd_g, inject_locs, int_num_rr, int_mean_g, int_sd_g, seed_sur, germ_prob, 
-	resist_G, fec_max, dd_fec, fec0, fec_cost, base_sur, herb_effect, gp, pro_exposed, 
-	seed_pro_short, seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
-	pro_seeds_to_mean_long, scale_pollen, shape_pollen, sqrt(ov), threshold])
+	sur_2_g(ig, herb_effect, base_sur, gp), inject_sd_g, inject_locs, int_num_rr, 
+	int_mean_g, int_sd_g, seed_sur, germ_prob, resist_G, fec_max, dd_fec, fec0, fec_cost, 
+	base_sur, herb_effect, gp, pro_exposed, seed_pro_short, seed_mean_dist_short, 
+	pro_seeds_to_mean_short, seed_mean_dist_long, pro_seeds_to_mean_long, scale_pollen, 
+	shape_pollen, sqrt(ov), threshold])
       
     end
   end
 end
 
-
-
-out = pmap(space_time_wrapper, par_list, batch_size = 7)
+out = pmap(space_time_wrapper, par_list, batch_size = 7);
  
-mat_out = vcat(out ...)
-df_TSR = DataFrame(mat_out)
+mat_out = vcat(out ...);
+df_TSR = DataFrame(mat_out);
 ###########Make the labels properly, add in scen, metric, ts and location x1:x_dim to labels
 names!(df_TSR, convert(Array{Symbol}, vcat(["inj_TSR", "inj_g", "seed_sur", "germ_prob", "fec_max", "dd_fec", "fec0", "fec_cost",
   "s0", "herb_effect", "g_pro", "pro_expo", "P_s_seed", "mds_seed", "P_mds_seed", "mdl_seed", "P_mdl_seed", 
-  "scale_pollen", "shape_pollen", "scen", "metric", "ts"],  [string("x", i) for i = 1:(x_dim)])))
+  "scale_pollen", "shape_pollen", "off_sd", "scen", "metric", "ts"],  [string("x", i) for i = 1:(x_dim)])));
   
+output_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output" 
 cd(output_loc);
-writetable("rho_Va_TSR_space.csv", res_df);
+writetable("rho_Va_TSR_space.csv", df_TSR);
   
   
   
