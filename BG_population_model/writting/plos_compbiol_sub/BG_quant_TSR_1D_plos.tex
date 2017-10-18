@@ -399,26 +399,10 @@ Several of the population model parameters, particularly those relating to the q
 \end{adjustwidth}
 \end{table}
 
-\subsection*{Sensitivity analysis}
-The model calibration resulted in 11,866 parameter combinations that produced realistic densities. We performed a global sensitivity analysis on this set of 11,866 parameter sets to explore how different parameters, and their interactions, affected the behaviour of the model. We followed the approach of \cite{Cout2014} and fitted Boosted Regression Trees (BRTs) to find relationships between the parameter values and the model behaviours of interest. We focused on three aspects of the models behaviour: the speed at which target site resistance establishes in the population, and how much resistance was derived from quantitative resistance. We used the frequency of alleles that are $R$ at final time step $T$ (\%$R_T$) as a metric of target site resistance spread, the survival of target site susceptible individuals under herbicide ('survival $rr$') at the highest mean $g$ achieved as a metric of how important quantitative resistance was, and mean spread rate as a metric of population spread. For a detailed explanation of the sensitivity analysis see \nameref{S2_Appendix}.
-
 \subsection*{Simulation experiments}
 Because we assume no mutation in the target site resistance locus, target site resistance can only develop in a population the target site resistant allele needs to be introduced from a population where it has already developed through mutation. It is also possible to import high levels of quantitative resistance. To explore how the composition of the source and receiving populations influence the rate of evolution of resistance in the latter we created two general scenarios: a natural spread scenario, where target site resistance starts at one edge of the landscape, and is allowed to invade into rest of the landscape (Fig. \ref{fig:exper}A); and a transplant scenario (Fig. \ref{fig:exper}B) where a small number of seeds are deposited in the center of a receiving landscape. The natural spread scenario replicates spread at a smaller scales, where the target site genotype is invading into a neighbouring field (possibly under different management), or from a field margin. The transplant scenario replicates the situation when a small amount of seeds are transported to a new, distant, area by farm vehicles. 
 
-To asses the behaviour of the model we use \%$R$ to measure the frequency of target site resistance. The level of quantitative resistance in a population was measured as the survival or $rr$ individuals ('survival $rr$'). We are also interested in the demographic advantage experienced by target site resistant individuals. We measure this as the ratio of the average number of seeds produced by a target site resistant individual that emerges from the seed bank, to the average number of seeds produced by a target site susceptible individual that emerges from the seed bank, under herbicide at location $x$ and time $t$.
-\begin{subequations}
-\label{eq:TSR_adv}
-\begin{equation}
-	K(x, t) = \frac{\kappa_R(x, t)}{\kappa_r(x, t)}
-\end{equation}
-\begin{equation}
-	\kappa_R(x, t) = \frac{\int_g (n(g, RR, x_m, t) + n(g, Rr, x_m, t)) s(g, RR, x, h_x = 1)\psi(g, x)\text{d}g}{\int_g n(g, RR, x_m, t) + n(g, Rr, x_m, t)\text{d}g}
-\end{equation}
-\begin{equation}
-	\kappa_r(x, t) = \frac{\int_g n(g, rr, x_m, t) s(g, rr, x, h_x = 1) \psi(g, x)\text{d}g}{\int_g n(g, rr, x_m, t)\text{d}g} 
-\end{equation}
-\end{subequations}
-$K(x, t)$ incorporates the effect of $g$ on both fecundity and survival. When $k = 1$ both target site resistant and susceptible individuals produce the same average number of seeds over their life span. When $K > 1$ for every seed an average target site susceptible individual produces, target site resistant individuals produce $K$ seeds on average.   
+To asses the behaviour of the model we use \%$R$ to measure the frequency of target site resistance. The level of quantitative resistance in a population was measured as the survival or $rr$ individuals ('survival $rr$').
 
 Unless otherwise stated in these simulation experiments $f_0 = 4$, $s_0 = 10$, $\rho = 1.5$, $f_r = 0.45$ and $\zeta = 16$. With these values an $rr$ individual with quantitative resistance $g = 5$ will have survival of 0.85 under herbicide, but produce $f_{max} 0.85$ seeds and pollen (assuming density is low).
 
@@ -457,10 +441,6 @@ When we model the evolution of target site and quantitative resistance as an exp
 \end{figure}
 
 As in the non-spatial model, the effect of the additive variance in quantitative resistance was reversed when target site resistant alleles were introduced into a population that was not previously exposed to herbicide, evolving and spreading faster when $V_a$ was lower (Fig. \ref{fig:pro_R_spr}b vs. \ref{fig:pro_R_spr}d).             
-
-
-
-TO HERE
 
 \section*{Discussion}
 We find that the ecological and historical context surrounding the invasion of target site resistance into a new area can have an enormous effect on how that invasion unfolds and which genetic architecture dominates. The invasion of target site resistance alleles was much slower when the invasion was into an area that already contained \textit{A. myosuroides}. In addition the frequency of target site resistance and amount of quantitative resistance changed very quickly over space, and on the target site resistance invasion front both architectures co-existed for long periods of time. This occurred even though target site resistance conferred perfect resistance with no demographic costs, giving target site resistant individuals a competitive advantage over those individuals with only quantitative resistance. When the invasion occurred into an empty landscape its dynamics were determined the genetic architecture of the source population and the of quantitative resistance. Given this variability we might expect to see different architectures predominate in different regions of a landscape. To date there is little evidence to either support or refute this hypothesis because the prevalence and type of resistance has not typically been studied at landscape scales \cite{Dely2013}.
