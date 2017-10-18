@@ -389,7 +389,7 @@ for ov in off_var
   end
 end
 
-out = pmap(space_time_wrapper, par_list, batch_size = 7);
+out = pmap(space_time_wrapper, par_list, batch_size = 9);
  
 mat_out = vcat(out ...);
 df_TSR = DataFrame(mat_out);
@@ -401,14 +401,5 @@ names!(df_TSR, convert(Array{Symbol}, vcat(["inj_TSR", "inj_g", "seed_sur", "ger
 output_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/model_output" 
 cd(output_loc);
 writetable("rho_Va_TSR_space.csv", df_TSR);
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
   

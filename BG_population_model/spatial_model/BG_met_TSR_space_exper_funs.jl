@@ -41,12 +41,13 @@ end
 
 # function that takes the raw population matricies (over g and space and time) and produces summaries of the populations at each time and space
 function snapshot_space_time(RR_ls::Array{Float64, 3}, Rr_ls::Array{Float64, 3}, rr_ls::Array{Float64, 3}, 
-  g_vals::Array{Float64, 1}, dg::Float64, herb_ef::Float64, s0::Float64, g_pro::Float64)
+  g_vals::Array{Float64, 1}, dg::Float64, herb_ef::Float64, s0::Float64, g_pro::Float64, fec0::Float64, 
+  fec_cost::Float64)
   
   T = size(RR_ls)[3] # time steps
   ls_size = size(RR_ls)[2]
     
-  m_names = ["num_RR", "num_Rr", "num_rr", "pro_R", "sur_rr"]
+  m_names = ["num_RR", "num_Rr", "num_rr", "pro_R", "sur_rr", "TSR_adv"]
   
   output = Array{Any, 2}(T * length(m_names), ls_size + 2)
   
@@ -60,6 +61,8 @@ function snapshot_space_time(RR_ls::Array{Float64, 3}, Rr_ls::Array{Float64, 3},
   output[(T * 3 + 1):(T * 4), 3:end] = get_pro_R(RR_ls, Rr_ls, rr_ls)
   output[(T * 4 + 1):(T * 5), 3:end] = get_sur_rr(rr_ls, g_vals, s0, herb_ef, 
     g_pro, dg)
+  output[(T * 5 + 1):(T * 6), 3:end] = get_TSR_adv(RR_ls, Rr_ls, rr_ls, dg,
+    s0, herb_ef, g_pro, fec0, fec_cost, g_vals)
     
   return output
   
@@ -228,6 +231,60 @@ function get_sur_rr(rr::Array{Float64, 3}, g_vals::Array{Float64, 1}, s0::Float6
   end
   
   return out
+  
+end
+# get fiotness of a given population, distribuited over g and space
+function get_fitness(pop::Array{Float64, 3}, dg::Float64, sur_vec::Array{Float64, 1}, 
+  fec_vec::Array{Float64, 1}, T::Int64)
+
+  fit = zeros(size(pop))
+ 
+  for t in 1:T
+    
+    fit[:, :, t] = pop[:, :, t] .* sur_vec .* fec_vec
+ 
+  end
+  
+  fit_space_time = sum(fit, 1) * dg
+  
+  return transpose(fit_space_time[1, :, :])# reduce to 2D and transpose
+  
+end
+# version for TSR 
+function get_fitness(pop::Array{Float64, 3}, dg::Float64, sur::Float64, 
+  fec_vec::Array{Float64, 1}, T::Int64)
+
+  fit = zeros(size(pop))
+ 
+  for t in 1:T
+    
+    fit[:, :, t] = pop[:, :, t] * sur .* fec_vec
+ 
+  end
+  
+  fit_space_time = sum(fit, 1) * dg
+  
+  return transpose(fit_space_time[1, :, :])# redice to 2D and transpose
+  
+end
+
+# get the realtive fitness advantage of TSR indivudals
+function get_TSR_adv(RR_pop::Array{Float64, 3}, Rr_pop::Array{Float64, 3}, rr_pop::Array{Float64, 3}, dg::Float64,
+  base_sur::Float64, h_eff::Float64, g_pro::Float64, fec0::Float64, fec_cost::Float64, g_vals::Array{Float64, 1})
+
+  T = size(rr_pop)[3]
+ 
+  g_effect_fec = 1 ./ (1 + exp(-(fec0 - abs(g_vals) * fec_cost)))
+  sur_rr = 1 ./ (1 + exp(-(base_sur - (h_eff - min(h_eff, g_vals * g_pro)))))
+  sur_R = 1 / (1 + exp(-(base_sur)))
+  
+  num_TSR = get_pop_size(RR_pop, dg) + get_pop_size(Rr_pop, dg)
+  num_rr = get_pop_size(rr_pop, dg)
+  
+  KR = (get_fitness(RR_pop, dg, sur_R, g_effect_fec, T) + get_fitness(Rr_pop, dg, sur_R, g_effect_fec, T)) ./ num_TSR
+  Krr = get_fitness(rr_pop, dg, sur_rr, g_effect_fec, T) ./ num_rr
+  
+  return KR ./ Krr
   
 end
 

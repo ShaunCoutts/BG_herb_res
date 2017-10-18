@@ -190,4 +190,61 @@ names!(res_df, convert(Array{Symbol}, all_names));
 cd(output_loc);
 writetable("rho_Va_noTSR.csv", res_df);
   
+
+##########################################################################################################################################################################
+# run to get the effect on TSR fitness advantage for the non-spatial model, for just 1 parameter set
+upper_g = 20.0;
+lower_g = -20.0;
+dg = 0.5;
+num_est = 20;
+num_iter = 100;
+resist_G = ["RR", "Rr"];
+g_vals = collect(lower_g : dg : upper_g);   
+
+fec_max = 60.0;
+fec0 = 4.0;
+fec_cost = 0.45;
+dd_fec = 0.0005;
+base_sur = 10.0; 
+herb_effect = 16.0; 
+g_prot = 1.5;
+pro_exposed = 0.8;
+seed_sur = 0.45;
+germ_prob = 0.52;
+resist_G = ["RR", "Rr"];
+
+Va = [0.5, 1.0, 1.5]; # addative variance, take sqrt() to standard deviation, which is the julia parameterisation
+herb_app1 = [1, 1, 2];
+herb_app2 = 2;
+
+int_num_RR = 0.0;
+int_num_Rr = 0.0;
+int_num_rr = [0.0, 1000.0, 1000.0];
+int_g = [0.0, 0.0, get_g_at_sur(0.5, base_sur, herb_effect, g_prot)];
+int_sd = [1.4142, 1.4142, 1.0];
+
+inj_num_RR = 1.0;
+inj_num_Rr = 0.0;
+inj_num_rr = 10.0 - inj_num_RR;
+inj_sd = 1.0;
+s_sur_rr = 0.5; # target survival for source population   
+  
+@time out = [run_wrapper_hot_seed_injection(int_num_RR, int_num_Rr, int_num_rr[tscen], 
+  inj_num_RR, inj_num_Rr, inj_num_rr, int_g[tscen], int_sd[tscen], 
+  get_g_at_sur(s_sur_rr, base_sur, herb_effect, g_prot), inj_sd, num_est, num_iter, 
+  herb_app1[tscen], herb_app2, germ_prob, fec0, fec_cost, fec_max, dd_fec, herb_effect, g_prot, 
+  seed_sur, pro_exposed, base_sur, sqrt(v), g_vals, dg, resist_G) for 
+  v = Va, tscen = 1:length(herb_app1)];
+  
+var_names = ["intRR", "intRr", "intrr", "injRR", "injRr", "injrr", "int_g", "int_sd", "inj_g", "inj_sd", "herb1", "herb2",
+  "germ_prob", "fec0", "fec_cost", "fec_max", "dd_fec", "herb_effect", "g_pro", "seed_sur", "pro_exposed", "s0", 
+  "off_sd", "est_period", "measure"];
+all_names = vcat(var_names, [string("t", i) for i = 1:(num_est + num_iter)]);
+
+res_df = DataFrame(vcat(out...));
+names!(res_df, convert(Array{Symbol}, all_names));
+
+# write the parameter sweep to a .csv file so an R plotting script can be used
+cd(output_loc);
+writetable("TSR_adv_trans_expr.csv", res_df);
   

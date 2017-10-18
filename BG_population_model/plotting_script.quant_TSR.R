@@ -135,9 +135,9 @@ df_expr = gather(trans_expr, t_lab, metric, t1:t120)
 
 df_expr = mutate(df_expr, ts = as.numeric(sapply(strsplit(t_lab, 't'), FUN = function(x) x[2])),
   ts_inj = ts - est_period, inj_sur_rr = g_2_sur(inj_g, g_pro, s0, herb_effect), 
-  inj_rr_pretty = paste0('survival rr inj. = ', round(inj_sur_rr, 2)), inj_R_pretty = paste0('%R inj. = ', injRR / 10), 
+  inj_rr_pretty = paste0('survival rr intro = ', round(inj_sur_rr, 2)), inj_R_pretty = paste0('%R inj. = ', injRR / 10), 
   targ_scen = ifelse(intrr == 0, 'empty', ifelse(intrr > 0 & herb1 == 1, 'naive', 'exposed')),
-  Va_pretty = paste0('Offspring var = ', off_sd ^ 2))
+  Va_pretty = paste0('Va = ', off_sd ^ 2))
 
 # select some of the parameter space to plot
 df_plot = filter(df_expr, g_pro == 1.5, measure == "sur_rr" | measure == "pro_R",
@@ -145,11 +145,15 @@ df_plot = filter(df_expr, g_pro == 1.5, measure == "sur_rr" | measure == "pro_R"
 
 df_plot = mutate(df_plot, pretty_metric = ifelse(measure == 'sur_rr', 'survival rr', '%R'))
   
-  
+my_greens = brewer.pal(n = 9, "Greens")[c(5, 7, 9)]
+
 trans_expr_plt = ggplot(df_plot, aes(x = ts_inj, y = metric * 100, colour = Va_pretty)) +
-  geom_line(aes(linetype = pretty_metric), size = 1.3) + labs(x = 'time step', y = 'percent (%)') + 
+  geom_line(aes(linetype = pretty_metric), size = 1.3) + 
+  scale_colour_manual(values = my_greens) +
+  labs(x = 'time step', y = 'percent (%)') + 
   annotate('text', label = paste0(letters[1:9], ')'), size = 5, x = 0, y = 100) + 
-  theme(legend.position = c(0.8, 0.5), panel.background = element_rect(fill = grey(0.95)),
+  theme(legend.position = c(0.8, 0.5), legend.title = element_blank(),
+    panel.background = element_rect(fill = grey(0.95)),
     panel.grid.major = element_line(colour = grey(1)),
     legend.background = element_rect(fill = grey(1))) +
   facet_grid(targ_scen ~ inj_rr_pretty)
@@ -160,6 +164,33 @@ pdf('TSR_rho1.5_injRR01.pdf', width = 12, height = 12)
   trans_expr_plt
 
 dev.off()
+
+# make a simpler 3 panel version with just high survival to show how TSR and quant 
+# evolove in the non-spatial model 
+df_plot = filter(df_expr, g_pro == 1.5, measure == "sur_rr" | measure == "pro_R",
+  inj_R_pretty == '%R inj. = 0.1', ts >= est_period, inj_rr_pretty == 'survival rr intro = 0.97' |
+    inj_rr_pretty == 'survival rr intro = 0.01')
+
+df_plot = mutate(df_plot, pretty_metric = ifelse(measure == 'sur_rr', 'survival rr', '%R'))
+
+trans_expr_plt = ggplot(df_plot, aes(x = ts_inj, y = metric * 100, colour = Va_pretty)) +
+  geom_line(aes(linetype = pretty_metric), size = 1.3) + 
+  scale_colour_manual(values = my_greens) +
+  labs(x = 'time step', y = 'percent (%)') + 
+  annotate('text', label = paste0(letters[1:6], ')'), size = 5, x = 0, y = 100) + 
+  theme(legend.position = c(0.8, 0.49), legend.title = element_blank(),
+    panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) +
+  facet_grid(targ_scen ~ inj_rr_pretty)
+
+setwd(output_loc)
+pdf('TSR_rho15_injRR01.pdf', width = 6, height = 8)
+
+  trans_expr_plt
+
+dev.off()
+
 
 ## look at the effect of rho on evoloution of TSR in a population
 # look at the seed translocation experements
@@ -175,22 +206,27 @@ df_rho = filter(df_expr, t_lab == paste0('t', est_period + 100),
 
 df_rho = mutate(df_rho, ts = as.numeric(sapply(strsplit(t_lab, 't'), FUN = function(x) x[2])),
   ts_inj = ts - est_period, inj_sur_rr = g_2_sur(inj_g, g_pro, s0, herb_effect), 
-  inj_rr_pretty = paste0('survival rr inj. = ', round(inj_sur_rr, 2)), inj_R_pretty = paste0('%R inj. = ', injRR / 10), 
+  inj_rr_pretty = paste0('survival rr intro = ', round(inj_sur_rr, 2)), inj_R_pretty = paste0('%R inj. = ', injRR / 10), 
   targ_scen = ifelse(intrr == 0, 'empty', ifelse(intrr > 0 & herb1 == 1, 'naive', 'exposed')),
-  Va_pretty = paste0('Offspring var = ', off_sd ^ 2), pretty_metric = ifelse(measure == 'sur_rr', 'survival rr', '%R'))
+  Va_pretty = paste0('Va = ', off_sd ^ 2), pretty_metric = ifelse(measure == 'sur_rr', 'survival rr', '%R'))
 
-df_rho = filter(df_rho, inj_R_pretty == '%R inj. = 0.1')
+df_rho = filter(df_rho, inj_R_pretty == '%R inj. = 0.1', inj_rr_pretty == 'survival rr intro = 0.97' |
+    inj_rr_pretty == 'survival rr intro = 0.01')
   
+my_greens = brewer.pal(n = 9, "Greens")[c(5, 7, 9)]
+
 rho_plt = ggplot(df_rho, aes(x = g_pro, y = metric * 100, colour = Va_pretty)) + 
-  geom_line(aes(linetype = pretty_metric), size = 1.3) +  labs(x = expression(rho), y = 'percent (%)') + 
-  annotate('text', label = paste0(letters[1:9], ')'), size = 5, x = 1, y = 100) + 
-  theme(legend.position = c(0.15, 0.85), panel.background = element_rect(fill = grey(0.95)),
+  geom_line(aes(linetype = pretty_metric), size = 1.3) +  labs(x = expression(rho), y = 'percent after 100 time steps (%)') + 
+  annotate('text', label = paste0(letters[1:6], ')'), size = 5, x = 1, y = 100) + 
+  scale_colour_manual(values = my_greens) +
+  theme(legend.position = c(0.15, 0.85), legend.title = element_blank(), 
+    panel.background = element_rect(fill = grey(0.95)),
     panel.grid.major = element_line(colour = grey(1)),
     legend.background = element_rect(fill = grey(1))) +
   facet_grid(targ_scen ~ inj_rr_pretty)
 
 setwd(output_loc)
-pdf('TSR_quant_rho_injRR01.pdf', width = 12, height = 12)
+pdf('TSR_quant_rho_injRR01.pdf', width = 6, height = 8)
 
   rho_plt
 
@@ -280,27 +316,218 @@ plot_df = filter(df_TSR_space, inj_rr_pretty == 'survival rr inj. = 0.5',
 # make the colour pallet for plot with custom limits
 my_blues = brewer.pal(n = 7, "Blues")[3:7]
   
+TSR_space_plt = ggplot(plot_df, aes(x = loc - 100, y = value * 100, colour = as.factor(ts_inj))) + 
+  geom_line() +   labs(x = 'location realtive to introduction', y = '%R') + 
+  theme(legend.position = c(0.05, 0.72), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) + 
+    annotate('text', label = paste0(letters[1:9], ')'), size = 5, x = -100, y = 100) + 
+  scale_colour_manual(name = 'time step', values = my_blues) + #add alot of annotation to label different parts
+  annotate('text', label = c(rep('', 8), 't=5'), size = 3.5, x = 5, y = 3, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=25'), size = 3.5, x = 5, y = 65, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=50'), size = 3.5, x = 25, y = 70, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=75'), size = 3.5, x = 45, y = 74, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=100'), size = 3.5, x = 70, y = 78, hjust = 0) +
+  annotate('segment', x = 0, xend = 0, y = 0, yend = 102, linetype = 2, size = 0.5) +
+  facet_grid(scen ~ Va_pretty)
+
+setwd(output_loc)
+pdf('TSR_space_injrr50.pdf', width = 12, height = 12)
+  
+  TSR_space_plt
+  
+dev.off()
+
+# make the same thing but with inj rr = 0.01 and 0.97
+plot_df = filter(df_TSR_space, inj_rr_pretty == 'survival rr inj. = 0.01', 
+  ts_inj == 5 | ts_inj == 25 | ts_inj == 50 | ts_inj == 75 | ts_inj == 100,
+  metric == 'pro_R', g_pro == 1.5)
   
 TSR_space_plt = ggplot(plot_df, aes(x = loc, y = value * 100, colour = as.factor(ts_inj))) + 
   geom_line() +   labs(x = 'location', y = '%R') + 
-  theme(legend.position = c(0.1, 0.70), panel.background = element_rect(fill = grey(0.95)),
+  theme(legend.position = c(0.05, 0.72), panel.background = element_rect(fill = grey(0.95)),
     panel.grid.major = element_line(colour = grey(1)),
     legend.background = element_rect(fill = grey(1))) + 
     annotate('text', label = paste0(letters[1:9], ')'), size = 5, x = 1, y = 100) + 
- scale_colour_manual(values = my_blues) + facet_grid(scen ~ Va_pretty)
+  scale_colour_manual(name = 'time step', values = my_blues) + #add alot of annotation to label different parts
+  annotate('text', label = c(rep('', 8), 't=5'), size = 3.5, x = 105, y = 3, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=25'), size = 3.5, x = 105, y = 65, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=50'), size = 3.5, x = 125, y = 70, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=75'), size = 3.5, x = 145, y = 74, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=100'), size = 3.5, x = 170, y = 78, hjust = 0) +
+  annotate('segment', x = 100, xend = 100, y = 0, yend = 102, linetype = 2, size = 0.5) +
+  facet_grid(scen ~ Va_pretty)
+
+setwd(output_loc)
+pdf('TSR_space_injrr01.pdf', width = 12, height = 12)
+  
+  TSR_space_plt
+  
+dev.off()
+
+## simpler version for paper
+plot_df = filter(df_TSR_space, inj_rr_pretty == 'survival rr inj. = 0.01', 
+  ts_inj == 5 | ts_inj == 25 | ts_inj == 50 | ts_inj == 75 | ts_inj == 100,
+  metric == 'pro_R', g_pro == 1.5, loc >= 100, scen == 'exposed' | scen == 'naive',
+  off_sd ^ 2 > 0.9)
+
+plot_df = mutate(plot_df, Va_pretty = paste0('Va = ', off_sd ^ 2))
+  
+TSR_space_plt = ggplot(plot_df, aes(x = loc - 100, y = value * 100, colour = as.factor(ts_inj))) + 
+  geom_line(size = 1.5) +   labs(x = 'location relative to introduction (m)', y = '%R') + 
+  theme(legend.position = c(0.1, 0.8), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) + 
+    annotate('text', label = paste0(letters[1:4], ')'), size = 5, x = 1, y = 100) + 
+  scale_colour_manual(name = 'time step', values = my_blues) + #add alot of annotation to label different parts
+  facet_grid(Va_pretty ~ scen)
+
+setwd(output_loc)
+pdf('TSR_space_injrr01_simp.pdf', width = 7, height = 7)
+  
+  TSR_space_plt
+  
+dev.off()
 
 
 
 
 
+plot_df = filter(df_TSR_space, inj_rr_pretty == 'survival rr inj. = 0.97', 
+  ts_inj == 5 | ts_inj == 25 | ts_inj == 50 | ts_inj == 75 | ts_inj == 100,
+  metric == 'pro_R', g_pro == 1.5)
+  
+TSR_space_plt = ggplot(plot_df, aes(x = loc, y = value * 100, colour = as.factor(ts_inj))) + 
+  geom_line() +   labs(x = 'location', y = '%R') + 
+  theme(legend.position = c(0.05, 0.72), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) + 
+    annotate('text', label = paste0(letters[1:9], ')'), size = 5, x = 1, y = 100) + 
+  scale_colour_manual(name = 'time step', values = my_blues) + #add alot of annotation to label different parts
+  annotate('text', label = c(rep('', 8), 't=5'), size = 3.5, x = 105, y = 3, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=25'), size = 3.5, x = 105, y = 62, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=50'), size = 3.5, x = 125, y = 67, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=75'), size = 3.5, x = 145, y = 72, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=100'), size = 3.5, x = 170, y = 76, hjust = 0) +
+  annotate('segment', x = 100, xend = 100, y = 0, yend = 102, linetype = 2, size = 0.5) +
+  facet_grid(scen ~ Va_pretty)
+
+setwd(output_loc)
+pdf('TSR_space_injrr97.pdf', width = 12, height = 12)
+  
+  TSR_space_plt
+  
+dev.off()
+
+# also make one with a lower rho
+plot_df = filter(df_TSR_space, inj_rr_pretty == 'survival rr inj. = 0.5', 
+  ts_inj == 5 | ts_inj == 25 | ts_inj == 50 | ts_inj == 75 | ts_inj == 100,
+  metric == 'pro_R', g_pro == 1.2)
+  
+TSR_space_plt = ggplot(plot_df, aes(x = loc, y = value * 100, colour = as.factor(ts_inj))) + 
+  geom_line() +   labs(x = 'location', y = '%R') + 
+  theme(legend.position = c(0.05, 0.72), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) + 
+    annotate('text', label = paste0(letters[1:9], ')'), size = 5, x = 1, y = 100) + 
+  scale_colour_manual(name = 'time step', values = my_blues) + #add alot of annotation to label different parts
+  annotate('text', label = c(rep('', 8), 't=5'), size = 3.5, x = 105, y = 3, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=25'), size = 3.5, x = 105, y = 62, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=50'), size = 3.5, x = 125, y = 67, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=75'), size = 3.5, x = 145, y = 72, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=100'), size = 3.5, x = 170, y = 76, hjust = 0) +
+  annotate('segment', x = 100, xend = 100, y = 0, yend = 102, linetype = 2, size = 0.5) +
+  facet_grid(scen ~ Va_pretty)
+
+setwd(output_loc)
+pdf('TSR_space_injrr50_rho012.pdf', width = 12, height = 12)
+  
+  TSR_space_plt
+  
+dev.off()
+
+plot_df = filter(df_TSR_space, inj_rr_pretty == 'survival rr inj. = 0.01', 
+  ts_inj == 5 | ts_inj == 25 | ts_inj == 50 | ts_inj == 75 | ts_inj == 100,
+  metric == 'pro_R', g_pro == 1.2)
+  
+TSR_space_plt = ggplot(plot_df, aes(x = loc, y = value * 100, colour = as.factor(ts_inj))) + 
+  geom_line() +   labs(x = 'location', y = '%R') + 
+  theme(legend.position = c(0.05, 0.72), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) + 
+    annotate('text', label = paste0(letters[1:9], ')'), size = 5, x = 1, y = 100) + 
+  scale_colour_manual(name = 'time step', values = my_blues) + #add alot of annotation to label different parts
+  annotate('text', label = c(rep('', 8), 't=5'), size = 3.5, x = 105, y = 3, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=25'), size = 3.5, x = 105, y = 62, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=50'), size = 3.5, x = 125, y = 67, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=75'), size = 3.5, x = 145, y = 72, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=100'), size = 3.5, x = 170, y = 76, hjust = 0) +
+  annotate('segment', x = 100, xend = 100, y = 0, yend = 102, linetype = 2, size = 0.5) +
+  facet_grid(scen ~ Va_pretty)
+
+setwd(output_loc)
+pdf('TSR_space_injrr01_rho012.pdf', width = 12, height = 12)
+  
+  TSR_space_plt
+  
+dev.off()
+
+plot_df = filter(df_TSR_space, inj_rr_pretty == 'survival rr inj. = 0.97', 
+  ts_inj == 5 | ts_inj == 25 | ts_inj == 50 | ts_inj == 75 | ts_inj == 100,
+  metric == 'pro_R', g_pro == 1.2)
+  
+TSR_space_plt = ggplot(plot_df, aes(x = loc, y = value * 100, colour = as.factor(ts_inj))) + 
+  geom_line() +   labs(x = 'location', y = '%R') + 
+  theme(legend.position = c(0.05, 0.72), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) + 
+    annotate('text', label = paste0(letters[1:9], ')'), size = 5, x = 1, y = 100) + 
+  scale_colour_manual(name = 'time step', values = my_blues) + #add alot of annotation to label different parts
+  annotate('text', label = c(rep('', 8), 't=5'), size = 3.5, x = 105, y = 3, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=25'), size = 3.5, x = 105, y = 62, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=50'), size = 3.5, x = 125, y = 67, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=75'), size = 3.5, x = 145, y = 72, hjust = 0) +
+  annotate('text', label = c(rep('', 8), 't=100'), size = 3.5, x = 170, y = 76, hjust = 0) +
+  annotate('segment', x = 100, xend = 100, y = 0, yend = 102, linetype = 2, size = 0.5) +
+  facet_grid(scen ~ Va_pretty)
+
+setwd(output_loc)
+pdf('TSR_space_injrr97_rho012.pdf', width = 12, height = 12)
+  
+  TSR_space_plt
+  
+dev.off()
 
 
+## use the same data to make a plot with TSR fitness advantage
+# first grab some data with the TSR_adv
+df_TSR_adv = filter(df_TSR_space, metric == 'TSR_adv', inj_rr_pretty == 'survival rr inj. = 0.5',
+  ts_inj == 5 | ts_inj == 25 | ts_inj == 50 | ts_inj == 75 | ts_inj == 100, g_pro == 1.5)
+
+# make the colour pallet for plot with custom limits
+my_blues = brewer.pal(n = 7, "Blues")[3:7]
+
+labs_df = data.frame(loc = rep(0, 9), value = c(rep(18, 3), rep(1.3, 3), rep(120, 3)),
+  scen = c(rep('empty', 3), rep('exposed', 3), rep('naive', 3)),
+  Va_pretty = c(rep(c('Offspring var = 0.5', 'Offspring var = 1', 'Offspring var = 1.5'), 3)),
+  labs = paste0(letters[1:9], ')'))
+
+TSR_adv_plt = ggplot(df_TSR_adv, aes(x = loc - 100, y = value, colour = as.factor(ts_inj))) +
+  geom_line() + xlim(0, 100) + labs(x = 'location realtive to introduction', y = 'TSR fitness / rr fitness') + 
+  theme(legend.position = c(0.05, 0.9), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) + 
+  scale_colour_manual(name = 'time step', values = my_blues) +
+  geom_text(data = labs_df, aes(x = loc, y = value, label = labs), size = 5, inherit.aes = FALSE) + 
+  facet_grid(scen ~ Va_pretty, scale  = 'free_y')
 
 
+setwd(output_loc)
+pdf('TSR_adv_injrr50_rho15_.pdf', width = 12, height = 12)
+  
+  TSR_adv_plt
 
-
-
-
+dev.off()
 
 
 

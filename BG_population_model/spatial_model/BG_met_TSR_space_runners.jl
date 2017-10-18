@@ -604,7 +604,7 @@ function run_scene_trans_space_exp(g_vals::Array{Float64, 1}, x_dim::Int64, dg::
   # intitilase the population on the full landscapes in the first time slice
   for x in 1:x_dim
     rr_naive[:, x, 1] = pdf(Normal(int_mean_g, int_sd_g), g_vals) * int_rr
-    rr_expos[:, x, 1] = pdf(Normal(int_mean_g, int_sd_g), g_vals) * int_rr
+    rr_expos[:, x, 1] = pdf(Normal(sur_2_g(0.5, herb_effect, base_sur, g_prot), int_sd_g), g_vals) * int_rr # start the exposed population with g such that survival is 0.5.
   end 
   
   #herb application for navie and exposed populations
@@ -681,9 +681,9 @@ function run_scene_trans_space_exp(g_vals::Array{Float64, 1}, x_dim::Int64, dg::
       
   end
   
-  output_empty = snapshot_space_time(RR_empty, Rr_empty, rr_empty, g_vals, dg, herb_effect, base_sur, g_prot)
-  output_naive = snapshot_space_time(RR_naive, Rr_naive, rr_naive, g_vals, dg, herb_effect, base_sur, g_prot)
-  output_expos = snapshot_space_time(RR_expos, Rr_expos, rr_expos, g_vals, dg, herb_effect, base_sur, g_prot)
+  output_empty = snapshot_space_time(RR_empty, Rr_empty, rr_empty, g_vals, dg, herb_effect, base_sur, g_prot, fec0, fec_cost)
+  output_naive = snapshot_space_time(RR_naive, Rr_naive, rr_naive, g_vals, dg, herb_effect, base_sur, g_prot, fec0, fec_cost)
+  output_expos = snapshot_space_time(RR_expos, Rr_expos, rr_expos, g_vals, dg, herb_effect, base_sur, g_prot, fec0, fec_cost)
     
   return (output_empty, output_naive, output_expos)
   

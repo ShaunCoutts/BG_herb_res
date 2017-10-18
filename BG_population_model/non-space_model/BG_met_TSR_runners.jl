@@ -362,7 +362,7 @@ function run_wrapper_hot_seed_injection(int_num_RR::Float64, int_num_Rr::Float64
     inj_g, inj_sd, herb_app1, herb_app2, germ_prob, fec0, fec_cost, fec_max, dd_fec, herb_effect, 
     g_prot, seed_sur, pro_exposed, base_sur, offspring_sd, num_est]
   
-  out = Array{Any, 2}(7, length(param) + 1 + num_est + num_iter)
+  out = Array{Any, 2}(8, length(param) + 1 + num_est + num_iter)
   
   # fill in parameter values and scenario
   for i in 1:size(out)[1]
@@ -397,6 +397,10 @@ function run_wrapper_hot_seed_injection(int_num_RR::Float64, int_num_Rr::Float64
   
   out[7, length(param) + 1] = "var_g_rr"
   out[7, (length(param) + 2):end] = get_var_g(rr_pop, g_vals, dg) 
+  
+  out[8, length(param) + 1] = "TSR_adv"
+  out[8, (length(param) + 2):end] = get_TSR_adv(RR_pop, Rr_pop, rr_pop, dg,
+      base_sur, herb_effect, g_prot, fec0, fec_cost, g_vals) 
   
   return out
   
@@ -669,6 +673,25 @@ function get_post_herb_pop(RR_pop::Array{Float64, 2}, Rr_pop::Array{Float64, 2},
   return out
   
 end  
+
+# get the fitness advantage of TSR over rr
+function get_TSR_adv(RR_pop::Array{Float64, 2}, Rr_pop::Array{Float64, 2}, rr_pop::Array{Float64, 2}, dg::Float64,
+  base_sur::Float64, h_eff::Float64, g_pro::Float64, fec0::Float64, fec_cost::Float64, g_vals::Array{Float64, 1})
+
+  
+  g_effect_fec = 1 ./ (1 + exp(-(fec0 - abs(g_vals) * fec_cost)))
+  sur_rr = 1 ./ (1 + exp(-(base_sur - (h_eff - min(h_eff, g_vals * g_pro)))))
+  sur_R = 1 / (1 + exp(-(base_sur)))
+  
+  num_TSR = vec(sum(RR_pop, 1) + sum(Rr_pop, 1)) * dg 
+  num_rr = vec(sum(rr_pop, 1)) * dg
+  
+  KR = (vec(sum(((RR_pop + Rr_pop) * sur_R) .* g_effect_fec, 1)) * dg) ./ num_TSR
+  Krr = (vec(sum(rr_pop .* sur_rr .* g_effect_fec, 1)) * dg) ./ num_rr
+  
+  return KR ./ Krr
+  
+end
 
 # find the value of g that implies a given survival
 function get_g_at_sur(targ_sur::Float64, base_sur::Float64, h_eff::Float64, g_pro::Float64)
