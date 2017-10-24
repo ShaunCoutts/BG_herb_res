@@ -529,6 +529,113 @@ pdf('TSR_adv_injrr50_rho15_.pdf', width = 12, height = 12)
 
 dev.off()
 
+###########################################################################################################################
+# plot of above ground dynaimics of population focus on the two most interasting cases 
+# where there is both TSR and quant resistance evoloving over time
+setwd(data_loc)
+trans_expr = read.csv('rho_Va_trans_expr.csv', header = TRUE, stringsAsFactors = FALSE)
+
+# turn the dataframe into long form
+df_expr = gather(trans_expr, t_lab, metric, t1:t120)
+
+df_expr = mutate(df_expr, ts = as.numeric(sapply(strsplit(t_lab, 't'), FUN = function(x) x[2])),
+  ts_inj = ts - est_period, inj_sur_rr = g_2_sur(inj_g, g_pro, s0, herb_effect), 
+  inj_rr_pretty = paste0('survival rr intro = ', round(inj_sur_rr, 2)), inj_R_pretty = paste0('%R inj. = ', injRR / 10), 
+  targ_scen = ifelse(intrr == 0, 'empty', ifelse(intrr > 0 & herb1 == 1, 'naive', 'exposed')),
+  Va_pretty = paste0('Va = ', off_sd ^ 2))
+
+# select some of the parameter space to plot
+df_plot = filter(df_expr, g_pro == 1.5, measure == "ab_sur_pop",
+  inj_rr_pretty == 'survival rr intro = 0.97', inj_R_pretty == '%R inj. = 0.1', 
+  ts >= est_period, targ_scen == 'empty' | targ_scen == 'naive')
+  
+my_greens = brewer.pal(n = 9, "Greens")[c(5, 7, 9)]
+
+trans_expr_plt = ggplot(df_plot, aes(x = ts_inj, y = metric * 100, colour = Va_pretty)) +
+  geom_line(size = 1.3) + 
+  scale_colour_manual(values = my_greens) +
+  labs(x = 'time step', y = 'number plants post herbicide') + 
+  annotate('text', label = paste0(letters[1:2], ')'), size = 5, x = 0, y = Inf, 
+    vjust = 1) + 
+  theme(legend.position = c(0.8, 0.5), legend.title = element_blank(),
+    panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) +
+  facet_grid(targ_scen ~.)
+
+setwd(output_loc)
+pdf('ab_pop_injRR01.pdf', width = 12, height = 12)
+
+  trans_expr_plt
+
+dev.off()
+
+# look at the spatial version
+setwd(data_loc)
+TSR_space = read.csv("rho_Va_TSR_space.csv", header = TRUE, stringsAsFactors = FALSE)
+
+# find the first index that have a non-zero value of num_RR at center cell to get introduction time
+inj_t = which(TSR_space$x100 > 0)[1]
+
+# turn the dataframe into long form
+df_TSR_space = gather(TSR_space, loc_lab, value, x1:x200)
+
+# function to turn individual num_G in to number that survive herbicide exposure
+num_G2num_sur = function(num_G, metric, s0, germ){
+  
+  num_RR = num_G[metric == 'num_RR']
+  num_Rr = num_G[metric == 'num_Rr']
+  num_rr = num_G[metric == 'num_rr']
+ 
+  sur_rr = num_G[metric == 'sur_rr']
+ 
+  num_R_sur = (num_RR + num_Rr) * (1 / (1 + exp(-s0))) * germ 
+  num_rr_sur = num_rr * sur_rr * germ
+ 
+  return(num_R_sur + num_rr_sur)
+  
+}
+
+# need a bit of manipulation here to get number post herbicide 
+df_pop_space = filter(df_TSR_space, metric == 'num_RR' | metric == 'num_Rr' | 
+  metric == 'num_rr' | metric == 'sur_rr', g_pro == 1.5) %>%
+  group_by(loc_lab, ts, scen, inj_g, inj_TSR, off_sd) %>%
+  summarise(ab_sur = num_G2num_sur(value, metric, mean(s0), mean(germ_prob)),
+    s0 = mean(s0), g_pro = mean(g_pro), herb_effect = mean(herb_effect))
+
+# add a few pretty labels and change some coloumns to numeric
+df_pop_space = mutate(df_pop_space, loc = as.numeric(sapply(strsplit(loc_lab, 'x'), FUN = function(x) x[2])),
+  ts_inj = ts - inj_t, inj_sur_rr = g_2_sur(inj_g, g_pro, s0, herb_effect),
+  inj_rr_pretty = paste0('survival rr intro = ', round(inj_sur_rr, 2)),
+  Va_pretty = paste0('Va = ', off_sd ^ 2))
+
+df_pop = filter(df_pop_space, inj_rr_pretty == 'survival rr intro = 0.01',
+  ts_inj == 5 | ts_inj == 25 | ts_inj == 50 | ts_inj == 75 | ts_inj == 100, g_pro == 1.5, 
+   Va_pretty == 'Va = 1' | Va_pretty == 'Va = 1.5', loc < 196)
+
+# make the colour pallet for plot with custom limits
+my_blues = brewer.pal(n = 7, "Blues")[3:7]
+
+pop_plt = ggplot(df_pop, aes(x = loc - 100, y = ab_sur, colour = as.factor(ts_inj))) +
+  geom_line() + xlim(0, 100) + labs(x = 'location realtive to introduction', y = 'number of plants post herbicide') + 
+  theme(legend.position = c(0.1, 0.5), panel.background = element_rect(fill = grey(0.95)),
+    panel.grid.major = element_line(colour = grey(1)),
+    legend.background = element_rect(fill = grey(1))) + 
+  scale_colour_manual(name = 'time step', values = my_blues) +
+  annotate('text', label = paste0(letters[1:6], ')'), size = 5, x = 0, y = Inf, 
+    vjust = 1) + 
+  facet_grid(scen ~ Va_pretty, scale  = 'free_y')
+
+
+setwd(output_loc)
+pdf('pop_space_rr001RR01.pdf', width = 6, height = 9)
+  
+  pop_plt
+
+dev.off()
+
+
+
 
 
 
