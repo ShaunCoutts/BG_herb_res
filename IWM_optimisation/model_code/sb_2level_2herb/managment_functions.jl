@@ -444,8 +444,7 @@ function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64,
 	Y_ALT::Float64, pro_exposed::Float64, sur_base::Float64, 
 	rep_pen::Float64, effect_herb1::Float64, effect_herb2::Float64, 
 	prot_g1_herb1::Float64, prot_g1_herb2::Float64, prot_g2_herb1::Float64,
-	prot_g2_herb2::Float64, fr::Float64, f0::Float64, rep_pen::Float64,
-	mut::Float64)
+	prot_g2_herb2::Float64, fr::Float64, f0::Float64, mut::Float64)
 
 	# hold the population actions 
 	pop_list = Array{Array, 1}(num_gen)

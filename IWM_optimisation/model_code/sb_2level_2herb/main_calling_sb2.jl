@@ -53,11 +53,16 @@ int_cv = 0.0;
 int_N = 10.0;
 
 # GA parameters
-num_gen = 2;
-pop_size = 10; # population of action sequences 
-mut = 0.01;
+num_gen = 20;
+pop_size = 50; # population of action sequences 
+mut = 0.02;
 
-
+@time sol = GA_solve(T, pop_size, num_gen, cost_herb_one, cost_WW, cost_ALT, cost_FAL, 
+	cost_plow, cost_spot, sur_crop_alt, low_g, up_g, dg, off_sd, off_cv, 
+	int_N, int_sd, int_cv, int_g1, int_g2, inv_frac, germ_prob, seed_sur, 
+	fec_max, fec_dd, dis_rate, Y0,Y_slope, Y_ALT, pro_exposed, sur_base, 
+	rep_pen, effect_herb1, effect_herb2, prot_g1_herb1, prot_g1_herb2, 
+	prot_g2_herb1, prot_g2_herb2, fr, f0, mut)
 
 
 
