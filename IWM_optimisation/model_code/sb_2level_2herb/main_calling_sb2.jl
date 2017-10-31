@@ -1,6 +1,8 @@
 # main calling script 
-code_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/model_code/sb_2level_2herb"
 
+##########################################################################
+
+code_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/model_code/sb_2level_2herb"
 
 cd(code_loc)
 include("pop_process_2sb_2herb.jl"); 
@@ -28,7 +30,7 @@ inv_frac = 0.8;
 germ_prob = 0.5;
 seed_sur = 0.5;
 fec_max = 60.0; 
-fec_dd = 0.004;
+fec_dd = 0.001;
 fr = 0.5;
 f0 = 4.0;
 # reward function parameters
@@ -53,7 +55,7 @@ int_cv = 0.0;
 int_N = 10.0;
 
 # GA parameters
-num_gen = 20;
+num_gen = 30;
 pop_size = 50; # population of action sequences 
 mut = 0.02;
 

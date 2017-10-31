@@ -1,4 +1,5 @@
 using StatsBase
+using DataFrames
 # managment and optimisation functions 
 
 # define action indexes that are const through whole script 
@@ -551,8 +552,26 @@ function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64,
 		int_sb2,sur_crop_alt, inv_frac, germ_prob, 
 		seed_sur, fec_max, fec_dd, dg, dis_rates, Y0, 
 		Y_slope, Y_ALT, C, rep_pen, cost_spot)
+	
+	# put the parameter values in a dataframe for easy use later in 
+	# plotting
+	par_df = DataFrame(int_g1 = [int_g1], int_g2 = [int_g2], 
+		int_N = [int_N], int_sd = [int_sd], int_cv = [int_cv], 
+		p_ex = [pro_exposed], s0 = [sur_base], 
+		eff_h1 = [effect_herb1], eff_h2 = [effect_herb2], 
+		p_g1h1 = [prot_g1_herb1], p_g1h2 = [prot_g1_herb2], 
+		p_g2h1 = [prot_g2_herb1], p_g2h2 = [prot_g2_herb2],
+		fr = [fr], f0 = [f0], off_sd = [off_sd], off_cv = [off_cv],
+		sur_alt = [sur_crop_alt], inv_frac = [inv_frac], 
+		germ_prob = [germ_prob], seed_sur = [seed_sur], 
+		fec_max = [fec_max], fec_dd = [fec_dd], 
+		dis_rate = [dis_rate], Y0 = [Y0], Y_slope = [Y_slope], 
+	        Y_alt = [Y_ALT], rep_pen = [rep_pen], cost_WW = [cost_WW], 
+		cost_alt = [cost_ALT], cost_fal = [cost_FAL], 
+		cost_plow = [cost_plow], cost_spot = [cost_spot], 
+		cost_herb = [cost_herb_one])
 
-	return (pop_list, reward_list)
+	return (pop_list, reward_list, par_df)
 
 end
 
