@@ -1,8 +1,10 @@
 # main calling script 
+using HDF5, JLD
 
 ##########################################################################
 
 code_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/model_code/sb_2level_2herb"
+data_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/GA_2level_sb_out/data_out"
 
 cd(code_loc)
 include("pop_process_2sb_2herb.jl"); 
@@ -21,8 +23,8 @@ sur_base = 10.0;
 effect_herb1 = 15.0; 
 effect_herb2 = 15.0;
 prot_g1_herb1 = 2.0; 
-prot_g1_herb2 = 1.0;
-prot_g2_herb1 = 1.0;
+prot_g1_herb2 = 0.0;
+prot_g2_herb1 = 0.0;
 prot_g2_herb2 = 2.0;
 sur_crop_alt = 0.8;
 T = 20;
@@ -44,7 +46,7 @@ cost_herb_one = 96.0; # cost herbicide from NIX 2017
 cost_FAL = 36.0; # based on two glyphosate applications 
 cost_WW = 383.0;
 cost_ALT = 273.0 # based on costs from spring barley NIX 2017
-cost_spot = 0.02; # clearing 100000 would cost £2000, > yeild of WW
+cost_spot = 0.03; # clearing 100000 would cost £2000, > yeild of WW
 cost_plow = 74.0; # cost inversion plowing
 
 # initial conditions 
@@ -64,11 +66,13 @@ mut = 0.02;
 	int_N, int_sd, int_cv, int_g1, int_g2, inv_frac, germ_prob, seed_sur, 
 	fec_max, fec_dd, dis_rate, Y0,Y_slope, Y_ALT, pro_exposed, sur_base, 
 	rep_pen, effect_herb1, effect_herb2, prot_g1_herb1, prot_g1_herb2, 
-	prot_g2_herb1, prot_g2_herb2, fr, f0, mut)
+	prot_g2_herb1, prot_g2_herb2, fr, f0, mut);
 
+cd(data_loc)
 
+save("test_sol.jld", "test_sol", sol)
 
-
+#sol = load("test_sol.jld")["test_sol"] 
 
 
 

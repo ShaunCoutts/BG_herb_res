@@ -1,4 +1,5 @@
 using DataFrames
+using Colors
 
 code_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/model_code/sb_2level_2herb"
 
@@ -196,7 +197,8 @@ end
 # summary of populatin and managment performance over time 
 function get_SB_size(pop_sim::Tuple, dg::Float64)
 
-	return (sum(pop_sim[1], 2) * dg, sum(pop_sim[2], 2) * dg)
+	return (sum(pop_sim[1], 2) * dg * dg, 
+		sum(pop_sim[2], 2) * dg * dg)
 
 end
 
@@ -212,7 +214,7 @@ function get_sur_herb(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 	g1_vals = repeat(g_vals, inner = len_g)
 	g2_vals = repeat(g_vals, outer = len_g)
 
-	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pars[:p_ex][1], 
+	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, 1.0, 
 		pars[:s0][1], pars[:eff_h1][1], pars[:eff_h2][1], 
 		pars[:p_g1h1][1], pars[:p_g1h2][1], pars[:p_g2h1][1], 
 		pars[:p_g2h2][1])
@@ -226,11 +228,11 @@ function get_sur_herb(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 		if tot_pop[i] > 0
 
 			sur_herb1[i] = sum(pop_sim[1][i, :] .* 
-					   herb_sur_tup[2]) * dg
+				herb_sur_tup[2]) * dg * dg
 			sur_herb2[i] = sum(pop_sim[1][i, :] .* 
-					   herb_sur_tup[3]) * dg
+				herb_sur_tup[3]) * dg * dg
 			sur_herb12[i] = sum(pop_sim[1][i, :] .*
-					    herb_sur_tup[4]) * dg
+				herb_sur_tup[4]) * dg * dg
 
 		end
 
@@ -243,4 +245,116 @@ function get_sur_herb(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 end
 
 
+function get_undis_reward(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
+		A::Tuple, act_seq::Array{Int64, 1},pars::DataFrame, 
+		dg::Float64, low_g::Float64, up_g::Float64)
+
+	T = size(pop_sim[1])[1]
+
+	g_vals = collect(low_g : dg : up_g)
+	len_g = size(g_vals)[1]
+	g1_vals = repeat(g_vals, inner = len_g)
+	g2_vals = repeat(g_vals, outer = len_g)
+
+	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pars[:p_ex][1], 
+		pars[:s0][1], pars[:eff_h1][1], pars[:eff_h2][1], 
+		pars[:p_g1h1][1], pars[:p_g1h2][1], pars[:p_g2h1][1], 
+		pars[:p_g2h2][1])
+
+	ab_pop = pop_sim[1] * pars[:germ_prob][1]
+	ab_pop_spot = zeros(size(ab_pop))
+
+	sub_acts = act_seq_2_sub_act(A, act_seq)
+
+	for t in 2:T
+
+		if sub_acts[t - 1, ACT_CROP] == CROP_FAL
+	  
+			ab_pop[t, :] .= 0.0
+	  
+		elseif sub_acts[t - 1, ACT_CROP] == CROP_WW
+	    
+			ab_pop[t, :] = ab_pop[t, :] .* 
+				herb_sur_tup[sub_acts[t - 1, ACT_HERB]]
+	    
+		else
+	    
+			ab_pop[t, :] = (ab_pop[t, :] .* 
+				herb_sur_tup[sub_acts[t - 1, ACT_HERB]]) * 
+				sur_crop_alt
+	  
+		end
+
+		ab_pop_spot[t, :] = ab_pop[t, :] * sub_acts[t - 1, ACT_SPOT]
+
+ 	end
+  
+	tot_ab_pop = vcat(sum(ab_pop, 2)...) * dg * dg
+	tot_ab_pop = tot_ab_pop[2:end]
+
+	tot_ab_pop_spot = vcat(sum(ab_pop_spot, 2)...) * dg * dg
+	tot_ab_pop_spot = tot_ab_pop_spot[2:end]
+
+	cost_space = make_cost_space(pars[:cost_herb][1], pars[:cost_WW][1],
+		pars[:cost_alt][1], pars[:cost_fal][1], pars[:cost_plow][1])
+				     
+	
+	reward = economic_reward(tot_ab_pop_spot, sub_acts[:, ACT_CROP],
+			pars[:Y0][1], pars[:Y_slope][1], pars[:Y_alt][1], 
+			pars[:rep_pen][1]) - 
+		costs(sub_acts, cost_space, pars[:cost_spot][1], tot_ab_pop) 
+
+	return reward
+
+end
+
+##########################################################################
+# set out some colour pallets to help consistency 
+function make_col_pal()
+
+	bin_act = colormap("Grays", 10)[[1, 10]]
+
+	herb_col = colormap("Blues", 10)[[4, 7, 10]]
+	crop_col = colormap("Greens", 10)[[4, 7, 10]]
+	plow_col = [bin_act[1], bin_act[2]]
+	spot_col = [bin_act[1], bin_act[2]]
+
+	return vcat([bin_act[1], herb_col, crop_col, plow_col, spot_col]...)
+
+end
+
+# re-code the action numbers into sequental numbers that match the above
+# pallett
+function recode_act(sub_acts::Array{Int64, 2})
+	
+	recode_act = deepcopy(sub_acts)
+
+	recode_act[:, ACT_CROP] += 4
+	recode_act[:, ACT_PLOW] += 7
+	recode_act[:, ACT_SPOT] += 10
+	
+	return recode_act
+
+end
+
+# convert the integer action numbers to RGB colour arrays. also transpose
+# and reorder the rows so it is nicer to plot 
+function subact_2_colmat(sub_acts::Array{Int64, 2}, 
+	col_pal::Array{ColorTypes.RGB{Float64}, 1})
+
+	# recode the actions so they are all on the same pallet
+	rc_act = recode_act(sub_acts)
+
+	herb_col = reshape(col_pal[rc_act[:, ACT_HERB]], 1, 
+		length(rc_act[:, ACT_HERB]))
+	crop_col = reshape(col_pal[rc_act[:, ACT_CROP]], 1, 
+		length(rc_act[:, ACT_CROP]))
+	plow_col = reshape(col_pal[rc_act[:, ACT_PLOW]], 1, 
+		length(rc_act[:, ACT_PLOW]))
+	spot_col = reshape(col_pal[rc_act[:, ACT_SPOT]], 1, 
+		length(rc_act[:, ACT_SPOT]))
+
+	return vcat([herb_col, crop_col, plow_col, spot_col]...)
+
+end
 

@@ -4,9 +4,10 @@ using StatPlots
 pyplot()
 
 
-using Colors
 
 code_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/model_code/sb_2level_2herb"
+data_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/GA_2level_sb_out/data_out"
+plot_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/GA_2level_sb_out/plot_out"
 
 cd(code_loc)
 include("plotting_functions.jl"); 
@@ -75,8 +76,45 @@ sb_size = get_SB_size(sim_pop, dg)
 
 surs = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g)
 
+# plot the population over time under the best action sequence
+
+# need to get the integer version since some of these functions call 
+# internal solver functions 
+best_act = sol[1][end][best_n_seq(1, sol[2])[end], :]; 	
+best_sub_acts = act_seq_2_sub_act(A, best_act);
+
+reward_t = get_undis_reward(sim_pop, A, best_act, sol[3], dg, low_g, up_g);
+resist = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g);
+SB = get_SB_size(sim_pop, dg);
+
+# get the action as a col_mat
+col_pal = make_col_pal();
+act_colmat = subact_2_colmat(best_sub_acts, col_pal);
 
 
+lm = @layout [grid(2, 1)
+	     b{0.2h}]
+plt = plot(layout = lm)
+
+# add the seed bank and rewards
+plot!(plt, [reward_t (SB[1] + SB[2])[2:end]], 
+	labels = ["reward £" "seed bank"], yguide = "amount", 
+	xtickfont = Plots.font(0), subplot = 1)
+
+# add the resistance plot
+plot!(plt, [resist[:herb1][2:end] resist[:herb2][2:end]], 
+	labels = ["herb 1" "herb 2"], yguide = "survival exposed",
+	xtickfont = Plots.font(9), subplot = 2)
+
+# add the colmat best action found
+heatmap!(plt, act_colmat, ylims = (-0.49999, 3.5), subplot = 3, aspect_ratio = 0.5)
+
+#NOT PERFECT BUT GETTING CLOSE TO WHAT I WANT
+# heed to add row labels on action, make and add the legend 
+# also change the location of the tick marks, also reduce the top margin so closer
+# to the other plot. also remove numbers on y plot 3, change colour of lines to 
+# be consistent with action make the lines in top plot some version of purple or grey
+# make lines thicker. add time step axis label. Also timing is off by a bit
 
 
 # make some colours 
