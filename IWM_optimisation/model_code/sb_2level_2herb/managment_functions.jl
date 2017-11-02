@@ -332,11 +332,11 @@ function eval_act_seq_pop(pop_act_seq::Array{Int64, 2},
 	Array{Float64, 1}, Array{Float64, 1}}, T::Int64, 
 	int_sb1::Array{Float64, 1}, int_sb2::Array{Float64, 1}, 
 	sur_crop_alt::Float64, inv_frac::Float64, germ_prob::Float64, 
-	seed_sur::Float64, fec_max::Float64, fec_dd::Float64, dg::Float64,
-	dis_rates::Array{Float64, 1}, Y0::Float64, Y_slope::Float64,
-	Y_ALT::Float64, cost_space::Tuple{Array{Float64, 1}, 
-	Array{Float64, 1}, Array{Float64, 1}}, rep_pen::Float64, 
-	cost_spot::Float64)
+	seed_sur::Float64, fec_max::Float64, fec_dd::Float64, 
+	sur_spot::Float64, dg::Float64, dis_rates::Array{Float64, 1}, 
+	Y0::Float64, Y_slope::Float64, Y_ALT::Float64, 
+	cost_space::Tuple{Array{Float64, 1}, Array{Float64, 1}, 
+	Array{Float64, 1}}, rep_pen::Float64, cost_spot::Float64)
 
 	act_pop_size = size(pop_act_seq)[1]
 	rewards = zeros(act_pop_size)
@@ -356,7 +356,7 @@ function eval_act_seq_pop(pop_act_seq::Array{Int64, 2},
 			 fit_cost, crop_sur_tup, herb_sur_tup, crop_act_seq, 
 			 spot_act_seq, plow_seq, herb_act_seq, T, 
 			 int_sb1, int_sb2, sur_crop_alt, inv_frac, germ_prob,
-			 seed_sur, fec_max, fec_dd, dg)
+			 seed_sur, fec_max, fec_dd, sur_spot, dg)
 
 		# get the rewards given act_seq_pop[i, :]
 		rewards[i] = reward_total(ab_pop, ab_pop_spot, dis_rates, 
@@ -441,11 +441,11 @@ function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64,
 	off_sd::Float64, off_cv::Float64, int_N::Float64, int_sd::Float64, 
 	int_cv::Float64, int_g1::Float64, int_g2::Float64, inv_frac::Float64, 
 	germ_prob::Float64, seed_sur::Float64, fec_max::Float64, 
-	fec_dd::Float64, dis_rate::Float64, Y0::Float64,Y_slope::Float64,
-	Y_ALT::Float64, pro_exposed::Float64, sur_base::Float64, 
-	rep_pen::Float64, effect_herb1::Float64, effect_herb2::Float64, 
-	prot_g1_herb1::Float64, prot_g1_herb2::Float64, prot_g2_herb1::Float64,
-	prot_g2_herb2::Float64, fr::Float64, f0::Float64, mut::Float64)
+	fec_dd::Float64, sur_spot::Float64, dis_rate::Float64, Y0::Float64,
+	Y_slope::Float64,Y_ALT::Float64, pro_exposed::Float64, 
+	sur_base::Float64, rep_pen::Float64, effect_herb1::Float64, 
+	effect_herb2::Float64, prot_g1_herb1::Float64, prot_g2_herb2::Float64, 
+	fr::Float64, f0::Float64, mut::Float64)
 
 	# hold the population actions 
 	pop_list = Array{Array, 1}(num_gen)
@@ -483,7 +483,7 @@ function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64,
 
 	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pro_exposed, 
 		sur_base, effect_herb1, effect_herb2, prot_g1_herb1, 
-		prot_g1_herb2, prot_g2_herb1, prot_g2_herb2)
+		prot_g2_herb2)
 
 	fit_cost = fec_cost_maker(fr, f0, g1_vals, g2_vals)
 
@@ -515,7 +515,7 @@ function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64,
 	int_mu = [int_g1; int_g2]
 	int_dist = MvNormal(int_mu, int_cov);
 	int_sb1 = pdf(int_dist, transpose(hcat(g1_vals, g2_vals))) * int_N  
-	int_sb2 = zeros(size(g1_vals)[1]) 
+	int_sb2 = deepcopy(int_sb1) 
 
 	# get number of acts, it is used a few times
 	N_acts = length(A)
@@ -532,8 +532,8 @@ function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64,
 			pat_pop, eff_pop, par_mix, mix_keys, mix_kernel,
 			fit_cost, crop_sur_tup, herb_sur_tup, T, int_sb1, 
 			int_sb2, sur_crop_alt, inv_frac, germ_prob, 
-			seed_sur, fec_max, fec_dd, dg, dis_rates, Y0, 
-			Y_slope, Y_ALT, C, rep_pen, cost_spot)
+			seed_sur, fec_max, fec_dd, sur_spot, dg, dis_rates,
+			Y0, Y_slope, Y_ALT, C, rep_pen, cost_spot)
 
 		# indicies of sequences that performed well  
 		win_ind = tourn_select(reward_list[g])
@@ -550,7 +550,7 @@ function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64,
 		pat_pop, eff_pop, par_mix, mix_keys, mix_kernel,
 		fit_cost, crop_sur_tup, herb_sur_tup, T, int_sb1, 
 		int_sb2,sur_crop_alt, inv_frac, germ_prob, 
-		seed_sur, fec_max, fec_dd, dg, dis_rates, Y0, 
+		seed_sur, fec_max, fec_dd, sur_spot, dg, dis_rates, Y0, 
 		Y_slope, Y_ALT, C, rep_pen, cost_spot)
 	
 	# put the parameter values in a dataframe for easy use later in 
@@ -559,12 +559,11 @@ function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64,
 		int_N = [int_N], int_sd = [int_sd], int_cv = [int_cv], 
 		p_ex = [pro_exposed], s0 = [sur_base], 
 		eff_h1 = [effect_herb1], eff_h2 = [effect_herb2], 
-		p_g1h1 = [prot_g1_herb1], p_g1h2 = [prot_g1_herb2], 
-		p_g2h1 = [prot_g2_herb1], p_g2h2 = [prot_g2_herb2],
+		p_g1h1 = [prot_g1_herb1], p_g2h2 = [prot_g2_herb2],
 		fr = [fr], f0 = [f0], off_sd = [off_sd], off_cv = [off_cv],
 		sur_alt = [sur_crop_alt], inv_frac = [inv_frac], 
 		germ_prob = [germ_prob], seed_sur = [seed_sur], 
-		fec_max = [fec_max], fec_dd = [fec_dd], 
+		fec_max = [fec_max], fec_dd = [fec_dd], sur_spot = [sur_spot], 
 		dis_rate = [dis_rate], Y0 = [Y0], Y_slope = [Y_slope], 
 	        Y_alt = [Y_ALT], rep_pen = [rep_pen], cost_WW = [cost_WW], 
 		cost_alt = [cost_ALT], cost_fal = [cost_FAL], 

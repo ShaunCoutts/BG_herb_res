@@ -77,11 +77,11 @@ function fec_cost_maker(fr::Float64, f0::Float64, g1::Array{Float64, 1},
 
 end
 
-
+# make the survival 
 function survial_herb_setup(g1_vals::Array{Float64, 1}, 
 	g2_vals::Array{Float64, 1}, pro_exposed::Float64, sur_base::Float64, 
 	effect_herb1::Float64, effect_herb2::Float64, prot_g1_herb1::Float64, 
-	prot_g1_herb2::Float64, prot_g2_herb1::Float64, prot_g2_herb2::Float64)
+	prot_g2_herb2::Float64)
 
 	# no herbicide
 	sur_none = 1 ./ (1 + exp(-(ones(size(g1_vals)[1]) * sur_base)))
@@ -89,21 +89,18 @@ function survial_herb_setup(g1_vals::Array{Float64, 1},
 	# herbicide 1
 	sur_1 = ((1 - pro_exposed) ./ (1 + exp(-(ones(size(g1_vals)[1]) * 
 		sur_base)))) + (pro_exposed ./ (1 + exp(-(sur_base - 
-		(effect_herb1 - min(effect_herb1, prot_g1_herb1 * g1_vals + 
-		prot_g2_herb1 * g2_vals))))))
+		(effect_herb1 - min(effect_herb1, prot_g1_herb1 * g1_vals))))))
   
 	# herbicide 2
 	sur_2 = ((1 - pro_exposed) ./ (1 + exp(-(ones(size(g1_vals)[1]) * 
 		sur_base)))) + (pro_exposed ./ (1 + exp(-(sur_base - 
-		(effect_herb2 - min(effect_herb2, prot_g1_herb2 * g1_vals + 
-		prot_g2_herb2 * g2_vals))))))
+		(effect_herb2 - min(effect_herb2, prot_g2_herb2 * g2_vals))))))
   
 	# both herbicides
 	sur_both = ((1 - pro_exposed) ./ (1 + exp(-(ones(size(g1_vals)[1]) * 
 		sur_base)))) + pro_exposed * ((1 ./ (1 + exp(-(sur_base - 
-		(effect_herb1 - min(effect_herb1, prot_g1_herb1 * g1_vals + 
-		prot_g2_herb1 * g2_vals)))))) .* (1 ./(1 + exp(-(sur_base - 
-		(effect_herb2 - min(effect_herb2, prot_g1_herb2 * g1_vals + 
+		(effect_herb1 - min(effect_herb1, prot_g1_herb1 * g1_vals)))))) .* 
+		(1 ./(1 + exp(-(sur_base - (effect_herb2 - min(effect_herb2, 
 		prot_g2_herb2 * g2_vals)))))))
     
 	return (sur_none, sur_1, sur_2, sur_both)
@@ -177,8 +174,8 @@ function one_step!(seedbank_1::Array{Float64, 2},
 	Array{Float64, 1}, Array{Float64, 1}, Array{Float64, 1}}, 
 	crop_act::Int64, spot_act::Int64, plow::Bool, herb_act::Int64, 
 	sur_crop_alt::Float64, inv_frac::Float64, germ_prob::Float64, 
-	seed_sur::Float64, fec_max::Float64, fec_dd::Float64, dg::Float64, 
-	t::Int64)
+	seed_sur::Float64, fec_max::Float64, fec_dd::Float64, 
+	sur_spot::Float64, dg::Float64, t::Int64)
     
 	# plowing
 	plow_inversion!(seedbank_1, seedbank_2, t, plow, inv_frac)
@@ -205,7 +202,11 @@ function one_step!(seedbank_1::Array{Float64, 2},
   
 	# apply spot control, but store the pre spot control population to 
 	# calculate the cost of spot control
-	ab_pop_spot[t, :] = ab_pop[t, :] * spot_act
+	if spot_act == 1
+
+		ab_pop_spot[t, :] = ab_pop[t, :] * sur_spot
+
+	end
   
 	# post survial above ground pop number
 	tot_ab_pop = sum(ab_pop_spot[t, :]) * dg * dg
@@ -257,7 +258,8 @@ function one_run!(seedbank_1::Array{Float64, 2}, seedbank_2::Array{Float64, 2},
 	herb_act_seq::Array{Int64, 1}, time_hor::Int64, 
 	int_sbL1::Array{Float64, 1}, int_sbL2::Array{Float64, 1}, 
 	sur_crop_alt::Float64, inv_frac::Float64, germ_prob::Float64, 
-	seed_sur::Float64, fec_max::Float64, fec_dd::Float64, dg::Float64)
+	seed_sur::Float64, fec_max::Float64, fec_dd::Float64, 
+	sur_spot::Float64, dg::Float64)
   
 	# re-set all the values from the previous run that will be 
 	# over-written, just to make sure 
@@ -279,7 +281,8 @@ function one_run!(seedbank_1::Array{Float64, 2}, seedbank_2::Array{Float64, 2},
 			crop_sur_tup, g_eff_dem, herb_sur_tup, 
 			crop_act_seq[i - 1], spot_act_seq[i - 1], 
 			plow_seq[i - 1], herb_act_seq[i - 1], sur_crop_alt, 
-			inv_frac, germ_prob, seed_sur, fec_max, fec_dd, dg, i)
+			inv_frac, germ_prob, seed_sur, fec_max, fec_dd, 
+			sur_spot, dg, i)
 	    
 	end
   

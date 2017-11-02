@@ -143,8 +143,7 @@ function sim_act_seq(herb_seq::Array{Int64, 1}, crop_seq::Array{Int64, 1},
 
 	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pars[:p_ex][1], 
 		pars[:s0][1], pars[:eff_h1][1], pars[:eff_h2][1], 
-		pars[:p_g1h1][1], pars[:p_g1h2][1], pars[:p_g2h1][1], 
-		pars[:p_g2h2][1])
+		pars[:p_g1h1][1], pars[:p_g2h2][1])
 
 	fit_cost = fec_cost_maker(pars[:fr][1], pars[:f0][1], g1_vals, g2_vals)
 	
@@ -187,8 +186,8 @@ function sim_act_seq(herb_seq::Array{Int64, 1}, crop_seq::Array{Int64, 1},
 		fit_cost, crop_sur_tup, herb_sur_tup, crop_seq, 
 		spot_seq, plow_seq, herb_seq, T, int_sb1, int_sb2, 
 		pars[:sur_alt][1], pars[:inv_frac][1], pars[:germ_prob][1],
-		pars[:seed_sur][1], pars[:fec_max][1], pars[:fec_dd][1], dg)
-
+		pars[:seed_sur][1], pars[:fec_max][1], pars[:fec_dd][1], 
+		pars[:sur_spot][1], dg)
 
 	return (SB1, SB2)
 
@@ -216,8 +215,7 @@ function get_sur_herb(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 
 	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, 1.0, 
 		pars[:s0][1], pars[:eff_h1][1], pars[:eff_h2][1], 
-		pars[:p_g1h1][1], pars[:p_g1h2][1], pars[:p_g2h1][1], 
-		pars[:p_g2h2][1])
+		pars[:p_g1h1][1], pars[:p_g2h2][1])
 
 	sur_herb1 = zeros(T)
 	sur_herb2 = zeros(T)
@@ -258,8 +256,7 @@ function get_undis_reward(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 
 	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pars[:p_ex][1], 
 		pars[:s0][1], pars[:eff_h1][1], pars[:eff_h2][1], 
-		pars[:p_g1h1][1], pars[:p_g1h2][1], pars[:p_g2h1][1], 
-		pars[:p_g2h2][1])
+		pars[:p_g1h1][1], pars[:p_g2h2][1])
 
 	ab_pop = pop_sim[1] * pars[:germ_prob][1]
 	ab_pop_spot = zeros(size(ab_pop))
@@ -285,7 +282,11 @@ function get_undis_reward(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 	  
 		end
 
-		ab_pop_spot[t, :] = ab_pop[t, :] * sub_acts[t - 1, ACT_SPOT]
+		if sub_acts[t - 1, ACT_SPOT] == 1
+
+			ab_pop_spot[t, :] = ab_pop[t, :] * pars[:sur_spot][1]
+
+		end
 
  	end
   
@@ -357,4 +358,51 @@ function subact_2_colmat(sub_acts::Array{Int64, 2},
 	return vcat([herb_col, crop_col, plow_col, spot_col]...)
 
 end
+
+# make a recatangle function
+rect(x, y, w, h) = Shape(x + [0, w, w, 0], y + [0, 0, h, h])
+
+# plot the color map on the right 
+function plot_colmat!(plt::Plots.Plot, col_map::Array{ColorTypes.RGB{Float64}, 2};
+		    subplot = 1)
+
+	# get the dimentions of the plot
+	plt_dims = size(col_map)
+
+	# make the intial plot
+	plot!(plt, xlim = (0, plt_dims[2]), ylim = (0, plt_dims[1]), 
+	      subplot = subplot, legend = :none)
+
+	# add the rectangles
+	for x in 0:(plt_dims[2] - 1)
+		for y in 0:(plt_dims[1] - 1)
+
+			plot!(plt, rect(x, plt_dims[1] - y, 1, -1), 
+				c = col_map[y + 1, x + 1], 
+			      	xlabel = "time step", subplot = subplot,
+				xtickfont = Plots.font(9),  
+				ytickfont = Plots.font(0))
+
+		end
+	end
+
+	ann_lit = colormap("Grays", 10)[7]
+
+	plot!(plt, subplot = subplot,
+	      annotations = [(2.4, 3.5, text("Herbicide", ann_lit, 20)),
+			(2.4, 2.5, text("Crop       ", ann_lit, 20)),
+			(2.4, 1.5, text("Plow       ", ann_lit, 20)),
+			(2.4, 0.5, text("Spot       ", ann_lit, 20))])
+	
+	return nothing
+
+end
+
+
+
+
+
+
+
+
 

@@ -3,8 +3,6 @@ using Plots
 using StatPlots
 pyplot()
 
-
-
 code_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/model_code/sb_2level_2herb"
 data_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/GA_2level_sb_out/data_out"
 plot_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/GA_2level_sb_out/plot_out"
@@ -71,11 +69,6 @@ spot_seq = best_seq[ACT_SPOT][end, :];
 sim_pop = sim_act_seq(herb_seq, crop_seq, spot_seq, plow_seq_int, 
 		sol[3], low_g, up_g, dg)
 
-
-sb_size = get_SB_size(sim_pop, dg)
-
-surs = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g)
-
 # plot the population over time under the best action sequence
 
 # need to get the integer version since some of these functions call 
@@ -90,28 +83,38 @@ SB = get_SB_size(sim_pop, dg);
 # get the action as a col_mat
 col_pal = make_col_pal();
 act_colmat = subact_2_colmat(best_sub_acts, col_pal);
+plt_greys = colormap("Grays", 10)[[5, 10]]
 
-
-lm = @layout [grid(2, 1)
+lm = @layout [grid(3, 1)
 	     b{0.2h}]
 plt = plot(layout = lm)
 
-# add the seed bank and rewards
-plot!(plt, [reward_t (SB[1] + SB[2])[2:end]], 
-	labels = ["reward £" "seed bank"], yguide = "amount", 
-	xtickfont = Plots.font(0), subplot = 1)
+# add the seed bank  
+plot!(plt, 0:20, [SB[1] SB[2]], 
+	labels = ["seed bank top" "seed bank bottom"], yguide = "amount", 
+	xtickfont = Plots.font(9), markershape = :circle, linewidth = 2, 
+	seriescolor = [plt_greys[2] plt_greys[1]], markerstrokewidth = 0, 
+	markersize = 5, xlims = (0, 20.1), subplot = 1)
 
 # add the resistance plot
-plot!(plt, [resist[:herb1][2:end] resist[:herb2][2:end]], 
+plot!(plt, 0:20, [resist[:herb1] resist[:herb2]], 
 	labels = ["herb 1" "herb 2"], yguide = "survival exposed",
-	xtickfont = Plots.font(9), subplot = 2)
+	xtickfont = Plots.font(9), markershape = :circle, linewidth = 2, 
+	seriescolor = [col_pal[2] col_pal[3]], markerstrokewidth = 0, 
+	markersize = 5, xlims = (0, 20.1), subplot = 2)
 
-# add the colmat best action found
-heatmap!(plt, act_colmat, ylims = (-0.49999, 3.5), subplot = 3, aspect_ratio = 0.5)
+# show the reward undiscounted so not confounded with discount rate 
+plot!(plt, 1:20, reward_t, xlims = (0, 20.1), 
+	legend = :none, yguide = "reward (£)", linewidth = 2, 
+	xtickfont = Plots.font(9), markershape = :circle,
+	seriescolor = plt_greys[2], markersize = 5,
+	markerstrokewidth = 0, subplot = 3)
+
+# add the colmat best action found	
+plot_colmat!(plt, act_colmat, subplot = 4)
+plot!(plt, subplot = 4) # second call needed to put the generated plot in scope
 
 #NOT PERFECT BUT GETTING CLOSE TO WHAT I WANT
-# heed to add row labels on action, make and add the legend 
-# also change the location of the tick marks, also reduce the top margin so closer
 # to the other plot. also remove numbers on y plot 3, change colour of lines to 
 # be consistent with action make the lines in top plot some version of purple or grey
 # make lines thicker. add time step axis label. Also timing is off by a bit
