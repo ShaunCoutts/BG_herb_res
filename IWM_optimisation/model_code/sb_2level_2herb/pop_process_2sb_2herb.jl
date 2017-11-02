@@ -206,8 +206,12 @@ function one_step!(seedbank_1::Array{Float64, 2},
 
 		ab_pop_spot[t, :] = ab_pop[t, :] * sur_spot
 
+	else
+
+		ab_pop_spot[t, :] = ab_pop[t, :] * 1.0
+
 	end
-  
+
 	# post survial above ground pop number
 	tot_ab_pop = sum(ab_pop_spot[t, :]) * dg * dg
   
@@ -268,8 +272,8 @@ function one_run!(seedbank_1::Array{Float64, 2}, seedbank_2::Array{Float64, 2},
 	ab_pop[:, :] .= 0.0
   
 	# set the intial seed bank
-	seedbank_1[1, :] = int_sbL1
-	seedbank_2[1, :] = int_sbL2
+	seedbank_1[1, :] = deepcopy(int_sbL1)
+	seedbank_2[1, :] = deepcopy(int_sbL2)
   
 	for i in 2:(time_hor + 1)
   

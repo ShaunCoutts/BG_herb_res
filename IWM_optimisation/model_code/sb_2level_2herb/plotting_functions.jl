@@ -175,7 +175,7 @@ function sim_act_seq(herb_seq::Array{Int64, 1}, crop_seq::Array{Int64, 1},
 	int_dist = MvNormal(int_mu, int_cov);
 	int_sb1 = pdf(int_dist, transpose(hcat(g1_vals, g2_vals))) * 
 		pars[:int_N][1]  
-	int_sb2 = zeros(size(g1_vals)[1]) 
+	int_sb2 = deepcopy(int_sb1) 
 
 	plow_bool = [false, true]
 	
