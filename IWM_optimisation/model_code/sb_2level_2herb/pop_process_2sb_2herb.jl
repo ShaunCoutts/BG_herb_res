@@ -73,7 +73,7 @@ end
 function fec_cost_maker(fr::Float64, f0::Float64, g1::Array{Float64, 1}, 
 	g2::Array{Float64, 1})
 
-	return 1 ./ (1 + exp(-(f0 - fr * abs(g1) - fr .* abs(g2))))
+	return 1 ./ (1 + exp(-(f0 - fr * abs(g1) - fr * abs(g2))))
 
 end
 

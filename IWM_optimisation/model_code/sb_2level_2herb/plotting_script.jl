@@ -2,6 +2,7 @@
 using Plots
 using StatPlots
 pyplot()
+using HDF5, JLD
 
 code_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/model_code/sb_2level_2herb"
 data_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/GA_2level_sb_out/data_out"
@@ -59,6 +60,9 @@ writetable("test_GA.csv", df)
 
 # simulate the best action seqence to then pull out some metrics of 
 # interest from the population 
+cd(data_loc)
+sol = load("test_sol_bad_int.jld")["test_sol"];
+
 best_seq = get_best_seq(sol, A);
 
 herb_seq = best_seq[ACT_HERB][end, :];
@@ -87,41 +91,138 @@ plt_greys = colormap("Grays", 10)[[5, 10]]
 
 lm = @layout [grid(3, 1)
 	     b{0.2h}]
-plt = plot(layout = lm)
+plt = plot(layout = lm, size = (800, 1200));
 
 # add the seed bank  
-plot!(plt, 0:20, [SB[1] SB[2]], 
+plot!(plt, 0:20, [SB[1] SB[2]], guidefont = Plots.font(14), 
 	labels = ["seed bank top" "seed bank bottom"], yguide = "amount", 
-	xtickfont = Plots.font(9), markershape = :circle, linewidth = 2, 
+	tickfont = Plots.font(12), markershape = :circle, linewidth = 2, 
 	seriescolor = [plt_greys[2] plt_greys[1]], markerstrokewidth = 0, 
-	markersize = 5, xlims = (0, 20.1), subplot = 1)
+	markersize = 5, xlims = (0, 20.1), legendfont = Plots.font(12),
+	subplot = 1);
 
 # add the resistance plot
-plot!(plt, 0:20, [resist[:herb1] resist[:herb2]], 
+plot!(plt, 0:20, [resist[:herb1] resist[:herb2]], guidefont = Plots.font(14), 
 	labels = ["herb 1" "herb 2"], yguide = "survival exposed",
-	xtickfont = Plots.font(9), markershape = :circle, linewidth = 2, 
+	tickfont = Plots.font(12), markershape = :circle, linewidth = 2, 
 	seriescolor = [col_pal[2] col_pal[3]], markerstrokewidth = 0, 
-	markersize = 5, xlims = (0, 20.1), subplot = 2)
+	markersize = 5, xlims = (0, 20.1), legendfont = Plots.font(12),
+	subplot = 2);
 
 # show the reward undiscounted so not confounded with discount rate 
-plot!(plt, 1:20, reward_t, xlims = (0, 20.1), 
+plot!(plt, 1:20, reward_t, xlims = (0, 20.1), guidefont = Plots.font(14), 
 	legend = :none, yguide = "reward (£)", linewidth = 2, 
-	xtickfont = Plots.font(9), markershape = :circle,
+	tickfont = Plots.font(12), markershape = :circle,
 	seriescolor = plt_greys[2], markersize = 5,
-	markerstrokewidth = 0, subplot = 3)
+	markerstrokewidth = 0, subplot = 3);
 
 # add the colmat best action found	
 plot_colmat!(plt, act_colmat, subplot = 4)
-plot!(plt, subplot = 4) # second call needed to put the generated plot in scope
+plot!(plt, subplot = 4); # second call needed to put the generated plot in scope
 
-#NOT PERFECT BUT GETTING CLOSE TO WHAT I WANT
-# to the other plot. also remove numbers on y plot 3, change colour of lines to 
-# be consistent with action make the lines in top plot some version of purple or grey
-# make lines thicker. add time step axis label. Also timing is off by a bit
+cd(plot_loc)
+savefig("QD_high_int_state.pdf")
+
+##########################################################################
+# take the results from the parameter sweep and explore them a bit, make 
+# sure everything worked
+cd(data_loc)
+sol_list = load("sol_sweep.jld")["sol_sweep"]
+
+# make plots of rewards 
+n_best = 10;
+
+# get the number of plots in a square, not very space efficent but fine 
+n_pars = length(sol_list)
+gd = get_grid_dim(n_pars)
+
+lm = @layout grid(gd[1], gd[2])
+
+plt = plot(layout = lm, xlabel = "generation", ylabel = "reward",
+	   size = (gd[2] * 500, gd[1] * 500));
+
+for i in 1:n_pars
+
+	sol = sol_list[i];
+
+	pars = sol[3];
+
+	# unpack some of the parameters for printing
+	int_g2 = round(pars[:int_g2], 3);
+	int_g1 = round(pars[:int_g1], 3);
+	int_N = pars[:int_N];
+	off_cv = pars[:off_cv];
+	dr = pars[:dis_rate];
+	y0 = pars[:Y0];
+
+	re_gen = reward_gen(sol[2], best_n_seq(n_best, sol[2]));
+
+	plot!(plt, re_gen, label = reshape(repmat([""], n_best), 1, n_best),
+	     subplot = i, 
+	     title = "int_g1 = $int_g1|int_g2 = $int_g2|int_N = $int_N\noff_cv = $off_cv|dis_rate = $dr|Y0 = $y0 ");
+
+end
+
+cd(plot_loc)
+savefig("rewards_over_gen.pdf")
+
+# show the whole populaiton of actions in the final population 
+new_dir = string(plot_loc, "/sol_pops")
+rm(new_dir, recursive = true)
+mkdir(new_dir)
+cd(new_dir)
+
+n_pars = length(sol_list)
+
+A = make_action_space()
+
+for i in 1:n_pars
+
+	sol = sol_list[i];
+
+	pars = sol[3];
+
+	# unpack some of the parameters for printing
+	int_g2 = round(pars[:int_g2], 3);
+	int_g1 = round(pars[:int_g1], 3);
+	int_N = pars[:int_N];
+	off_cv = pars[:off_cv];
+	dr = pars[:dis_rate];
+	y0 = pars[:Y0];
+
+	best_seq = get_best_seq(sol, A)
+
+	par_title = "int_g1 = $int_g1|int_g2 = $int_g2\nint_N = $int_N|off_cv = $off_cv\ndis_rate = $dr|Y0 = $y0"
+
+	lm = @layout grid(4, 1)
+
+	plt = plot(layout = lm, size = (500, 1000), 
+		xlabel = ["" "" "" "time"], ylabel = ["Gen" "Gen" "Gen" "Gen"]);
+	heatmap!(plt, best_seq[ACT_HERB], title = string(par_title, "\nHERB"), subplot = 1);
+	heatmap!(plt, best_seq[ACT_CROP], title = "CROP", subplot = 2);
+	heatmap!(plt, best_seq[ACT_PLOW], title = "PLOW", subplot = 3);
+	heatmap!(plt, best_seq[ACT_SPOT], title = "SPOT", subplot = 4);
+
+	savefig(plt, "sol_pop_$i.pdf")
+
+end
 
 
-# make some colours 
-crop_col = colormap("Blues", 4)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #heatmap to plot population over 2d
 heatmap(matrix)

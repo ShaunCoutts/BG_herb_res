@@ -124,7 +124,7 @@ end
 # at time step to then map that to the action seqence 
 function sim_act_seq(herb_seq::Array{Int64, 1}, crop_seq::Array{Int64, 1}, 
 		spot_seq::Array{Int64, 1}, plow_seq_int::Array{Int64, 1}, 
-		pars::DataFrame, low_g::Float64, up_g::Float64, dg::Float64)
+		pars::Dict{Symbol, Float64}, low_g::Float64, up_g::Float64, dg::Float64)
 
 	T = length(herb_seq)
 
@@ -138,21 +138,21 @@ function sim_act_seq(herb_seq::Array{Int64, 1}, crop_seq::Array{Int64, 1},
 	Ng = length(g1_vals)
 
 	# pre-calc the effet of managment actions 
-	crop_sur_tup = (1.0, pars[:sur_alt][1], 0.0)
+	crop_sur_tup = (1.0, pars[:sur_alt], 0.0)
 	spot_sur_tup = (0.0, 1.0)
 
-	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pars[:p_ex][1], 
-		pars[:s0][1], pars[:eff_h1][1], pars[:eff_h2][1], 
-		pars[:p_g1h1][1], pars[:p_g2h2][1])
+	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pars[:p_ex], 
+		pars[:s0], pars[:eff_h1], pars[:eff_h2], 
+		pars[:p_g1h1], pars[:p_g2h2])
 
-	fit_cost = fec_cost_maker(pars[:fr][1], pars[:f0][1], g1_vals, g2_vals)
+	fit_cost = fec_cost_maker(pars[:fr], pars[:f0], g1_vals, g2_vals)
 	
 	# generate the indexing keys
 	mix_keys = make_index_keys(len_g, len_g)
 	
 	# define resistance trait values and their co-var
-	cov_mat = [pars[:off_sd][1] pars[:off_cv][1];
-		   pars[:off_cv][1] pars[:off_sd][1]]
+	cov_mat = [pars[:off_sd] pars[:off_cv];
+		   pars[:off_cv] pars[:off_sd]]
 	mix_kernel = offspring_dist_setup(g1_vals, g2_vals, cov_mat, 
 		mix_keys)
 
@@ -169,12 +169,12 @@ function sim_act_seq(herb_seq::Array{Int64, 1}, crop_seq::Array{Int64, 1},
 	par_mix = zeros(length(mix_keys[1]))
 
 	# intial populations 
-	int_cov = [pars[:int_sd][1] pars[:int_cv][1]; 
-		   pars[:int_cv][1] pars[:int_sd][1]]
-	int_mu = [pars[:int_g1][1]; pars[:int_g2][1]]
+	int_cov = [pars[:int_sd] pars[:int_cv]; 
+		   pars[:int_cv] pars[:int_sd]]
+	int_mu = [pars[:int_g1]; pars[:int_g2]]
 	int_dist = MvNormal(int_mu, int_cov);
 	int_sb1 = pdf(int_dist, transpose(hcat(g1_vals, g2_vals))) * 
-		pars[:int_N][1]  
+		pars[:int_N]  
 	int_sb2 = deepcopy(int_sb1) 
 
 	plow_bool = [false, true]
@@ -185,9 +185,9 @@ function sim_act_seq(herb_seq::Array{Int64, 1}, crop_seq::Array{Int64, 1},
 		pat_pop, eff_pop, par_mix, mix_keys, mix_kernel,
 		fit_cost, crop_sur_tup, herb_sur_tup, crop_seq, 
 		spot_seq, plow_seq, herb_seq, T, int_sb1, int_sb2, 
-		pars[:sur_alt][1], pars[:inv_frac][1], pars[:germ_prob][1],
-		pars[:seed_sur][1], pars[:fec_max][1], pars[:fec_dd][1], 
-		pars[:sur_spot][1], dg)
+		pars[:sur_alt], pars[:inv_frac], pars[:germ_prob],
+		pars[:seed_sur], pars[:fec_max], pars[:fec_dd], 
+		pars[:sur_spot], dg)
 
 	return (SB1, SB2)
 
@@ -202,7 +202,7 @@ function get_SB_size(pop_sim::Tuple, dg::Float64)
 end
 
 function get_sur_herb(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
-	pars::DataFrame, dg::Float64, low_g::Float64, up_g::Float64)
+	      pars::Dict{Symbol, Float64}, dg::Float64, low_g::Float64, up_g::Float64)
 
 	tot_pop = get_SB_size(pop_sim, dg)[1]
 
@@ -214,8 +214,8 @@ function get_sur_herb(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 	g2_vals = repeat(g_vals, outer = len_g)
 
 	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, 1.0, 
-		pars[:s0][1], pars[:eff_h1][1], pars[:eff_h2][1], 
-		pars[:p_g1h1][1], pars[:p_g2h2][1])
+		pars[:s0], pars[:eff_h1], pars[:eff_h2], 
+		pars[:p_g1h1], pars[:p_g2h2])
 
 	sur_herb1 = zeros(T)
 	sur_herb2 = zeros(T)
@@ -236,15 +236,15 @@ function get_sur_herb(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 
 	end
 	
-	return DataFrame(herb1 = vcat(sur_herb1 ./ tot_pop...), 
-		herb2 = vcat(sur_herb2 ./ tot_pop...), 
-		herb12 = vcat(sur_herb12 ./ tot_pop...))
+	return Dict(:herb1 => vcat(sur_herb1 ./ tot_pop...), 
+		:herb2 => vcat(sur_herb2 ./ tot_pop...), 
+		:herb12 => vcat(sur_herb12 ./ tot_pop...))
 
 end
 
 
 function get_undis_reward(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
-		A::Tuple, act_seq::Array{Int64, 1},pars::DataFrame, 
+		A::Tuple, act_seq::Array{Int64, 1}, pars::Dict{Symbol, Float64}, 
 		dg::Float64, low_g::Float64, up_g::Float64)
 
 	T = size(pop_sim[1])[1]
@@ -254,11 +254,11 @@ function get_undis_reward(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 	g1_vals = repeat(g_vals, inner = len_g)
 	g2_vals = repeat(g_vals, outer = len_g)
 
-	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pars[:p_ex][1], 
-		pars[:s0][1], pars[:eff_h1][1], pars[:eff_h2][1], 
-		pars[:p_g1h1][1], pars[:p_g2h2][1])
+	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pars[:p_ex], 
+		pars[:s0], pars[:eff_h1], pars[:eff_h2], 
+		pars[:p_g1h1], pars[:p_g2h2])
 
-	ab_pop = pop_sim[1] * pars[:germ_prob][1]
+	ab_pop = pop_sim[1] * pars[:germ_prob]
 	ab_pop_spot = zeros(size(ab_pop))
 
 	sub_acts = act_seq_2_sub_act(A, act_seq)
@@ -284,7 +284,11 @@ function get_undis_reward(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 
 		if sub_acts[t - 1, ACT_SPOT] == 1
 
-			ab_pop_spot[t, :] = ab_pop[t, :] * pars[:sur_spot][1]
+			ab_pop_spot[t, :] = ab_pop[t, :] * pars[:sur_spot]
+
+		else
+
+			ab_pop_spot[t, :] = ab_pop[t, :] * 1.0
 
 		end
 
@@ -296,14 +300,14 @@ function get_undis_reward(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 	tot_ab_pop_spot = vcat(sum(ab_pop_spot, 2)...) * dg * dg
 	tot_ab_pop_spot = tot_ab_pop_spot[2:end]
 
-	cost_space = make_cost_space(pars[:cost_herb][1], pars[:cost_WW][1],
-		pars[:cost_alt][1], pars[:cost_fal][1], pars[:cost_plow][1])
+	cost_space = make_cost_space(pars[:cost_herb], pars[:cost_WW],
+		pars[:cost_alt], pars[:cost_fal], pars[:cost_plow])
 				     
 	
 	reward = economic_reward(tot_ab_pop_spot, sub_acts[:, ACT_CROP],
-			pars[:Y0][1], pars[:Y_slope][1], pars[:Y_alt][1], 
-			pars[:rep_pen][1]) - 
-		costs(sub_acts, cost_space, pars[:cost_spot][1], tot_ab_pop) 
+			pars[:Y0], pars[:Y_slope], pars[:Y_alt], 
+			pars[:rep_pen]) - 
+		costs(sub_acts, cost_space, pars[:cost_spot], tot_ab_pop) 
 
 	return reward
 
@@ -380,8 +384,9 @@ function plot_colmat!(plt::Plots.Plot, col_map::Array{ColorTypes.RGB{Float64}, 2
 			plot!(plt, rect(x, plt_dims[1] - y, 1, -1), 
 				c = col_map[y + 1, x + 1], 
 			      	xlabel = "time step", subplot = subplot,
-				xtickfont = Plots.font(9),  
-				ytickfont = Plots.font(0))
+				xtickfont = Plots.font(12),  
+				ytickfont = Plots.font(0),
+				guidefont = Plots.font(14))
 
 		end
 	end
@@ -398,6 +403,15 @@ function plot_colmat!(plt::Plots.Plot, col_map::Array{ColorTypes.RGB{Float64}, 2
 
 end
 
+# make a grid gieven an aribrarty number of plots, what is a good grid
+function get_grid_dim(n::Int64)
+
+	r = convert(Int64, ceil(sqrt(n)))
+	c = convert(Int64, floor(sqrt(n)))
+
+	return (r, c)
+
+end
 
 
 

@@ -1,4 +1,5 @@
 # main calling script 
+
 using HDF5, JLD
 
 ##########################################################################
@@ -22,8 +23,8 @@ pro_exposed = 0.8;
 sur_base = 10.0;
 effect_herb1 = 14.0; 
 effect_herb2 = 14.0;
-prot_g1_herb1 = 1.2; 
-prot_g2_herb2 = 1.2;
+prot_g1_herb1 = 1.3; 
+prot_g2_herb2 = 1.3;
 sur_crop_alt = 0.8;
 sur_spot = 0.05;
 T = 20;
@@ -32,7 +33,7 @@ germ_prob = 0.5;
 seed_sur = 0.5;
 fec_max = 60.0; 
 fec_dd = 0.001;
-fr = 0.5;
+fr = 0.2;
 f0 = 4.0;
 
 # reward function parameters
@@ -51,25 +52,23 @@ cost_spot = 0.03; # clearing 100000 would cost £2000, > yeild of WW
 cost_plow = 74.0; # cost inversion plowing
 
 #cost parameters re-define to make some actions terrible by ramping up the cost
-cost_herb_one = 20.0; # cost herbicide from NIX 2017
-cost_FAL = 36.0; # based on two glyphosate applications 
-cost_WW = 383.0;
-cost_ALT = 273.0 # based on costs from spring barley NIX 2017
-cost_spot = 10.03; # clearing 100000 would cost £2000, > yeild of WW
-cost_plow = 2000.0; # cost inversion plowing
-
-
+# cost_herb_one = 20.0; # cost herbicide from NIX 2017
+#cost_FAL = 36.0; # based on two glyphosate applications 
+#cost_WW = 383.0;
+#cost_ALT = 273.0 # based on costs from spring barley NIX 2017
+#cost_spot = 1000.03; # clearing 100000 would cost £2000, > yeild of WW
+#cost_plow = 20000.0; # cost inversion plowing
 
 # initial conditions 
-int_g1 = 0.0;
+int_g1 = 5.0;
 int_g2 = 0.0;
 int_sd = 1.732;
 int_cv = 0.0;
-int_N = 100.0;
+int_N = 100000.0;
 
 # GA parameters
-num_gen = 15;
-pop_size = 26; # num of action sequences evaluaed each gen, must be even
+num_gen = 30;
+pop_size = 50; # num of action sequences evaluaed each gen, must be even
 mut = 0.02;
 
 @time sol = GA_solve(T, pop_size, num_gen, cost_herb_one, cost_WW, cost_ALT, cost_FAL, 
@@ -80,7 +79,7 @@ mut = 0.02;
 
 cd(data_loc)
 
-save("test_sol.jld", "test_sol", sol)
+save("test_sol_bad_int.jld", "test_sol", sol)
 
 #sol = load("test_sol.jld")["test_sol"] 
 
