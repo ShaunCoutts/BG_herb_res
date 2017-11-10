@@ -127,16 +127,16 @@ savefig("QD_high_int_state.pdf")
 # take the results from the parameter sweep and explore them a bit, make 
 # sure everything worked
 cd(data_loc)
-sol_list = load("sol_sweep.jld")["sol_sweep"]
+sol_list = load("sol_sweep_hipop.jld")["sol_sweep"];
 
 # make plots of rewards 
 n_best = 10;
 
 # get the number of plots in a square, not very space efficent but fine 
-n_pars = length(sol_list)
-gd = get_grid_dim(n_pars)
+n_pars = length(sol_list);
+gd = get_grid_dim(n_pars);
 
-lm = @layout grid(gd[1], gd[2])
+lm = @layout grid(gd[1], gd[2]);
 
 plt = plot(layout = lm, xlabel = "generation", ylabel = "reward",
 	   size = (gd[2] * 500, gd[1] * 500));
@@ -164,10 +164,10 @@ for i in 1:n_pars
 end
 
 cd(plot_loc)
-savefig("rewards_over_gen.pdf")
+savefig("rewards_over_gen_hipop.pdf")
 
 # show the whole populaiton of actions in the final population 
-new_dir = string(plot_loc, "/sol_pops")
+new_dir = string(plot_loc, "/sol_pops_hipop")
 rm(new_dir, recursive = true)
 mkdir(new_dir)
 cd(new_dir)
@@ -190,11 +190,11 @@ for i in 1:n_pars
 	dr = pars[:dis_rate];
 	y0 = pars[:Y0];
 
-	best_seq = get_best_seq(sol, A)
+	best_seq = get_best_seq(sol, A);
 
 	par_title = "int_g1 = $int_g1|int_g2 = $int_g2\nint_N = $int_N|off_cv = $off_cv\ndis_rate = $dr|Y0 = $y0"
 
-	lm = @layout grid(4, 1)
+	lm = @layout grid(4, 1);
 
 	plt = plot(layout = lm, size = (500, 1000), 
 		xlabel = ["" "" "" "time"], ylabel = ["Gen" "Gen" "Gen" "Gen"]);
@@ -207,8 +207,72 @@ for i in 1:n_pars
 
 end
 
+# Visulise the solutions 
+new_dir = string(plot_loc, "/sol_vis")
+rm(new_dir, recursive = true)
+mkdir(new_dir)
+cd(new_dir)
 
+n_pars = length(sol_list);
 
+A = make_action_space();
+
+col_pal = make_col_pal();
+plt_greys = colormap("Grays", 10)[[5, 10]];
+low_g = -10.0;
+up_g = 10.0;
+dg = 1.0;
+
+for i in 1:n_pars
+
+	plt = solution_viz(sol_list[i], A, up_g, low_g, dg)	
+	
+	savefig(plt, "sol_vis_$i.pdf")
+
+end
+
+# look at the diversity of solutions in last generation 
+# plot the sub actions at over the whole population,  make sure there is 
+# good diversity for at least a good number of generations 
+new_dir = string(plot_loc, "/sol_diversity")
+rm(new_dir, recursive = true)
+mkdir(new_dir)
+cd(new_dir)
+
+n_pars = length(sol_list);
+
+A = make_action_space();
+
+for i in 1:n_pars
+	
+	sol = sol_list[i];
+
+	sub_acts = actseq_subact(sol[1][end], A);
+
+	lm = @layout [b{0.0h}; grid(2, 2)];
+
+	pars = sol[3];
+
+	# unpack some of the parameters for printing
+	int_g2 = round(pars[:int_g2], 3);
+	int_g1 = round(pars[:int_g1], 3);
+	int_N = pars[:int_N];
+	off_cv = pars[:off_cv];
+	dr = pars[:dis_rate];
+	y0 = pars[:Y0];
+
+	par_title = "int_g1 = $int_g1|int_g2 = $int_g2\nint_N = $int_N|off_cv = $off_cv\ndis_rate = $dr|Y0 = $y0";
+
+	plt = plot(layout = lm, title = [par_title "HERB" "CROP" "PLOW" "SPOT"], 
+		xlabel = ["" "" "" "time" "time"], ylabel = ["" "pop of seq" "" "pop of seq" ""]);
+	heatmap!(plt, sub_acts[ACT_HERB], subplot = 2);
+	heatmap!(plt, sub_acts[ACT_CROP], subplot = 3);
+	heatmap!(plt, sub_acts[ACT_PLOW], subplot = 4);
+	heatmap!(plt, sub_acts[ACT_SPOT], subplot = 5);
+
+	savefig(plt, "sol_div_$i.pdf")
+
+end
 
 
 

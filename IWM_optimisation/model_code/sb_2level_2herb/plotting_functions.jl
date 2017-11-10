@@ -278,7 +278,7 @@ function get_undis_reward(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 	    
 			ab_pop[t, :] = (ab_pop[t, :] .* 
 				herb_sur_tup[sub_acts[t - 1, ACT_HERB]]) * 
-				sur_crop_alt
+			pars[:sur_alt]
 	  
 		end
 
@@ -305,9 +305,9 @@ function get_undis_reward(pop_sim::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 				     
 	
 	reward = economic_reward(tot_ab_pop_spot, sub_acts[:, ACT_CROP],
-			pars[:Y0], pars[:Y_slope], pars[:Y_alt], 
-			pars[:rep_pen]) - 
-		costs(sub_acts, cost_space, pars[:cost_spot], tot_ab_pop) 
+		pars[:Y0], pars[:Y_slope], pars[:Y_alt], pars[:rep_pen]) - 
+	costs(sub_acts, cost_space, pars[:spot_fix], pars[:spot_var], 
+		tot_ab_pop) 
 
 	return reward
 
@@ -413,10 +413,291 @@ function get_grid_dim(n::Int64)
 
 end
 
+# function that visulizes a solution 
+function solution_viz(sol::Tuple, A::Tuple, up_g::Float64, low_g::Float64, 
+	dg::Float64)
+
+	col_pal = make_col_pal();
+	plt_greys = colormap("Grays", 10)[[5, 10]];
+
+	pars = sol[3];
+	# unpack some of the parameters for printing
+	int_g2 = round(pars[:int_g2], 3);
+	int_g1 = round(pars[:int_g1], 3);
+	int_N = pars[:int_N];
+	off_cv = pars[:off_cv];
+	dr = pars[:dis_rate];
+	y0 = pars[:Y0];
+
+	best_seq = get_best_seq(sol, A);
+
+	herb_seq = best_seq[ACT_HERB][end, :];
+	crop_seq = best_seq[ACT_CROP][end, :];
+	plow_seq_int = best_seq[ACT_PLOW][end, :];
+	spot_seq = best_seq[ACT_SPOT][end, :];
+
+	sim_pop = sim_act_seq(herb_seq, crop_seq, spot_seq, plow_seq_int, 
+		sol[3], low_g, up_g, dg);
+
+	par_title = "int_g1 = $int_g1|int_g2 = $int_g2\nint_N = $int_N|off_cv = $off_cv\ndis_rate = $dr|Y0 = $y0"
+	
+	best_act = sol[1][end][best_n_seq(1, sol[2])[end], :]; 	
+	best_sub_acts = act_seq_2_sub_act(A, best_act);
+	act_colmat = subact_2_colmat(best_sub_acts, col_pal);
+
+	reward_t = get_undis_reward(sim_pop, A, best_act, sol[3], dg, low_g, up_g);
+	resist = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g);
+	SB = get_SB_size(sim_pop, dg);
+
+	lm = @layout grid(4, 1);
+
+	plt = plot(layout = lm, size = (500, 1000)) 
+
+	# add the seed bank  
+	plot!(plt, 0:20, [SB[1] SB[2]], guidefont = Plots.font(12), 
+		labels = ["seed bank top" "seed bank bottom"], yguide = "amount", 
+		tickfont = Plots.font(12), markershape = :circle, linewidth = 2, 
+		seriescolor = [plt_greys[2] plt_greys[1]], markerstrokewidth = 0, 
+		markersize = 5, xlims = (0, 20.1), legendfont = Plots.font(12),
+		title = par_title, subplot = 1);
+
+		# add the resistance plot
+	plot!(plt, 0:20, [resist[:herb1] resist[:herb2]], guidefont = Plots.font(12), 
+		labels = ["herb 1" "herb 2"], yguide = "survival exposed",
+		tickfont = Plots.font(12), markershape = :circle, linewidth = 2, 
+		seriescolor = [col_pal[2] col_pal[3]], markerstrokewidth = 0, 
+		markersize = 5, xlims = (0, 20.1), legendfont = Plots.font(12),
+		subplot = 2);
+
+	# show the reward undiscounted so not confounded with discount rate 
+	plot!(plt, 1:20, reward_t, xlims = (0, 20.1), guidefont = Plots.font(12), 
+		legend = :none, yguide = "reward (£)", linewidth = 2, 
+		tickfont = Plots.font(12), markershape = :circle,
+		seriescolor = plt_greys[2], markersize = 5,
+		markerstrokewidth = 0, subplot = 3);
+
+	# add the colmat best action found	
+	plot_colmat!(plt, act_colmat, subplot = 4)
+	plot!(plt, subplot = 4); # second call needed to put the generated plot in scope
+
+	return plt
+
+end
+
+##########################################################################
+# set of functions to extract summary statistics of the whoel sequence 
+# %WW, total £, #herb apps, survival of most effective herb.
+function get_pro_WW(sol::Tuple, A::Tuple)
+
+	best_seq = get_best_seq(sol, A)
+
+	num_WW = sum(best_seq[ACT_CROP][end, :] .== CROP_WW)
+
+	num_years = size(best_seq[1])[2]
+
+	return num_WW / num_years
+	
+end
+
+function get_pro_plow(sol::Tuple, A::Tuple)
+
+	best_seq = get_best_seq(sol, A)
+
+	num_plow = sum(best_seq[ACT_PLOW][end, :] .== PLOW)
+
+	num_years = size(best_seq[1])[2]
+
+	return num_plow / num_years
+
+end
+
+function get_spot_spend(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
+	sol::Tuple, A::Tuple, low_g::Float64, up_g::Float64, dg::Float64)
+
+	T = size(sim_pop[1])[1]
+
+	g_vals = collect(low_g : dg : up_g)
+	len_g = size(g_vals)[1]
+	g1_vals = repeat(g_vals, inner = len_g)
+	g2_vals = repeat(g_vals, outer = len_g)
+
+	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pars[:p_ex], 
+		pars[:s0], pars[:eff_h1], pars[:eff_h2], 
+		pars[:p_g1h1], pars[:p_g2h2])
+
+	ab_pop = sim_pop[1] * pars[:germ_prob]
+	spot_spend = zeros(T - 1)
+
+	best_act = sol[1][end][best_n_seq(1, sol[2])[end], :] 	
+	sub_acts = act_seq_2_sub_act(A, best_act)
+
+	for t in 2:T
+
+		if sub_acts[t - 1, ACT_CROP] == CROP_FAL
+	  
+			ab_pop[t, :] .= 0.0
+	  
+		elseif sub_acts[t - 1, ACT_CROP] == CROP_WW
+	    
+			ab_pop[t, :] = ab_pop[t, :] .* 
+				herb_sur_tup[sub_acts[t - 1, ACT_HERB]]
+	    
+		else
+	    
+			ab_pop[t, :] = (ab_pop[t, :] .* 
+				herb_sur_tup[sub_acts[t - 1, ACT_HERB]]) * 
+				pars[:sur_alt]
+	  
+		end
+
+		if sub_acts[t - 1, ACT_SPOT] == 1
+
+			spot_spend[t - 1] = pars[:spot_fix] + 
+				pars[:spot_var] * sum(ab_pop[t, :]) * dg 
+
+		end
+
+ 	end
+  
+	return sum(spot_spend)
+
+end
 
 
+function get_tot_reward(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
+	sol::Tuple, A::Tuple, low_g::Float64, up_g::Float64, dg::Float64)
 
+	best_act = sol[1][end][best_n_seq(1, sol[2])[end], :] 	
 
+	reward_t = get_undis_reward(sim_pop, A, best_act, sol[3], dg, 
+		low_g, up_g)
 
+	return sum(reward_t)
 
+end
 
+# the proportion of max possible reward achived
+function get_reward_pro_max(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
+	sol::Tuple, A::Tuple, low_g::Float64, up_g::Float64, dg::Float64)
+
+	reward_t = get_tot_reward(sim_pop, sol, A, low_g, up_g, dg)
+	
+	max_pos = size(sol[1][1])[2] * sol[3][:Y0]
+
+	return reward_t / max_pos
+
+end
+
+function get_num_herb(sol::Tuple, A::Tuple)
+
+	best_seq = get_best_seq(sol, A)
+
+	herb_seq = best_seq[ACT_HERB][end, :]
+	
+	h1 = (herb_seq .== HERB1) * 1
+	h2 = (herb_seq .== HERB2) * 1
+	h12 = (herb_seq .== HERB12) * 2
+
+	num_years = size(best_seq[1])[2]
+	
+	return sum(h1 + h2 + h12) / num_years
+
+end
+
+function get_min_fin_res(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}, 
+	sol::Tuple, dg::Float64, low_g::Float64, up_g::Float64)
+
+	resist = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g)
+
+	return min(resist[:herb1][end], resist[:herb2][end])
+
+end
+
+function get_fin_res12(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}, 
+	sol::Tuple, dg::Float64, low_g::Float64, up_g::Float64)
+
+	resist = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g)
+
+	return resist[:herb12][end]
+end
+
+function get_int_res12(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}, 
+	sol::Tuple, dg::Float64, low_g::Float64, up_g::Float64)
+
+	resist = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g)
+
+	return resist[:herb12][1]
+end
+
+function get_min_int_res(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}, 
+	sol::Tuple, dg::Float64, low_g::Float64, up_g::Float64)
+
+	resist = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g)
+
+	return min(resist[:herb1][1], resist[:herb2][1])
+
+end
+
+# use these summary functions to build a data frame of results
+function make_sum_df(sol_list::Array{Any, 1}, A::Tuple, low_g::Float64, up_g::Float64,
+		    dg::Float64)
+
+	df_list = []
+	np = length(sol_list)
+
+	for i in 1:np
+
+		sol = sol_list2[i]
+
+		# get the parameter values and put them in data frame
+		df_temp = DataFrame(; sol[3]...)
+
+		# calculate the measures and add them to df
+		best_seq = get_best_seq(sol, A)
+
+		herb_seq = best_seq[ACT_HERB][end, :]
+		crop_seq = best_seq[ACT_CROP][end, :]
+		plow_seq_int = best_seq[ACT_PLOW][end, :]
+		spot_seq = best_seq[ACT_SPOT][end, :]
+
+		sim_pop = sim_act_seq(herb_seq, crop_seq, spot_seq, 
+			plow_seq_int, sol[3], low_g, up_g, dg)
+
+		df_temp[:proWW] = get_pro_WW(sol, A)
+
+		df_temp[:proPlow] = get_pro_plow(sol, A)
+
+		df_temp[:spot_spend] = get_spot_spend(sim_pop, sol, A, 
+			low_g, up_g, dg)
+
+		df_temp[:tot_profit] = get_tot_reward(sim_pop, sol, A, 
+			low_g, up_g, dg)
+
+		df_temp[:pro_max] = get_reward_pro_max(sim_pop, sol, A, 
+			low_g, up_g, dg)
+
+		df_temp[:herb_apps] = get_num_herb(sol, A)
+
+		df_temp[:int_min_res] = get_min_int_res(sim_pop, sol, dg, 
+			low_g, up_g)
+
+		df_temp[:int_res12] = get_int_res12(sim_pop, sol, dg, 
+			low_g, up_g)
+
+		df_temp[:fin_min_res] = get_min_fin_res(sim_pop, sol, dg,
+			low_g, up_g)
+
+		df_temp[:fin_res12] = get_fin_res12(sim_pop, sol, dg, 
+			low_g, up_g)
+
+		push!(df_list, df_temp)
+
+		print("$i\n")
+
+	end
+	
+	return vcat(df_list...)
+
+end
+
+# TODO: CREATE A SIMILAR DATA FRAME BUT FOR A COUPLE SIMPLE COUNTER FACTUALS, LIKE CYCLE, FULL HERB12 AND NO HERB

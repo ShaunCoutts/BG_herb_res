@@ -97,10 +97,10 @@ int_cv = 0.0;
 
 ##########################################################################
 # varied parameters as lists
-off_cv = [0.0];
-dis_rate = [0.96];
+off_cv = [0.0, 0.5];
+dis_rate = [0.85, 0.9, 0.95, 1.0];
 Y0 = [1022, 1668.0];
-int_N = [100.0, 100000.0];
+int_N = [100000.0];
 int_g1 = [sur_2_g(0.02, effect_herb1, sur_base, prot_g1_herb1),
 	  sur_2_g(0.97, effect_herb1, sur_base, prot_g1_herb1),
 	  sur_2_g(0.97, effect_herb1, sur_base, prot_g1_herb1)];
@@ -174,11 +174,11 @@ for dr in dis_rate
 	end
 end
 
-sol_sweep = pmap(GA_wrapper, par_dfs)	
+dis_sweep = pmap(GA_wrapper, par_dfs)	
 
 cd(out_loc)
 
-save("sol_sweep_hipop.jld", "sol_sweep", sol_sweep)
+save("dis_sweep_obj.jld", "dis_sweep", dis_sweep)
 
 #sol_sweep = load("sol_sweep.jld")["sol_sweep"]
 

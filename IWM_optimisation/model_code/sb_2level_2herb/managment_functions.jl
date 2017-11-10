@@ -270,8 +270,8 @@ end
 
 # return a vector of costs taking a matirx of actions (rows = t, colunm = acttions)
 function costs(actions::Array{Int64, 2}, cost_space::Tuple{Array{Float64, 1}, 
-	Array{Float64, 1}, Array{Float64, 1}}, cost_spot::Float64,
-        N_pre_spot::Array{Float64, 1})
+	Array{Float64, 1}, Array{Float64, 1}}, spot_fix::Float64, 
+	spot_var::Float64, N_pre_spot::Array{Float64, 1})
 
 	T = size(actions)[1]
 	cost_vect = zeros(T)
@@ -284,7 +284,7 @@ function costs(actions::Array{Int64, 2}, cost_space::Tuple{Array{Float64, 1},
 
 		else
 
-			spot_cost = cost_spot * N_pre_spot[t]
+			spot_cost = spot_fix + spot_var * N_pre_spot[t]
 
 		end
 
@@ -304,8 +304,8 @@ function reward_total(ab_pop::Array{Float64, 2},
 	ab_pop_spot::Array{Float64, 2}, dis_rates::Array{Float64, 1}, 
 	Y0::Float64, slope::Float64, alt_Y::Float64, rep_penelty::Float64, 
 	act_seq::Array{Int64, 2}, cost_space::Tuple{Array{Float64, 1}, 
-	Array{Float64, 1}, Array{Float64, 1}}, cost_spot::Float64,
-	dg::Float64)
+	Array{Float64, 1}, Array{Float64, 1}}, spot_fix::Float64, 
+	spot_var::Float64, dg::Float64)
   
 	tot_ab_pop = vcat(sum(ab_pop, 2)...) * dg * dg
 	tot_ab_pop = tot_ab_pop[2:end]
@@ -315,7 +315,7 @@ function reward_total(ab_pop::Array{Float64, 2},
 
 	raw_reward = economic_reward(tot_ab_pop_spot, act_seq[:, ACT_CROP],
 			Y0, slope, alt_Y, rep_penelty) - 
-		costs(act_seq, cost_space, cost_spot, tot_ab_pop) 
+		costs(act_seq, cost_space, spot_fix, spot_var, tot_ab_pop) 
 
 	dis_reward = dis_rates .* raw_reward
 
@@ -341,7 +341,8 @@ function eval_act_seq_pop(pop_act_seq::Array{Int64, 2},
 	sur_spot::Float64, dg::Float64, dis_rates::Array{Float64, 1}, 
 	Y0::Float64, Y_slope::Float64, Y_ALT::Float64, 
 	cost_space::Tuple{Array{Float64, 1}, Array{Float64, 1}, 
-	Array{Float64, 1}}, rep_pen::Float64, cost_spot::Float64)
+	Array{Float64, 1}}, rep_pen::Float64, spot_fix::Float64, 
+	spot_var::Float64)
 
 	act_pop_size = size(pop_act_seq)[1]
 	rewards = zeros(act_pop_size)
@@ -366,7 +367,7 @@ function eval_act_seq_pop(pop_act_seq::Array{Int64, 2},
 		# get the rewards given act_seq_pop[i, :]
 		rewards[i] = reward_total(ab_pop, ab_pop_spot, dis_rates, 
 			Y0, Y_slope, Y_ALT, rep_pen, sub_acts, cost_space, 
-			cost_spot, dg)
+			spot_fix, spot_var, dg)
 
 	end
  
@@ -441,7 +442,7 @@ end
 # One GA run to find good managment sequences
 function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64, 
 	cost_herb_one::Float64, cost_WW::Float64, cost_ALT::Float64, 
-	cost_FAL::Float64, cost_plow::Float64, cost_spot::Float64, 
+	cost_FAL::Float64, cost_plow::Float64, spot_fix::Float64, spot_var::Float64, 
 	sur_crop_alt::Float64, low_g::Float64, up_g::Float64, dg::Float64, 
 	off_sd::Float64, off_cv::Float64, int_N::Float64, int_sd::Float64, 
 	int_cv::Float64, int_g1::Float64, int_g2::Float64, inv_frac::Float64, 
@@ -538,7 +539,7 @@ function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64,
 			fit_cost, crop_sur_tup, herb_sur_tup, T, int_sb1, 
 			int_sb2, sur_crop_alt, inv_frac, germ_prob, 
 			seed_sur, fec_max, fec_dd, sur_spot, dg, dis_rates,
-			Y0, Y_slope, Y_ALT, C, rep_pen, cost_spot)
+			Y0, Y_slope, Y_ALT, C, rep_pen, spot_fix, spot_var)
 
 		# indicies of sequences that performed well  
 		win_ind = tourn_select(reward_list[g])
@@ -556,7 +557,7 @@ function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64,
 		fit_cost, crop_sur_tup, herb_sur_tup, T, int_sb1, 
 		int_sb2,sur_crop_alt, inv_frac, germ_prob, 
 		seed_sur, fec_max, fec_dd, sur_spot, dg, dis_rates, Y0, 
-		Y_slope, Y_ALT, C, rep_pen, cost_spot)
+		Y_slope, Y_ALT, C, rep_pen, spot_fix, spot_var)
 	
 	# put the parameter values in a Dict for easy use later in 
 	# plotting
@@ -591,7 +592,8 @@ function GA_solve(T::Int64, pop_size::Int64, num_gen::Int64,
 			:cost_alt => cost_ALT, 
 			:cost_fal => cost_FAL, 
 			:cost_plow => cost_plow, 
-			:cost_spot => cost_spot, 
+			:spot_fix => spot_fix,
+			:spot_var => spot_var,
 			:cost_herb => cost_herb_one)
 
 	return (pop_list, reward_list, par_dict)
