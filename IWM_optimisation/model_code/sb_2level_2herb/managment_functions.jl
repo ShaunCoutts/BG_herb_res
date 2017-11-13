@@ -128,6 +128,28 @@ function act_seq_2_sub_act(A::Tuple, act_seq::Array{Int64, 1})
 
 end
 
+function sub_act_2_act_seq(A::Tuple, sub_act::Array{Int64, 2})
+
+	# put the Action space into a vectorised form to help searching
+	A_mat = reshape(vcat(A...), 4, length(A))
+
+	act_seq = Array{Int64, 1}(T)
+
+	for t in 1:T
+
+		herb_act = find(A_mat[ACT_HERB, :] .== sub_act[t, ACT_HERB])
+		crop_act = find(A_mat[ACT_CROP, :] .== sub_act[t, ACT_CROP])
+		plow_act = find(A_mat[ACT_PLOW, :] .== sub_act[t, ACT_PLOW])
+		spot_act = find(A_mat[ACT_SPOT, :] .== sub_act[t, ACT_SPOT])
+
+		act_seq[t] = intersect(herb_act, crop_act, plow_act, spot_act)[1]
+
+	end
+
+	return act_seq
+
+end
+
 # generate a couple of special case action sequences for testing 
 function act_seq_herb0(A::Tuple, time_hor::Int64)
 

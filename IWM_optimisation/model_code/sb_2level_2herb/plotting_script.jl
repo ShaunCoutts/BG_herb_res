@@ -127,7 +127,7 @@ savefig("QD_high_int_state.pdf")
 # take the results from the parameter sweep and explore them a bit, make 
 # sure everything worked
 cd(data_loc)
-sol_list = load("sol_sweep_hipop.jld")["sol_sweep"];
+sol_list = load("dis_sweep_obj.jld")["dis_sweep"];
 
 # make plots of rewards 
 n_best = 10;
@@ -164,7 +164,7 @@ for i in 1:n_pars
 end
 
 cd(plot_loc)
-savefig("rewards_over_gen_hipop.pdf")
+savefig("rewards_over_gen_dis.pdf")
 
 # show the whole populaiton of actions in the final population 
 new_dir = string(plot_loc, "/sol_pops_hipop")
@@ -249,7 +249,7 @@ for i in 1:n_pars
 
 	sub_acts = actseq_subact(sol[1][end], A);
 
-	lm = @layout [b{0.0h}; grid(2, 2)];
+	lm = @layout [b{0.05h}; grid(2, 2)];
 
 	pars = sol[3];
 
@@ -274,11 +274,16 @@ for i in 1:n_pars
 
 end
 
+# turn the parameter sweep results into a dataframe for export and plotitng R
+A = make_action_space();
+low_g = -10.0;
+up_g = 10.0;
+dg = 1.0;
 
+cd(data_loc)
+sol_list = load("dis_sweep_obj.jld")["dis_sweep"];
 
-
-
-
+dis_df = make_sum_df(sol_list, A, low_g, up_g, dg)
 
 
 

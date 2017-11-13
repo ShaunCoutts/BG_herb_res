@@ -60,7 +60,7 @@ up_g = 10.0;
 off_sd = 1.1225; # Va = 1.5
 
 # define parameters 
-pro_exposed = 0.8;
+pro_exposed = 0.95;
 sur_base = 10.0;
 effect_herb1 = 14.0; 
 effect_herb2 = 14.0;
@@ -73,7 +73,7 @@ inv_frac = 0.8;
 germ_prob = 0.5;
 seed_sur = 0.5;
 fec_max = 60.0; 
-fec_dd = 0.00001;
+fec_dd = 0.0003; # needs to be around this level to keep the population in observed density range of yeild function 
 fr = 0.2;
 f0 = 4.0;
 

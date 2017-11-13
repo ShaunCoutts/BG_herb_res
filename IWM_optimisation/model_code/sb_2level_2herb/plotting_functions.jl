@@ -123,12 +123,10 @@ end
 # simulate a given action seqence to get the seed bank size and resistance 
 # at time step to then map that to the action seqence 
 function sim_act_seq(herb_seq::Array{Int64, 1}, crop_seq::Array{Int64, 1}, 
-		spot_seq::Array{Int64, 1}, plow_seq_int::Array{Int64, 1}, 
-		pars::Dict{Symbol, Float64}, low_g::Float64, up_g::Float64, dg::Float64)
+	spot_seq::Array{Int64, 1}, plow_seq_int::Array{Int64, 1}, 
+	pars::Dict{Symbol, Float64}, low_g::Float64, up_g::Float64, dg::Float64)
 
 	T = length(herb_seq)
-
-	#A = make_action_space()
 
 	g_vals = collect(low_g : dg : up_g)
 	len_g = size(g_vals)[1]
@@ -521,6 +519,8 @@ function get_spot_spend(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 	g1_vals = repeat(g_vals, inner = len_g)
 	g2_vals = repeat(g_vals, outer = len_g)
 
+	pars = sol[3]
+
 	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pars[:p_ex], 
 		pars[:s0], pars[:eff_h1], pars[:eff_h2], 
 		pars[:p_g1h1], pars[:p_g2h2])
@@ -576,6 +576,18 @@ function get_tot_reward(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 
 end
 
+function get_tot_reward(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
+	pars::Dict{Symbol, Float64}, best_act::Array{Int64, 1}, A::Tuple, 
+	low_g::Float64, up_g::Float64, dg::Float64)
+
+	reward_t = get_undis_reward(sim_pop, A, best_act, pars, dg, 
+		low_g, up_g)
+
+	return sum(reward_t)
+
+end
+
+
 # the proportion of max possible reward achived
 function get_reward_pro_max(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 	sol::Tuple, A::Tuple, low_g::Float64, up_g::Float64, dg::Float64)
@@ -587,6 +599,19 @@ function get_reward_pro_max(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}
 	return reward_t / max_pos
 
 end
+
+function get_reward_pro_max(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
+	pars::Dict{Symbol, Float64}, best_act::Array{Int64, 1}, A::Tuple, 
+	low_g::Float64, up_g::Float64, dg::Float64)
+
+	reward_t = get_tot_reward(sim_pop, pars, best_act, A, low_g, up_g, dg)
+	
+	max_pos = length(best_act) * pars[:Y0]
+
+	return reward_t / max_pos
+
+end
+
 
 function get_num_herb(sol::Tuple, A::Tuple)
 
@@ -605,34 +630,38 @@ function get_num_herb(sol::Tuple, A::Tuple)
 end
 
 function get_min_fin_res(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}, 
-	sol::Tuple, dg::Float64, low_g::Float64, up_g::Float64)
+		pars::Dict{Symbol, Float64}, dg::Float64, low_g::Float64, 
+		up_g::Float64)
 
-	resist = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g)
+	resist = get_sur_herb(sim_pop, pars, dg, low_g, up_g)
 
 	return min(resist[:herb1][end], resist[:herb2][end])
 
 end
 
 function get_fin_res12(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}, 
-	sol::Tuple, dg::Float64, low_g::Float64, up_g::Float64)
+	pars::Dict{Symbol, Float64}, dg::Float64, low_g::Float64, 
+	up_g::Float64)
 
-	resist = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g)
+	resist = get_sur_herb(sim_pop, pars, dg, low_g, up_g)
 
 	return resist[:herb12][end]
 end
 
 function get_int_res12(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}, 
-	sol::Tuple, dg::Float64, low_g::Float64, up_g::Float64)
+	pars::Dict{Symbol, Float64}, dg::Float64, low_g::Float64, 
+	up_g::Float64)
 
-	resist = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g)
+	resist = get_sur_herb(sim_pop, pars, dg, low_g, up_g)
 
 	return resist[:herb12][1]
 end
 
 function get_min_int_res(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}, 
-	sol::Tuple, dg::Float64, low_g::Float64, up_g::Float64)
+	pars::Dict{Symbol, Float64}, dg::Float64, low_g::Float64, 
+	up_g::Float64)
 
-	resist = get_sur_herb(sim_pop, sol[3], dg, low_g, up_g)
+	resist = get_sur_herb(sim_pop, pars, dg, low_g, up_g)
 
 	return min(resist[:herb1][1], resist[:herb2][1])
 
@@ -647,7 +676,7 @@ function make_sum_df(sol_list::Array{Any, 1}, A::Tuple, low_g::Float64, up_g::Fl
 
 	for i in 1:np
 
-		sol = sol_list2[i]
+		sol = sol_list[i]
 
 		# get the parameter values and put them in data frame
 		df_temp = DataFrame(; sol[3]...)
@@ -678,16 +707,16 @@ function make_sum_df(sol_list::Array{Any, 1}, A::Tuple, low_g::Float64, up_g::Fl
 
 		df_temp[:herb_apps] = get_num_herb(sol, A)
 
-		df_temp[:int_min_res] = get_min_int_res(sim_pop, sol, dg, 
+		df_temp[:int_min_res] = get_min_int_res(sim_pop, sol[3], dg, 
 			low_g, up_g)
 
-		df_temp[:int_res12] = get_int_res12(sim_pop, sol, dg, 
+		df_temp[:int_res12] = get_int_res12(sim_pop, sol[3], dg, 
 			low_g, up_g)
 
-		df_temp[:fin_min_res] = get_min_fin_res(sim_pop, sol, dg,
+		df_temp[:fin_min_res] = get_min_fin_res(sim_pop, sol[3], dg,
 			low_g, up_g)
 
-		df_temp[:fin_res12] = get_fin_res12(sim_pop, sol, dg, 
+		df_temp[:fin_res12] = get_fin_res12(sim_pop, sol[3], dg, 
 			low_g, up_g)
 
 		push!(df_list, df_temp)
@@ -700,4 +729,157 @@ function make_sum_df(sol_list::Array{Any, 1}, A::Tuple, low_g::Float64, up_g::Fl
 
 end
 
-# TODO: CREATE A SIMILAR DATA FRAME BUT FOR A COUPLE SIMPLE COUNTER FACTUALS, LIKE CYCLE, FULL HERB12 AND NO HERB
+# Functions to simulate some simpler, extream herbicide based statergies
+function sim_both(pars::Dict{Symbol, Float64}, T::Int64, A::Tuple,  
+	low_g::Float64, up_g::Float64, dg::Float64)
+
+	herb_seq = repeat([HERB12], inner = T)
+	crop_seq = repeat([CROP_WW], inner = T)
+	spot_seq = repeat([SPOT0], inner = T)
+	plow_seq = repeat([PLOW0], inner = T)
+
+	simed_pop = sim_act_seq(herb_seq, crop_seq, spot_seq, plow_seq, 
+		pars, low_g, up_g, dg)
+
+	# get the parameter values and put them in data frame
+	df_temp = DataFrame(; pars...)
+
+	# get also the action seqence in terms of actions
+	sub_act = hcat([herb_seq crop_seq plow_seq spot_seq])
+	act_seq = sub_act_2_act_seq(A, sub_act)
+	# add the measures of perfomance, some are dummy so the output 
+	# will match the summaries from the parameter sweeps
+	df_temp[:proWW] = NA
+
+	df_temp[:proPlow] = NA
+
+	df_temp[:spot_spend] = NA
+
+	df_temp[:tot_profit] = get_tot_reward(simed_pop, pars, act_seq, A, 
+		low_g, up_g, dg)
+
+	df_temp[:pro_max] = get_reward_pro_max(simed_pop, pars, act_seq, A, 
+		low_g, up_g, dg)
+
+	df_temp[:herb_apps] = NA
+
+	df_temp[:int_min_res] = get_min_int_res(simed_pop, pars, dg, 
+		low_g, up_g)
+
+	df_temp[:int_res12] = get_int_res12(simed_pop, pars, dg, 
+		low_g, up_g)
+
+	df_temp[:fin_min_res] = get_min_fin_res(simed_pop, pars, dg,
+		low_g, up_g)
+
+	df_temp[:fin_res12] = get_fin_res12(simed_pop, pars, dg, 
+		low_g, up_g)
+
+	return df_temp
+
+end
+
+function sim_cycle(pars::Dict{Symbol, Float64}, T::Int64, A::Tuple,  
+	low_g::Float64, up_g::Float64, dg::Float64)
+
+	herb_seq = repeat([HERB1, HERB2], outer = convert(Int64, T / 2))
+	crop_seq = repeat([CROP_WW], inner = T)
+	spot_seq = repeat([SPOT0], inner = T)
+	plow_seq = repeat([PLOW0], inner = T)
+
+	simed_pop = sim_act_seq(herb_seq, crop_seq, spot_seq, plow_seq, 
+		pars, low_g, up_g, dg)
+
+	# get the parameter values and put them in data frame
+	df_temp = DataFrame(; pars...)
+
+	# get also the action seqence in terms of actions
+	sub_act = hcat([herb_seq crop_seq plow_seq spot_seq])
+	act_seq = sub_act_2_act_seq(A, sub_act)
+	# add the measures of perfomance, some are dummy so the output 
+	# will match the summaries from the parameter sweeps
+	df_temp[:proWW] = NA
+
+	df_temp[:proPlow] = NA
+
+	df_temp[:spot_spend] = NA
+
+	df_temp[:tot_profit] = get_tot_reward(simed_pop, pars, act_seq, A, 
+		low_g, up_g, dg)
+
+	df_temp[:pro_max] = get_reward_pro_max(simed_pop, pars, act_seq, A, 
+		low_g, up_g, dg)
+
+	df_temp[:herb_apps] = NA
+
+	df_temp[:int_min_res] = get_min_int_res(simed_pop, pars, dg, 
+		low_g, up_g)
+
+	df_temp[:int_res12] = get_int_res12(simed_pop, pars, dg, 
+		low_g, up_g)
+
+	df_temp[:fin_min_res] = get_min_fin_res(simed_pop, pars, dg,
+		low_g, up_g)
+
+	df_temp[:fin_res12] = get_fin_res12(simed_pop, pars, dg, 
+		low_g, up_g)
+
+	return df_temp
+
+end
+
+function sim_alt(pars::Dict{Symbol, Float64}, T::Int64, A::Tuple,  
+	low_g::Float64, up_g::Float64, dg::Float64)
+
+	herb_seq = repeat([HERB0], inner = T)
+	crop_seq = repeat([CROP_ALT], inner = T)
+	spot_seq = repeat([SPOT0], inner = T)
+	plow_seq = repeat([PLOW0], inner = T)
+
+	simed_pop = sim_act_seq(herb_seq, crop_seq, spot_seq, plow_seq, 
+		pars, low_g, up_g, dg)
+
+	# get the parameter values and put them in data frame
+	df_temp = DataFrame(; pars...)
+
+	# get also the action seqence in terms of actions
+	sub_act = hcat([herb_seq crop_seq plow_seq spot_seq])
+	act_seq = sub_act_2_act_seq(A, sub_act)
+	# add the measures of perfomance, some are dummy so the output 
+	# will match the summaries from the parameter sweeps
+	df_temp[:proWW] = NA
+
+	df_temp[:proPlow] = NA
+
+	df_temp[:spot_spend] = NA
+
+	df_temp[:tot_profit] = get_tot_reward(simed_pop, pars, act_seq, A, 
+		low_g, up_g, dg)
+
+	df_temp[:pro_max] = get_reward_pro_max(simed_pop, pars, act_seq, A, 
+		low_g, up_g, dg)
+
+	df_temp[:herb_apps] = NA
+
+	df_temp[:int_min_res] = get_min_int_res(simed_pop, pars, dg, 
+		low_g, up_g)
+
+	df_temp[:int_res12] = get_int_res12(simed_pop, pars, dg, 
+		low_g, up_g)
+
+	df_temp[:fin_min_res] = get_min_fin_res(simed_pop, pars, dg,
+		low_g, up_g)
+
+	df_temp[:fin_res12] = get_fin_res12(simed_pop, pars, dg, 
+		low_g, up_g)
+
+	return df_temp
+
+end
+
+
+
+
+
+
+
