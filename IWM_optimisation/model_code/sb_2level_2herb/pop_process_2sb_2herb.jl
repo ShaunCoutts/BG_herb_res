@@ -106,6 +106,76 @@ function survial_herb_setup(g1_vals::Array{Float64, 1},
 	return (sur_none, sur_1, sur_2, sur_both)
 
 end
+
+# make the TSR mixing kernel
+function make_TSR_kernel()
+
+	# set up two matricies that mix the two TSRs independetly 
+	M = [1.0 0.0 0.0; # RR x RR
+	      0.5 0.5 0.0; # RR x Rr
+	      0.0 1.0 0.0; # RR x rr
+	      0.5 0.5 0.0; # Rr x RR
+	      0.25 0.5 0.25; # Rr x Rr
+	      0.0 0.5 0.5; # Rr x rr
+	      0.0 1.0 0.0; # rr x RR
+	      0.0 0.5 0.5; # rr x Rr
+	      0.0 0.0 1.0] # rr x rr
+
+	# get the number of crosses and targets
+	Ncross = size(M)[1]
+	Noff = size(M)[2]
+
+	# build the Ncross*Ncross x Noff*Noff joint mixing kernel for G1 and G2
+	joint_kernel = Array{Float64, 2}(Ncross * Ncross, Noff * Noff)
+
+	cross = 0
+	for g1 in 1:Ncross
+		for g2 in 1:Ncross
+
+			cross += 1
+			off = 0
+
+			for off1 in 1:Noff
+				for off2 in 1:Noff
+
+					off += 1
+
+					joint_kernel[cross, off] = 
+						M[g1, off1] * M[g2, off2];
+
+				end
+			end
+		end
+	end
+
+	# NOTE STRUCTURE OR OUTPUT
+	#                 
+	# rows 1:9        RR AA | RR Aa | RR aa | Rr AA | Rr Aa | Rr aa | rr AA | rr Aa | rr aa
+	# RR AA x RR AA
+	# RR AA x RR Aa
+	# RR AA x RR aa
+	# RR Aa x RR AA
+	# RR Aa x RR Aa
+	# RR Aa x RR aa                 81 x 9  offspring ratios      
+	# RR aa x RR AA
+	# RR aa x RR Aa
+	# RR aa x RR aa 
+	# rows 10:18
+	# RR AA x Rr AA
+	# RR AA x Rr Aa
+	# RR AA x Rr aa
+	#       .
+	#       .
+	#       .
+	# rr aa x rr AA
+	# rr aa x rr Aa
+	# rr aa x rr aa
+
+	return joint_kernel
+
+end
+
+
 #################################################################################################################
 # Functions that do things during timestep
 
