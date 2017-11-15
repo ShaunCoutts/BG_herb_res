@@ -283,14 +283,47 @@ dg = 1.0;
 cd(data_loc)
 sol_list = load("dis_sweep_obj.jld")["dis_sweep"];
 
-dis_df = make_sum_df(sol_list, A, low_g, up_g, dg)
+dis_df = make_sum_df(sol_list, A, low_g, up_g, dg);
 
+# also include a few simpler fixed stratergies to see how they perform
+T = size(sol_list[1][1][1])[2];
+L = length(sol_list);
 
+both_df = [];
+herbcyc_df = [];
+alt_df = [];
+herbcrop_cyc = [];
 
+for l in 1:L 
 
+	push!(both_df, sim_both(sol_list[l][3], T, A, low_g, up_g, dg))
+	push!(herbcyc_df, sim_herb_cycle(sol_list[l][3], T, A, low_g, 
+		up_g, dg))
+	push!(alt_df, sim_alt(sol_list[l][3], T, A, low_g, up_g, dg))
+	push!(herbcrop_cyc, sim_herbcrop_cycle(sol_list[l][3], T, A, 
+		low_g, up_g, dg))
 
+	print("$l\n")
 
+end
 
+herb12_df = vcat(both_df...);
+h12cyc_df = vcat(herbcyc_df...);
+conalt_df = vcat(alt_df...);
+h12altcyc_df = vcat(herbcrop_cyc...);
+
+# add a scenario to each dataframe and join them all together
+dis_df[:scen] = "optimGA";
+herb12_df[:scen] = "allh12";
+h12cyc_df[:scen] = "cych12";
+conalt_df[:scen] = "allalt";
+h12altcyc_df[:scen] = "cych12alt";
+
+all_df = vcat([dis_df, herb12_df, h12cyc_df, conalt_df, h12altcyc_df]);
+
+# save for shipping to R
+cd(data_loc)
+writetable("dis_rate_sweep.csv", all_df)
 
 
 #heatmap to plot population over 2d

@@ -106,8 +106,36 @@ hm = ggplot(ga_test, aes(x = ts, y = sub_act)) +
 		axis.text.x = element_text(size = 10),
 		axis.title = element_text(size = 15)) 
 
+##########################################################################
+# plot some parameter sweeps 
+setwd(data_loc)
+dis_sweep = read.csv('dis_rate_sweep.csv', header = TRUE, stringsAsFactors = FALSE)
 
+my_grey = grey(c(0.2, 0.35, 0.5, 0.65))
 
+# grab the mesaures and parameters that I want 
+df_dis = select(dis_sweep, int_g1, int_g2, off_cv, Y0, dis_rate, proWW:scen)
+df_dis = mutate(df_dis, 
+	int_scen = ifelse(int_g1 < 0.2 & int_g2 < 0.2, 'suceptable h1 and h2',
+	ifelse(int_g1 > 0.2 & int_g2 < 0.2, 'resistant h1, suceptable h2',
+	'resistant h1 and h2')),
+	Y0_pretty = paste0('Wheat yeild: ', Y0, ' £/ha'))
 
+# split up the dataframes to seperate different measures
+rew_res = select(df_dis, int_g1:dis_rate, pro_max, scen:Y0_pretty) %>%
+	filter(scen == 'optimGA')
 
+rew_fix = select(df_dis, int_g1:dis_rate, pro_max, scen:Y0_pretty) %>%
+	filter(scen != 'optimGA')
+
+rew_plt = ggplot(rew_res, aes(x = dis_rate, y = pro_max, 
+		group = as.factor(off_cv))) +
+	geom_line(aes(linetype = as.factor(off_cv))) + 
+	geom_line(data = rew_fix, aes(x = dis_rate, y = pro_max, 
+		linetype = as.factor(off_cv), colour = scen), 
+		 inherit.aes = FALSE) +  
+	scale_colour_manual(values = my_grey) +
+	facet_grid(int_scen ~ Y0_pretty)
+
+rew_plt
 
