@@ -167,7 +167,7 @@ cd(plot_loc)
 savefig("rewards_over_gen_dis.pdf")
 
 # show the whole populaiton of actions in the final population 
-new_dir = string(plot_loc, "/sol_pops_hipop")
+new_dir = string(plot_loc, "/sol_pops")
 rm(new_dir, recursive = true)
 mkdir(new_dir)
 cd(new_dir)

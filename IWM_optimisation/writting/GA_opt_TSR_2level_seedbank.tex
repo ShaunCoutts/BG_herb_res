@@ -49,55 +49,54 @@ Something about integrated weed management to reduce use of herbicides, and thus
 We develop a model of quantitative resistance to two herbicides in an important weed of wheat in Europe. We embed this model in a decision theory framework to find good integrated weed strategies to manage a population where herbicide resistance can evolve, and there is potential cross resistance.        
 
 \section*{Methods}
-The purpose of the population model is to translate actions to the reward function. In this case we are modelling the population of black grass over time, its response to management actions and its impacts on wheat yield. We model a population that can become resistant to herbicide through evolved target site resistance. A commonly recommended [REX] and applied [Hicks et al] strategy to combat resistance and manage populations in the face of resistance is to apply herbicides that impair different cellar pathways (i.e. modes of action), either sequentially (cycling) or concurrently (stacking). To allow this behaviour in the optimal strategies we model two independent target site resistant genotypes in the same population.
-
-We track the number of seeds in the seed bank with each resistance genotype ($g_1, g_2$) given action $a_q$ is taken. The action $a_q$ is how the manager effects the population model, and thus the reward they get from taking a given set of actions. Each action is a tuple of four sub-actions $a_q = \langle a_h, a_b, a_k, a_m \rangle$, see Appendix 1 for a description of the sub-actions and all the eligible combinations of these sub-actions (i.e. the full actions space, $\mathbf{A}$).   
+The purpose of the population model is to translate actions to the reward function. In this case we are modelling the population of black grass over time, its response to management actions and its impacts on wheat yield. We model a population that can become resistant to herbicide through evolved target site resistance. A commonly recommended [REX] and applied [Hicks et al] strategy to combat resistance and manage populations in the face of resistance is to apply herbicides that impair different cellar pathways (i.e. modes of action), either sequentially (cycling) or concurrently (stacking). To allow this behaviour in the optimal strategies we model target to two herbicides, conferred by two independent target site resistant alleles ($R$ and $A$). We track the number of seeds in the seed bank with each resistance genotype $G_1 \in \{RR, Rr, rr\}$ and $G_2 \in \{QQ, Qq, qq\}$ (lower case denotes susceptible variant) given action $a_j$ is taken. The action $a_j$ is how the manager effects the population model, and thus the reward they get. Each action is a tuple of four sub-actions $a_j = \langle a_h, a_b, a_k, a_m \rangle$, see Appendix 1 for a description of the sub-actions and all the eligible combinations of these sub-actions (i.e. the full actions space, $\mathbf{A}$).   
 
 \subsection*{Population model}
-We use a discrete time, spatially implicit model, where herbicide resistance is assumed to be a quantitative, polygenic trait. We model the inheritance of resistance to both herbicides jointly, using the infinitesimal model [REF Fisher]. We model the black grass population using a yearly time step, starting at the beginning of the growing season before any seeds have emerged.
+We use a discrete time, spatially implicit model, where resistance to each herbicide is assumed to be conferred by a mutation in at a single locus. Thus, there are up to two locus that can confer target site resistance, we assume that the inheritance of each is Mendelian and independent of the other. We model the black grass population using a yearly time step, starting at the beginning of the growing season before any seeds have emerged.
 
-The seed bank at depth level $l \in \{1, 2\}$, time $t$, with resistance to herbicides 1 and 2 of $g_1$ and $g_2$ is 
+The seed bank at depth level $l \in \{1, 2\}$, time $t$, with resistance genotype $G$ is 
 \begin{subequations}
 \label{eq:sb}
 \begin{align}
-	b(g_1, g_2, 1, t) &= b'(g_1, g_2, 1, t - 1)\phi_b (1 - \phi_e) + f(g_1, g_2, t-1)\\
-	b(g_1, g_2, 2, t) &= b'(g_1, g_2, 2, t - 1)\phi_b	 
+	b(G_1, G_2, 1, t) &= b'(G_1, G_2, 1, t - 1)\phi_b (1 - \phi_e) + f(G_1, G_2, t-1)\\
+	b(G_1, G_2, 2, t) &= b'(G_1, G_2, 2, t - 1)\phi_b	 
 \end{align}      
 \end{subequations} 
-where $\phi_b$ is the proportion of seeds that survive from one year to the next, $\phi_e$ is the portion of seeds that germinate from the seed bank and $b'(g_1, g_2, l, t - 1)$ is the distribution of seeds over $g_1$ and $g_2$ at depth level $l$ in the previous year directly after plowing. To plow or not is the first management decision made (see Figure \ref{fig:life_cyc} for timing of management actions in the life cycle). Plowing moves seeds from one level of the seed bank to the other and is
+where $\phi_b$ is the proportion of seeds that survive from one year to the next, $\phi_e$ is the portion of seeds that germinate from the seed bank and $b'(G_1, G_2, l, t - 1)$ is the seeds of genotype $\{G_1, G_2\}$ at depth level $l$ in the previous year directly after plowing. To plow or not is the first management decision made (see Figure \ref{fig:life_cyc} for timing of management actions in the life cycle). Plowing moves seeds from one level of the seed bank to the other and is
 \begin{subequations}
 \label{eq:sb_pp}
 \begin{align}
-	b'(g_1, g_2, 1, t) &= b(g_1, g_2, 1, t) - b(g_1, g_2, 1, t) I a_b + b(g_1, g_2, 2, t) I a_b \\
-	b'(g_1, g_2, 2, t) &= b(g_1, g_2, 2, t) - b(g_1, g_2, 2, t) I a_b + b(g_1, g_2, 1, t) I a_b
+	b'(G_1, G_2, 1, t) &= b(G_1, G_2, 1, t) - b(G_1, G_2, 1, t) I a_b + b(G_1, G_2, 2, t) I a_b \\
+	b'(G_1, G_2, 2, t) &= b(G_1, G_2, 2, t) - b(G_1, G_2, 2, t) I a_b + b(G_1, G_2, 1, t) I a_b
 \end{align}
 \end{subequations} 
-where sub-action $a_b \in \{0, 1\}$ indicates if plowing was carried out or not and $I \in [0, 1]$ is the portion of seeds inverted to the other seed bank depth if plowing is carried out. The life cycle is closed by adding the seeds produced in the previous year ($f(g_1, g_2, t - 1)$) to the top layer of the seed bank in the current year.
+where sub-action $a_b \in \{0, 1\}$ indicates if plowing was carried out or not and $I \in [0, 1]$ is the portion of seeds inverted to the other seed bank depth if plowing is carried out. The life cycle is closed by adding the seeds produced in the previous year ($f_G(t - 1)$) to the top layer of the seed bank in the current year.
 
-To get the distribution of seeds over resistance ($f(g_1, g_2, t)$) we need the parent distributions over resistance $g_1$ and $g_2$. The parent distributions are the survivors after management interventions, these distributions are also used to calculate the reward function (Figure \ref{fig:life_cyc}). The starting point to these distributions is the germination and emergence of new plants from the top level of the seed bank
+To get the number of seeds produced by genotype $G \in \{G_1, G_2\}$ ($f(G_1, G_2, t)$) we find the survivors after management interventions to act as parents (Figure \ref{fig:life_cyc}). The starting point is the germination and emergence of new plants from the top level of the seed bank
 \begin{equation}\label{eq:ag}
-	n(g_1, g_2, t) = b'(g_1, g_2, 1, t)\phi_e
+	n(G_1, G_2, t) = b'(G_1, G_2, 1, t)\phi_e
 \end{equation}
-The survivors after all management except spot treatments ($a_m$) are
+Where $\phi_e$ is the germination rate. The survivors after all management except spot treatments ($a_m$) are
 \begin{equation}\label{eq:ab_sur}
-	n'(g_1, g_2, t) = n(g_1, g_2, t)s(g_1, g_2, a_h, a_k) 
+	n'(G_1, G_2, t) = n(G_1, G_2, t)S(G_1, G_2, a_h, a_k) 
 \end{equation}
-where the survival function $s(g_1, g_2, a_h, a_k)$ incorporates herbicide applications ($a_h$) and crop choice ($a_k$).
-\begin{subequations}
-\label{eq:sur}
-\begin{equation}
-	s(g_1, g_2, a_h, a_k) = \begin{cases}
-		\left( \frac{1}{1 + e^{-s_0}} \right) K(a_k) &~ \text{if} ~ a_h = 0 \\
-		\left( \frac{1 - \theta}{1 + e^{-s_0}} + \frac{\theta}{1 + \Phi(g_1, g_2, 1)} \right) K(a_k) &~\text{if}~a_h = 1 \\
-		\left( \frac{1 - \theta}{1 + e^{-s_0}} + \frac{\theta}{1 + \Phi(g_1, g_2, 2)} \right) K(a_k) &~ \text{if} ~ a_h = 2 \\
-		\left( \frac{1 - \theta}{1 + e^{-s_0}} + \theta \left( \frac{1}{1 + \Phi(g_1, g_2, 1)} \cdot \frac{1}{1 + \Phi(g_1, g_2, 2)} \right) \right) K(a_k) &~ \text{if} ~ a_h = \text{both} \\	
+where the survival function $S(G_1, G_2, a_h, a_k)$ incorporates resistance genotype $\{G_1, G_2\}$, herbicide applications ($a_h$) and crop choice ($a_k$).
+\begin{equation}\label{eq:sur}
+	s(G_1, G_2, a_h, a_k) = \begin{cases}
+		s_0 K(a_k) &~\text{if} ~ a_h = 0 \\
+		\big((1 - \theta)s_0 + \theta s_0 H(G_1)\big) K(a_k) &~\text{if}~a_h = 1 \\
+		\big((1 - \theta)s_0 + \theta s_0 H(G_2) \big) K(a_k) &~ \text{if} ~ a_h = 2 \\
+		\big((1 - \theta)s_0 + \theta s_0 H(G_1) H(G_2)\big) K(a_k) &~ \text{if} ~ a_h = \text{both} \\	
 	\end{cases} 
 \end{equation}
+where $s_0$ is survival without herbicide under winter wheat. Survival under herbicide $i$ is 
 \begin{equation}
-	\Phi(g_1, g_2, i) = \text{exp}\Bigg[-\Bigg(s_0 - \bigg(\beta_i - \mathbf{min}\Big(\beta_i,~\sum_{j \in \{1, 2\}}\rho_i^j g_j\Big)\bigg)\Bigg)\Bigg] 
+	H(G_i) = \begin{cases}
+		1 &~\text{if}~G_i \in G*\\
+		s_h &~\text{otherwise}
+	\end{cases}
 \end{equation}
-\end{subequations}
-where $\theta$ is the proportion of individuals exposed to the herbicide and $s_0$ is survival without herbicide under winter wheat, $\beta_i$ is the effect of herbicide $i \in \{1, 2\}$ on a susceptible individual, and $\rho_i^j$ is the protective effect of resistance trait $g_j$ against herbicide $i$. The strength of cross resistance is given by $\rho_1^2 = \rho_2^1$, which assumes that cross resistance is perfectly bi-directional. We also assume that $\rho_1^1 > \rho_1^2$ and $\rho_2^2 > \rho_2^1$, i.e. cross resistance is always weaker than primary resistance. Finally, crop choice affects survival of above ground individuals through the function
+where $G*$ is the set of resistant genotypes. For example if resistance to both herbicides is dominant for then $G* = \{RR, Rr, QQ, Qq\}$. Survival under herbicide for susceptible individuals is $s_h$, which also includes the proportion of individuals that are not exposed to herbicide due to emerging after spray, or unevenness in herbicide application over space. This function assumes that target site resistance confers perfect resistance. Finally, crop choice affects survival of above ground individuals through the function
 \begin{equation}
 	K(a_k) = \begin{cases}
 		1~\text{if}~a_k = \text{wheat}\\
@@ -105,40 +104,34 @@ where $\theta$ is the proportion of individuals exposed to the herbicide and $s_
 		0~\text{if}~a_k = \text{fallow}		
 	\end{cases}
 \end{equation}	
-where $\alpha$ is the survival of black grass in the alternative crop (which could be winter wheat), relative to its survival in winter wheat. Survival might be reduced because the alternative crop is highly competitive against winter wheat or because differences in sowing and emergence times mean some of the black grass can be exposed to broad spectrum herbicides. Reductions in fecundity due to increased competition under an alternative crop are subsumed into $\alpha$, because black grass is an annual any reduction in fecundity is equivalent to a reduction in survival. Survival under a fallow rotation is assumed to be 0 since broad spectrum herbicides or cultivation can be used to control any black grass that emerges. This formulation of the survival function implicitly assumes that herbicides are stacked (i.e. used as a mixture), rather than used in separate applications. Separate applications would require a slightly different formulation of Eq. \ref{eq:sur}.
+where $\alpha$ is the survival of black grass in the alternative crop, relative to its survival in winter wheat. Survival might be reduced because the alternative crop is highly competitive against black grass or because differences in sowing and emergence times mean some of the black grass can be exposed to broad spectrum herbicides. Reductions in fecundity due to increased competition under an alternative crop are subsumed into $\alpha$, because black grass is an annual any reduction in fecundity is equivalent to a reduction in survival. Survival under a fallow rotation is assumed to be 0 since broad spectrum herbicides or cultivation can be used to control any black grass that emerges. This formulation of the survival function implicitly assumes that herbicides are stacked (i.e. used as a mixture), rather than used in separate applications. Separate applications would require a slightly different formulation of Eq. \ref{eq:sur}.
 
 After other control methods have been applied spot control can be applied. We assume spot control is 100\% effective but that its cost scales with post control population
 \begin{equation}\label{eq:tot_pop1}
-	N'(t) = \int_{g_1}\int_{g_2} n'(g_1, g_2, t) \text{d}g_1\text{d}g_2. 
+	N'(t) = \sum_{g \in G_1 \times G_2} n'(G_1, G_2, t). 
 \end{equation}
+The full set of genotypes is the Cartesian production of $G_1$ and $G_2$, i.e. $G_1 \times G_2 = \{(RR, QQ), (RR, Qq), (RR, qq), (Rr, QQ), (Rr, Qq), (Rr, qq), (rr, QQ), (rr, Qq), (rr, qq) \}$.
+ 
 Thus the final post spot control population is 
 \begin{equation}\label{eq:spot_cont}
 	n''(g_1, g_2, t) = n'(g_1, g_2, t)a_m
 \end{equation}   
-where spot treatment action is $a_m \in \{0, 1\}$.
+where spot treatment action is $a_m \in \{\beta, 1\}$ and $\beta$ is the survival under spot control (for example plants may go undetected).
  
-The demographic costs of herbicide and the effects of density on population performance are applied to $n''(g_1, g_2, t)$ to get the effective reproductive population. The effects may occur through reductions in fecundity or survival. The effective reproductive population is
-\begin{equation}\label{eq:eff_pop}
-	n'''(g_1, g_2, t) = \frac{n''(g_1, g_2, t)}{1 + \text{exp}(-(f_0 - f_r|g_1| - f_r|g_2|))} \cdot \frac{1}{1 + f_d N''(t)}
-\end{equation}     
-where $f_d$ is the effect of density on seed production, with $1/f_d$ the population where individuals start to interfere with each other. $f_0$ controls the reduction in fecundity due to resistance when both $g_1$ and $g_2$ are 0, $f_r$ is the change (in logits) in fecundity with a one unit change in $g_j$, and $|g_j|$ is the absolute value of $g_j$. The total above ground population post all control is
-\begin{equation}\label{eq:tot_pop2}
-	N''(t) = \int_{g_1}\int_{g_2} n''(g_1, g_2, t) \text{d}g_1\text{d}g_2. 
-\end{equation}
-
 \begin{figure}[H]
 \includegraphics[scale=0.7]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/writting/figures/pop_mod_2sb_scheme.pdf}
 \caption{Life cycle with management interventions over the year. Pink processes are management interventions and blue processes are biological population processes.}
 \label{fig:life_cyc}
 \end{figure} 
 
-Finally new seeds are created from these parent distributions by mixing simultaneously over both $g_1$ and $g_2$. The number of seeds produced with resistance $g_1$ and $g_2$ at time $t$ is 
+Finally new seeds are created by simultaneously mixing over both $G_1$ and $G_2$. The number of seeds produced with resistance $G_1$ and $G_2$ at time $t$ is 
 \begin{equation}
 \label{eq:fec}
 \begin{split}
-	f(g_1, g_2, t) = \int_{g_1^m}\int_{g_1^p}\int_{g_2^m}\int_{g_2^p} n'''(g_1^m, g_2^m, t)f_{max} \frac{n'''(g_1^p, g_2^p, t)}{N'''(t)}MV&N(g_1, g_2| \mathbf{\mu}, \mathbf{\Sigma})\cdot\\ &\text{d}g_1^m\text{d}g_1^p\text{d}g_2^m\text{d}g_2^p
-\end{split}	
+	f(G_1, G_2, t) = \mathbb{n}''\mathbb{M}
 \end{equation} 
+
+
 where $g_j^m$ is resistance trait $j$ of the maternal parent and $g_j^p$ is resistance trait $j$ of the paternal parent and, $n'''(g_1, g_2, t)$ is defined in Eq. \ref{eq:eff_pop}. We assume that pollen is never limiting, and so only the relative frequency of the paternal resistance $(g_1^p, g_2^p)$ is important, thus we divide effective reproductive population $n'''(g_1^p, g_2^p, t)$ by
 \begin{equation}\label{eq:tot_pop3}
 	N'''(t) = \int_{g_1}\int_{g_2} n'''(g_1, g_2, t) \text{d}g_1\text{d}g_2 
