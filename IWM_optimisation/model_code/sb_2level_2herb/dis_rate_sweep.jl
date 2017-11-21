@@ -98,7 +98,7 @@ int_cv = 0.0;
 ##########################################################################
 # varied parameters as lists
 off_cv = [0.0, 0.5];
-dis_rate = [0.85, 0.9, 0.95, 1.0];
+dis_rate = [0.75, 0.8];
 Y0 = [1022, 1668.0];
 int_N = [100000.0];
 int_g1 = [sur_2_g(0.02, effect_herb1, sur_base, prot_g1_herb1),
@@ -178,7 +178,7 @@ dis_sweep = pmap(GA_wrapper, par_dfs)
 
 cd(out_loc)
 
-save("dis_sweep_obj.jld", "dis_sweep", dis_sweep)
+save("dis_myopic_sweep_obj.jld", "dis_sweep", dis_sweep)
 
 #sol_sweep = load("sol_sweep.jld")["sol_sweep"]
 

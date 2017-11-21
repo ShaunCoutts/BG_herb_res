@@ -111,7 +111,7 @@ hm = ggplot(ga_test, aes(x = ts, y = sub_act)) +
 setwd(data_loc)
 dis_sweep = read.csv('dis_rate_sweep.csv', header = TRUE, stringsAsFactors = FALSE)
 
-my_grey = grey(c(0.2, 0.35, 0.5, 0.65))
+my_blues = brewer.pal(9, 'Blues')[c(5, 7, 9)]
 
 # grab the mesaures and parameters that I want 
 df_dis = select(dis_sweep, int_g1, int_g2, off_cv, Y0, dis_rate, proWW:scen)
@@ -122,20 +122,81 @@ df_dis = mutate(df_dis,
 	Y0_pretty = paste0('Wheat yeild: ', Y0, ' £/ha'))
 
 # split up the dataframes to seperate different measures
+# total reward as prportion of maximum avilable
 rew_res = select(df_dis, int_g1:dis_rate, pro_max, scen:Y0_pretty) %>%
 	filter(scen == 'optimGA')
 
 rew_fix = select(df_dis, int_g1:dis_rate, pro_max, scen:Y0_pretty) %>%
-	filter(scen != 'optimGA')
+	filter(scen != 'optimGA') %>% filter(scen != 'allalt')
 
 rew_plt = ggplot(rew_res, aes(x = dis_rate, y = pro_max, 
-		group = as.factor(off_cv))) +
+		group = as.factor(off_cv))) + geom_point() +
 	geom_line(aes(linetype = as.factor(off_cv))) + 
 	geom_line(data = rew_fix, aes(x = dis_rate, y = pro_max, 
 		linetype = as.factor(off_cv), colour = scen), 
 		 inherit.aes = FALSE) +  
-	scale_colour_manual(values = my_grey) +
+	scale_colour_manual(values = my_blues) +
 	facet_grid(int_scen ~ Y0_pretty)
 
 rew_plt
+
+# resistance of most effective herbicide after 20 years
+min_res = select(df_dis, int_g1:dis_rate, fin_min_res, scen:Y0_pretty) %>%
+	filter(scen == 'optimGA')
+
+res_fix = select(df_dis, int_g1:dis_rate, fin_min_res, scen:Y0_pretty) %>%
+	filter(scen != 'optimGA') %>% filter(scen != 'allalt')
+
+res_plt = ggplot(min_res, aes(x = dis_rate, y = fin_min_res, 
+		group = as.factor(off_cv))) + geom_point() +
+	geom_line(aes(linetype = as.factor(off_cv))) + 
+	geom_line(data = res_fix, aes(x = dis_rate, y = fin_min_res, 
+		linetype = as.factor(off_cv), colour = scen), 
+		inherit.aes = FALSE) +  
+	scale_colour_manual(values = my_blues) +
+	facet_grid(int_scen ~ Y0_pretty)
+
+res_plt
+
+# total number of herbicide applications 
+herb_app = select(df_dis, int_g1:dis_rate, herb_apps, scen:Y0_pretty) %>%
+	filter(scen == 'optimGA')
+
+herb_fix = select(df_dis, int_g1:dis_rate, herb_apps, scen:Y0_pretty) %>%
+	filter(scen != 'optimGA') %>% filter(scen != 'allalt')
+
+herb_plt = ggplot(herb_app, aes(x = dis_rate, y = herb_apps, 
+		group = as.factor(off_cv))) + geom_point() +
+	geom_line(aes(linetype = as.factor(off_cv))) + 
+	facet_grid(int_scen ~ Y0_pretty)
+
+herb_plt
+
+# total spent on spot control 
+spot = select(df_dis, int_g1:dis_rate, spot_spend, scen:Y0_pretty) %>%
+	filter(scen == 'optimGA')
+
+spot_plt = ggplot(spot, aes(x = dis_rate, y = spot_spend, 
+		group = as.factor(off_cv))) + geom_point() +
+	geom_line(aes(linetype = as.factor(off_cv))) + 
+	facet_grid(int_scen ~ Y0_pretty)
+
+spot_plt
+
+# proportion of winter wheat in the rotation
+WW_sum = select(df_dis, int_g1:dis_rate, proWW, scen:Y0_pretty) %>%
+	filter(scen == 'optimGA')
+
+WW_plt = ggplot(WW_sum, aes(x = dis_rate, y = proWW, 
+		group = as.factor(off_cv))) + geom_point() +
+	geom_line(aes(linetype = as.factor(off_cv))) + 
+	facet_grid(int_scen ~ Y0_pretty)
+
+WW_plt
+
+
+
+
+
+
 
