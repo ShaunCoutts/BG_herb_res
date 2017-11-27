@@ -282,8 +282,13 @@ dg = 1.0;
 
 cd(data_loc)
 sol_list = load("dis_sweep_obj.jld")["dis_sweep"];
+sol_list_M = load("dis_myopic_sweep_obj.jld")["dis_sweep"];
 
 dis_df = make_sum_df(sol_list, A, low_g, up_g, dg);
+dis_M_df = make_sum_df(sol_list_M, A, low_g, up_g, dg);
+
+# join the myopic and long view dataframes (these were run seperatly)
+dis_df = vcat([dis_M_df, dis_df])
 
 # also include a few simpler fixed stratergies to see how they perform
 T = size(sol_list[1][1][1])[2];
@@ -301,6 +306,20 @@ for l in 1:L
 		up_g, dg))
 	push!(alt_df, sim_alt(sol_list[l][3], T, A, low_g, up_g, dg))
 	push!(herbcrop_cyc, sim_herbcrop_cycle(sol_list[l][3], T, A, 
+		low_g, up_g, dg))
+
+	print("$l\n")
+
+end
+
+L = length(sol_list_M);
+for l in 1:L 
+
+	push!(both_df, sim_both(sol_list_M[l][3], T, A, low_g, up_g, dg))
+	push!(herbcyc_df, sim_herb_cycle(sol_list_M[l][3], T, A, low_g, 
+		up_g, dg))
+	push!(alt_df, sim_alt(sol_list_M[l][3], T, A, low_g, up_g, dg))
+	push!(herbcrop_cyc, sim_herbcrop_cycle(sol_list_M[l][3], T, A, 
 		low_g, up_g, dg))
 
 	print("$l\n")

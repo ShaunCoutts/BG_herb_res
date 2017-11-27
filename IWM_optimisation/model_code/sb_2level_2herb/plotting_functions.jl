@@ -669,11 +669,12 @@ end
 # summary of the early seedbank to capture temporal component of stratergy
 # average of top seed bank over first t time steps
 function get_SB_t(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
-	t::Int64)
+	t::Int64, dg::Float64)
 
-	pop = sim_pop[1][2:(t + 1)] #start at 2 as element 1 is int pop
+	pop = sum(sim_pop[1], 2) * dg
+	pop_t = pop[2:(t + 1)] #start at 2 as element 1 is int pop
 
-	return sum(pop) / t
+	return sum(pop_t) / t
 
 end
 
@@ -729,9 +730,9 @@ function make_sum_df(sol_list::Array{Any, 1}, A::Tuple, low_g::Float64, up_g::Fl
 		df_temp[:fin_res12] = get_fin_res12(sim_pop, sol[3], dg, 
 			low_g, up_g)
 
-		df_temp[:SB5] = get_SB_t(sim_pop, 5)
+		df_temp[:SB5] = get_SB_t(sim_pop, 5, dg)
 
-		df_temp[:SB10] = get_SB_t(sim_pop, 10)
+		df_temp[:SB10] = get_SB_t(sim_pop, 10, dg)
 
 		push!(df_list, df_temp)
 
@@ -789,9 +790,9 @@ function sim_both(pars::Dict{Symbol, Float64}, T::Int64, A::Tuple,
 	df_temp[:fin_res12] = get_fin_res12(simed_pop, pars, dg, 
 		low_g, up_g)
 
-	df_temp[:SB5] = get_SB_t(simed_pop, 5)
+	df_temp[:SB5] = get_SB_t(simed_pop, 5, dg)
 
-	df_temp[:SB10] = get_SB_t(simed_pop, 10)
+	df_temp[:SB10] = get_SB_t(simed_pop, 10, dg)
 
 	return df_temp
 
@@ -842,9 +843,9 @@ function sim_herb_cycle(pars::Dict{Symbol, Float64}, T::Int64, A::Tuple,
 	df_temp[:fin_res12] = get_fin_res12(simed_pop, pars, dg, 
 		low_g, up_g)
 
-	df_temp[:SB5] = get_SB_t(simed_pop, 5)
+	df_temp[:SB5] = get_SB_t(simed_pop, 5, dg)
 
-	df_temp[:SB10] = get_SB_t(simed_pop, 10)
+	df_temp[:SB10] = get_SB_t(simed_pop, 10, dg)
 
 	return df_temp
 
@@ -895,9 +896,9 @@ function sim_alt(pars::Dict{Symbol, Float64}, T::Int64, A::Tuple,
 	df_temp[:fin_res12] = get_fin_res12(simed_pop, pars, dg, 
 		low_g, up_g)
 
-	df_temp[:SB5] = get_SB_t(simed_pop, 5)
+	df_temp[:SB5] = get_SB_t(simed_pop, 5, dg)
 
-	df_temp[:SB10] = get_SB_t(simed_pop, 10)
+	df_temp[:SB10] = get_SB_t(simed_pop, 10, dg)
 
 	return df_temp
 
@@ -956,9 +957,9 @@ function sim_herbcrop_cycle(pars::Dict{Symbol, Float64}, T::Int64, A::Tuple,
 	df_temp[:fin_res12] = get_fin_res12(simed_pop, pars, dg, 
 		low_g, up_g)
 
-	df_temp[:SB5] = get_SB_t(simed_pop, 5)
+	df_temp[:SB5] = get_SB_t(simed_pop, 5, dg)
 
-	df_temp[:SB10] = get_SB_t(simed_pop, 10)
+	df_temp[:SB10] = get_SB_t(simed_pop, 10, dg)
 
 	return df_temp
 
