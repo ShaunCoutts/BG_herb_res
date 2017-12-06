@@ -344,6 +344,116 @@ all_df = vcat([dis_df, herb12_df, h12cyc_df, conalt_df, h12altcyc_df]);
 cd(data_loc)
 writetable("dis_rate_sweep.csv", all_df)
 
+# I want to make a couple of very specific plots for BES poster
+# first get the list of solutions 
+A = make_action_space();
+low_g = -10.0;
+up_g = 10.0;
+dg = 1.0;
+
+cd(data_loc)
+sol_list = load("dis_sweep_obj.jld")["dis_sweep"];
+sol_list_M = load("dis_myopic_sweep_obj.jld")["dis_sweep"];
+
+dis_df = make_sum_df(sol_list, A, low_g, up_g, dg);
+# find the indext for the paramerters I want
+dis95_ind = find((dis_df[:dis_rate] .== 0.95) & (dis_df[:Y0] .== 1022) & 
+		 (dis_df[:int_g1] .< 0.2) & (dis_df[:int_g2] .< 0.2) &
+		 (dis_df[:off_cv] .== 0.0));
+
+dis_M_df = make_sum_df(sol_list_M, A, low_g, up_g, dg);
+# get the indicies for the pramereter sets I want 
+dis75_ind = find((dis_M_df[:dis_rate] .== 0.75) & (dis_M_df[:Y0] .== 1022) & 
+		 (dis_M_df[:int_g1] .< 0.2) & (dis_M_df[:int_g2] .< 0.2) &
+		 (dis_M_df[:off_cv] .== 0.0));
+
+# the saving or read in seems to convert tuples to arrays, or not perserve 
+# the type information so will have to make the tuple here
+sol95L = sol_list[dis95_ind];
+sol95 = (sol95L[1][1], sol95L[1][2], sol95L[1][3]);
+
+sol75L = sol_list_M[dis75_ind];
+sol75 = (sol75L[1][1], sol75L[1][2], sol75L[1][3]);
+
+# make the discount rate 0.95
+best_seq = get_best_seq(sol95, A);
+
+herb_seq = best_seq[ACT_HERB][end, :];
+crop_seq = best_seq[ACT_CROP][end, :];
+plow_seq_int = best_seq[ACT_PLOW][end, :];
+spot_seq = best_seq[ACT_SPOT][end, :];
+
+sim_pop = sim_act_seq(herb_seq, crop_seq, spot_seq, plow_seq_int, 
+		sol95[3], low_g, up_g, dg);
+
+best_act = sol95[1][end][best_n_seq(1, sol95[2])[end], :]; 	
+best_sub_acts = act_seq_2_sub_act(A, best_act);
+
+SB_95 = get_SB_size(sim_pop, dg);
+
+# get the action as a col_mat
+col_pal = make_col_pal();
+act_colmat95 = subact_2_colmat(best_sub_acts, col_pal);
+
+# now the 75
+best_seq = get_best_seq(sol75, A);
+
+herb_seq = best_seq[ACT_HERB][end, :];
+crop_seq = best_seq[ACT_CROP][end, :];
+plow_seq_int = best_seq[ACT_PLOW][end, :];
+spot_seq = best_seq[ACT_SPOT][end, :];
+
+sim_pop = sim_act_seq(herb_seq, crop_seq, spot_seq, plow_seq_int, 
+		sol75[3], low_g, up_g, dg);
+
+best_act = sol75[1][end][best_n_seq(1, sol75[2])[end], :]; 	
+best_sub_acts = act_seq_2_sub_act(A, best_act);
+
+SB_75 = get_SB_size(sim_pop, dg);
+
+# get the action as a col_mat
+act_colmat75 = subact_2_colmat(best_sub_acts, col_pal);
+
+plt_greys = colormap("Grays", 10)[[5, 10]];
+
+lm = @layout [[grid(1, 1); b{0.25h}] [grid(1, 1); b{0.25h}]];
+plt = plot(layout = lm, size = (1200, 600));
+
+# add the seed bank  
+plot!(plt, 0:20, [(SB_75[1] / 1000) (SB_75[2] / 1000)], guidefont = Plots.font(16), 
+      legend = :none, yguide = "seed bank (number seeds x1000)", ylim = (0, 245), 
+      ytickfont = Plots.font(15), xticks = (0:5:20, [""]),  markershape = :circle, 
+	linewidth = 2, seriescolor = [plt_greys[2] plt_greys[1]], markerstrokewidth = 0, 
+	markersize = 7, xlims = (0, 20.1), legendfont = Plots.font(12),
+	title = "discount rate = 0.75", titlefont = Plots.font(18), subplot = 1);
+
+# add the colmat best action found	
+plot_colmat!(plt, act_colmat75, subplot = 2)
+plot!(plt, subplot = 2); # second call needed to put the generated plot in scope
+
+# add the seed bank  
+plot!(plt, 0:20, [(SB_95[1] / 1000) (SB_95[2] / 1000)], guidefont = Plots.font(16), 
+      labels = ["seed bank top" "seed bank bottom"], ylim = (0, 245), 
+      tickfont = Plots.font(15, RGB(1, 1, 1)), xticks = (0:5:20, [""]), 
+      yticks = (0:50:200, ["."]), markershape = :circle, linewidth = 2, 
+      seriescolor = [plt_greys[2] plt_greys[1]], markerstrokewidth = 0, markersize = 7, 
+      xlims = (0, 20.1), legendfont = Plots.font(12), title = "discount rate = 0.95", 
+	titlefont = Plots.font(18), subplot = 3);
+
+# add the colmat best action found	
+plot_colmat!(plt, act_colmat95, subplot = 4)
+plot!(plt, subplot = 4); # second call needed to put the generated plot in scope
+
+cd(plot_loc)
+savefig(plt, "action_seq_poster.svg")
+
+
+
+
+
+
+
+
 
 #heatmap to plot population over 2d
 heatmap(matrix)

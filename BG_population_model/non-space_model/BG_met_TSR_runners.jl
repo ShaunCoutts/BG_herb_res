@@ -191,6 +191,79 @@ function multi_iter_HSI(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64
   
 end
 
+function multi_iter_HSI(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64, 1}, 
+	int_pop_rr::Array{Float64, 1}, HSI_RR::Array{Float64, 1}, HSI_Rr::Array{Float64, 1}, 
+	HSI_rr::Array{Float64, 1}, num_est::Int64, num_iter::Int64, 
+	g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, 
+	g_effect_fec::Array{Float64, 1}, sur_tup::Tuple{Float64, Array{Float64, 1}}, 
+	seed_sur::Float64, g_vals::Array{Float64, 1}, resist_G::Array{String, 1}, 
+	germ_prob::Float64, fec_max::Float64, dd_fec::Float64, dg::Float64, 
+	herb_app::Array{Int64, 1})
+
+	#set aside a chunck of memory for the landscapes for each genotype 
+	RR_landscape = zeros(length(g_vals), num_iter + num_est)
+	Rr_landscape = zeros(length(g_vals), num_iter + num_est)
+	rr_landscape = zeros(length(g_vals), num_iter + num_est)
+
+	#sets the intial population for each G at the locations specified in int_pop_x_G. 
+	RR_landscape[:, 1] = deepcopy(int_pop_RR)
+	Rr_landscape[:, 1] = deepcopy(int_pop_Rr)
+	rr_landscape[:, 1] = deepcopy(int_pop_rr)
+
+	# a set of matrices to hold the above ground populations
+	RR_ab_pop = zeros(length(g_vals))
+	Rr_ab_pop = zeros(length(g_vals))
+	rr_ab_pop = zeros(length(g_vals))
+
+	## create the RR_eff_pop and do the pre calc effect of resist costs
+	RR_eff_pop = zeros(length(g_vals))
+	Rr_eff_pop = zeros(length(g_vals))
+	rr_eff_pop = zeros(length(g_vals))
+	eff_pop_holder = zeros(length(g_vals))
+
+	# a set of matrices to hold the total amount of pollen that arrives are each 
+	# location for each metabolic resitance score for each genotype
+	pollen_RR = zeros(length(g_vals))
+	pollen_Rr = zeros(length(g_vals))
+	pollen_rr = zeros(length(g_vals))
+	total_pollen = 0.0
+
+	#set of matrices to hold the new seeds produced at each location pre dispersal 
+	RR_newseed = zeros(length(g_vals))
+	Rr_newseed = zeros(length(g_vals))
+	rr_newseed = zeros(length(g_vals))
+
+	# iterate through the timesteps before seed injection
+	for t in 2:num_est
+
+	pop_update!(RR_landscape, Rr_landscape, rr_landscape, RR_ab_pop, 
+		Rr_ab_pop, rr_ab_pop, eff_pop_holder, RR_eff_pop, 
+		Rr_eff_pop, rr_eff_pop, pollen_RR, pollen_Rr, pollen_rr, 
+		RR_newseed, Rr_newseed, rr_newseed, g_mixing_kernel, 
+		g_mixing_index, g_effect_fec, sur_tup, seed_sur, g_vals, 
+		resist_G, germ_prob, fec_max, dd_fec, dg, herb_app[t], t)
+
+	end
+
+	# inject the seeds into the population
+	RR_landscape[:, num_est] = RR_landscape[:, num_est] + HSI_RR
+	Rr_landscape[:, num_est] = Rr_landscape[:, num_est] + HSI_Rr
+	rr_landscape[:, num_est] = rr_landscape[:, num_est] + HSI_rr
+
+	for t in (num_est + 1):(num_iter + num_est)
+
+	pop_update!(RR_landscape, Rr_landscape, rr_landscape, RR_ab_pop, Rr_ab_pop, 
+		rr_ab_pop, eff_pop_holder, RR_eff_pop, Rr_eff_pop, rr_eff_pop, 
+		pollen_RR, pollen_Rr, pollen_rr, RR_newseed, Rr_newseed, rr_newseed, 
+		g_mixing_kernel, g_mixing_index, g_effect_fec, sur_tup, seed_sur, 
+		g_vals, resist_G, germ_prob, fec_max, dd_fec, dg, herb_app[t], t)
+
+	end
+
+	return (RR_landscape, Rr_landscape, rr_landscape)
+
+end
+
 # function to run the model experiment where a single parameter set is tested under both herbicide 
 # and no-herbicide
 # don't have the burnin period. Takes time and only give the sd, which then changes with selection anyway 
@@ -286,6 +359,49 @@ function model_run_hot_seed_injection(int_num_RR::Float64, int_num_Rr::Float64, 
   return herb_run 
   
 end
+
+# a more flexible model runner that takes a vectore of herbicide application 
+function model_run_hot_seed_injection(int_num_RR::Float64, int_num_Rr::Float64, 
+	int_num_rr::Float64, inj_num_RR::Float64, inj_num_Rr::Float64, 
+	inj_num_rr::Float64, int_g::Float64, int_sd::Float64, inj_g::Float64, 
+	inj_sd::Float64, TSR_iter::Int64, num_iter::Int64, herb_app::Array{Int64, 1},
+	germ_prob::Float64, fec0::Float64, fec_cost::Float64, fec_max::Float64, 
+	dd_fec::Float64, herb_effect::Float64, g_prot::Float64, seed_sur::Float64, 
+	pro_exposed::Float64, base_sur::Float64, offspring_sd::Float64, 
+	g_vals::Array{Float64, 1}, dg::Float64, resist_G::Array{String, 1})
+ 
+	#intial populations 
+	int_pop_RR = pdf(Normal(int_g, int_sd), g_vals) * int_num_RR
+	int_pop_Rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_Rr
+	int_pop_rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_rr
+
+	# injected seeds
+	HSI_RR = pdf(Normal(inj_g, inj_sd), g_vals) * inj_num_RR
+	HSI_Rr = pdf(Normal(inj_g, inj_sd), g_vals) * inj_num_Rr
+	HSI_rr = pdf(Normal(inj_g, inj_sd), g_vals) * inj_num_rr
+
+	# build the mixing kernel for metabolic resistance score every row is a offspring score
+	# every coloum is a g_m x g_p combination, so every coloumn is a normal dist with
+	# a mean of g_m*g_p and sd of offspring sd
+	g_mixing_kernel = zeros(length(g_vals), length(g_vals) ^ 2)
+	fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
+	g_mixing_index = generate_index_pairs(g_vals)
+
+	# give the effect of herb as a function of g, make it symetrical stabilising function, centered on 0
+	g_effect_fec = 1 ./ (1 + exp(-(fec0 - abs(g_vals) * fec_cost)))
+
+	#set up the survival vectors 
+	sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
+
+	herb_run = multi_iter_HSI(int_pop_RR, int_pop_Rr, int_pop_rr, HSI_RR, 
+		HSI_Rr, HSI_rr, TSR_iter, num_iter, g_mixing_kernel, g_mixing_index, 
+		g_effect_fec, sur_tup, seed_sur, g_vals, resist_G, germ_prob, 
+		fec_max, dd_fec, dg, herb_app)
+
+	return herb_run 
+
+end
+
 
 # wrapper function to take the results of the herbicide run and make some populaton summaries for plotting 
 # output a list of parameters, and then a set of measures over the number of time steps
@@ -405,6 +521,82 @@ function run_wrapper_hot_seed_injection(int_num_RR::Float64, int_num_Rr::Float64
   return out
   
 end
+
+# wrapper function that allows more flxibility in when herbcide is 
+# allplied to take the results of the herbicide run and make some 
+# populaton summaries for plotting. 
+# output a list of parameters, and then a set of measures over the number 
+# of time steps
+function run_wrapper_bespoke(int_num_RR::Float64, int_num_Rr::Float64, 
+	int_num_rr::Float64, inj_num_RR::Float64, inj_num_Rr::Float64, 
+	inj_num_rr::Float64, int_g::Float64, int_sd::Float64, inj_g::Float64, 
+	inj_sd::Float64, TSR_iter::Int64, num_iter::Int64, 
+	herb_app::Array{Int64, 1}, germ_prob::Float64, fec0::Float64, 
+	fec_cost::Float64, fec_max::Float64, dd_fec::Float64, 
+	herb_effect::Float64, g_prot::Float64, seed_sur::Float64, 
+	pro_exposed::Float64, base_sur::Float64, offspring_sd::Float64,
+	g_vals::Array{Float64, 1}, dg::Float64, resist_G::Array{String, 1})
+  
+	pop_run = model_run_hot_seed_injection(int_num_RR, int_num_Rr, int_num_rr, 
+		inj_num_RR, inj_num_Rr, inj_num_rr, int_g, int_sd, inj_g, inj_sd, 
+		TSR_iter, num_iter, herb_app, germ_prob, fec0, fec_cost, fec_max, 
+		dd_fec, herb_effect, g_prot, seed_sur, pro_exposed, base_sur, 
+		offspring_sd, g_vals, dg, resist_G)
+
+	RR_pop = pop_run[1]
+	Rr_pop = pop_run[2]
+	rr_pop = pop_run[3]
+
+	param = [int_num_RR, int_num_Rr, int_num_rr, inj_num_RR, inj_num_Rr, 
+		 inj_num_rr, int_g, int_sd, inj_g, inj_sd, 
+		 findfirst(herb_app .== 2), findlast(herb_app .== 2), 
+		 germ_prob, fec0, fec_cost, fec_max, dd_fec, herb_effect, g_prot, 
+		 seed_sur, pro_exposed, base_sur, offspring_sd, TSR_iter]
+
+	out = Array{Any, 2}(8, length(param) + 1 + TSR_iter + num_iter)
+
+	# fill in parameter values and scenario
+	for i in 1:size(out)[1]
+
+	out[i, 1:length(param)] = param
+
+	end
+
+	sur_pre = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
+
+	# fill in the different measures
+	out[1, length(param) + 1] = "sur_rr"
+	out[1, (length(param) + 2):end] = get_sur_rr(rr_pop, base_sur, herb_effect, g_prot, 
+		g_vals , dg)
+
+	out[2, length(param) + 1] = "pro_R"
+	out[2, (length(param) + 2):end] = get_pro_R(RR_pop, Rr_pop, rr_pop, dg) 
+
+	out[3, length(param) + 1] = "pop_sur"
+	out[3, (length(param) + 2):end] = get_pop_sur(RR_pop, Rr_pop, rr_pop, dg,
+		sur_pre)
+
+	out[4, length(param) + 1] = "pop_size"
+	out[4, (length(param) + 2):end] = get_pop_size(RR_pop, Rr_pop, rr_pop, dg)
+
+	out[5, length(param) + 1] = "ab_sur_pop"
+	out[5, (length(param) + 2):end] = get_post_herb_pop(RR_pop, Rr_pop, rr_pop, dg,
+		sur_pre, germ_prob)
+
+	out[6, length(param) + 1] = "mean_g_rr"
+	out[6, (length(param) + 2):end] = get_mean_g(rr_pop, g_vals, dg) 
+
+	out[7, length(param) + 1] = "var_g_rr"
+	out[7, (length(param) + 2):end] = get_var_g(rr_pop, g_vals, dg) 
+
+	out[8, length(param) + 1] = "TSR_adv"
+	out[8, (length(param) + 2):end] = get_TSR_adv(RR_pop, Rr_pop, rr_pop, dg,
+		base_sur, herb_effect, g_prot, fec0, fec_cost, g_vals) 
+
+	return out
+
+end
+
 
 
 

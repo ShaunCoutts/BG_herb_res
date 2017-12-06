@@ -217,17 +217,18 @@ SB10_plt
 ##########################################################################
 # make a more focused set of plots to tell the story for the poster 
 rew_df = select(df_dis, int_g1:dis_rate, pro_max, scen:Y0_pretty) %>%
-	filter(scen == 'optimGA', Y0 == 1022, int_scen != 'int state: resistant h1 and h2') %>% 
+	filter(scen == 'optimGA', Y0 == 1022, 
+	       int_scen == 'int state: susceptible h1 and h2') %>% 
 	mutate(cv_pretty = ifelse(off_cv == 0, 'none', 'high'))
 
 rew_fix = select(df_dis, int_g1:dis_rate, pro_max, scen:Y0_pretty) %>%
 	filter(scen != 'optimGA') %>% 
-	filter(scen != 'allalt', Y0 == 1022, int_scen != 'int state: resistant h1 and h2') %>%
+	filter(scen != 'allalt', Y0 == 1022, 
+	       int_scen == 'int state: susceptible h1 and h2') %>%
 	mutate(cv_pretty = ifelse(off_cv == 0, 'none', 'high'),
 		pretty_scen = ifelse(scen == 'allh12', 'cont. h1 and h2',
 			ifelse(scen == 'cych12', 'h1->h2->h1...', 
 			       'h1->h2 & rotate crop')))
-
 
 cur_con = mean(rew_df$Y0) * 20 
 
@@ -246,13 +247,10 @@ rew_plt = ggplot(rew_df, aes(x = dis_rate, y = (pro_max * cur_con) / 1000,
 	      legend.background = element_rect(color = 'white'),
 	      legend.text = element_text(size = 15),
 	      legend.title = element_text(size = 15),
-	      legend.position = c(0.8, 0.82), 
-	      strip.text = element_text(size = 20)) +
-	annotate('text', y = 10, x = 0.75, label = c('a)', 'b)'), size = 10) + 
-	facet_grid(int_scen ~ .)
+	      legend.position = c(0.8, 0.70)) 
 
 setwd(plot_loc)
-pdf('reward_poster.pdf', height = 12, width = 8)
+pdf('reward_poster_simp.pdf', height = 8, width = 8)
 
 	rew_plt
 
@@ -260,7 +258,8 @@ dev.off()
 
 # seed bank plot
 SB10_df = select(df_dis, int_g1:dis_rate, SB10, scen:Y0_pretty) %>%
-	filter(scen == 'optimGA', Y0 == 1022, int_scen != 'int state: resistant h1 and h2') %>% 
+	filter(scen == 'optimGA', Y0 == 1022, 
+	       int_scen == 'int state: susceptible h1 and h2') %>% 
 	mutate(cv_pretty = ifelse(off_cv == 0, 'none', 'high'))
 
 SB10_plt = ggplot(SB10_df, aes(x = dis_rate, y = SB10 / 1000, 
@@ -273,13 +272,10 @@ SB10_plt = ggplot(SB10_df, aes(x = dis_rate, y = SB10 / 1000,
 	      legend.background = element_rect(color = 'white'),
 	      legend.text = element_text(size = 20),
 	      legend.title = element_text(size = 20),
-	      legend.position = c(0.8, 0.82), 
-	      strip.text = element_text(size = 20)) +
-	annotate('text', y = 220, x = 0.75, label = c('a)', 'b)'), size = 10) + 
-	facet_grid(int_scen ~ .)
+	      legend.position = c(0.8, 0.82)) 
 
 setwd(plot_loc)
-pdf('early_seedbank.pdf', height = 12, width = 8)
+pdf('early_seedbank_simp_poster.pdf', height = 8, width = 8)
 
 	SB10_plt
 
@@ -287,12 +283,12 @@ dev.off()
 
 # resistance plot
 res_df = select(df_dis, int_g1:dis_rate, fin_min_res, scen:Y0_pretty) %>%
-	filter(scen == 'optimGA', Y0 == 1022, int_scen != 'int state: resistant h1 and h2') %>% 
+	filter(scen == 'optimGA', Y0 == 1022, int_scen == 'int state: susceptible h1 and h2') %>% 
 	mutate(cv_pretty = ifelse(off_cv == 0, 'none', 'high'))
 
 res_fix = select(df_dis, int_g1:dis_rate, fin_min_res, scen:Y0_pretty) %>%
 	filter(scen != 'optimGA') %>% 
-	filter(scen != 'allalt', Y0 == 1022, int_scen != 'int state: resistant h1 and h2') %>%
+	filter(scen != 'allalt', Y0 == 1022, int_scen == 'int state: susceptible h1 and h2') %>%
 	mutate(cv_pretty = ifelse(off_cv == 0, 'none', 'high'),
 		pretty_scen = ifelse(scen == 'allh12', 'cont. h1 and h2',
 			ifelse(scen == 'cych12', 'h1->h2->h1...', 
@@ -312,14 +308,10 @@ res_plt = ggplot(res_df, aes(x = dis_rate, y = fin_min_res,
 	      legend.background = element_rect(color = 'white'),
 	      legend.text = element_text(size = 15),
 	      legend.title = element_text(size = 15),
-	      legend.position = c(0.8, 0.3), 
-	      strip.text = element_text(size = 20)) +
-	annotate('text', y = Inf, x = 0.75, label = c('a)', 'b)'), 
-		 size = 10, vjust = 1) + 
-	facet_grid(int_scen ~ .)
+	      legend.position = c(0.8, 0.3)) 
 
 setwd(plot_loc)
-pdf('resistance_min_poster', height = 12, width = 8)
+pdf('resistance_min_simp_poster.pdf', height = 8, width = 8)
 
 	res_plt
 

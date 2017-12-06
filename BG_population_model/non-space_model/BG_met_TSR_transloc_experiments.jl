@@ -28,14 +28,14 @@ int_sd_g = 1.4142;
 int_num_RR = 0.0;
 int_num_Rr = 0.0;
 int_num_rr = 10.0; # number of intial seeds at each location for each genoptype, assume only TS susceptible
-num_iter = 100;
-int_run = 20;
+num_iter = 200;
+TSR_iter = 50;
 
 offspring_sd = 1.0;
 fec_max = 60.0;
 fec0 = 4.0;
 fec_cost = 0.45;
-dd_fec = 0.001;
+dd_fec = 0.0005;
 base_sur = 10.0; 
 herb_effect = 16.0; 
 g_prot = 1.5; 
@@ -43,10 +43,52 @@ pro_exposed = 0.8;
 seed_sur = 0.45;
 germ_prob = 0.52;
 resist_G = ["RR", "Rr"];
-herb_app = 2;
+noherb_time = 20;
+herb_time = (num_iter + TSR_iter) - noherb_time; 
+herb_app = vcat(repeat([1], outer = noherb_time), 
+		repeat([2], outer = herb_time));
 
 # set up the evaluation points for quantitative resistance
 g_vals = collect(lower_g : dg : upper_g);   
+
+int_num_RR = 0.0;
+int_num_Rr = 0.0;
+int_num_rr = 10.0;
+int_g = get_g_at_sur(0.001, base_sur, herb_effect, g_prot);
+int_sd = 1.4142;
+
+inj_num_RR = 1.0;
+inj_num_Rr = 0.0;
+inj_num_rr = 100.0 - inj_num_RR;
+inj_g = get_g_at_sur(0.001, base_sur, herb_effect, g_prot);
+inj_sd = 1.4142;
+ 
+# do a single run to show whow the population evoles over time and 
+# what happens in response to herbcide application and TSR introduction
+single_run = run_wrapper_bespoke(int_num_RR, int_num_Rr, int_num_rr, 
+	inj_num_RR, inj_num_Rr, inj_num_rr, int_g, int_sd, inj_g, inj_sd, 
+	TSR_iter, num_iter, herb_app, germ_prob, fec0, fec_cost, fec_max, 
+	dd_fec, herb_effect, g_prot, seed_sur, pro_exposed, base_sur, 
+	offspring_sd, g_vals, dg, resist_G);
+  
+var_names = ["intRR", "intRr", "intrr", "injRR", "injRr", "injrr", 
+	     "int_g", "int_sd", "inj_g", "inj_sd", "first_herb", "last_herb",
+	     "germ_prob", "fec0", "fec_cost", "fec_max", "dd_fec", "herb_effect", 
+	     "g_pro", "seed_sur", "pro_exposed", "s0", "off_sd", "TSR_int", 
+	     "measure"];
+
+all_names = vcat(var_names, [string("t", i) for i = 1:(TSR_iter + num_iter)]);
+
+res_df = DataFrame(single_run);
+names!(res_df, convert(Array{Symbol}, all_names));
+
+# write the parameter sweep to a .csv file so an R plotting script can be used
+cd(output_loc);
+writetable("single_pop_trajectory.csv", res_df);
+ 
+
+
+
 
 # set a up a limited parameter to find a nice region of parameter space to work in
 g_pro = [1.0, 1.5, 2.0];

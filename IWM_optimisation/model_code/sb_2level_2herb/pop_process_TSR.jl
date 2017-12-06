@@ -180,9 +180,58 @@ function make_int_pop(N1::Float64, N2::Float64, RR::Float64, Rr::Float64,
 	
 end
 
-###########################################################################
+# pre-calc the survival that maps the herb action index and genotypeto 
+# a survival, where Resistance is dominant
+function make_herb_sur_dom(mix_key::Tuple, s0::Float64, pr_ex::Float64,
+	sur_herb::Float64)
 
-function TSR_par_cross(mat::Array{Float64, 1}, pat::Array{Float64, 1},
+	# survivals to reference by mk[G1] and mk[G2]
+	Hs = [1.0, 1.0, sur_herb]
+	# to make herb 1 and 2 have different dominance
+	# Hs2 = [1.0, sur_herb, sur_herb]
+	# change rest of function accrdingly
+
+	# a set of vectors to hold the survival of each G under each 
+	# herb combination, so 4 * 9 = 36 total survivals.
+	sur_h0 = ones(length(mix_key[G1])) * s0
+	sur_h1 = ((1 - pr_ex) * s0) + 
+		(pr_ex * s0 * Hs[mix_key[G1]])
+	sur_h2 = ((1 - pr_ex) * s0) + 
+		(pr_ex * s0 * Hs[mix_key[G2]])
+	sur_h12 = ((1 - pr_ex) * s0) + 
+		(pr_ex * s0 * Hs[mix_key[G1]] .* Hs[mix_key[G2]])
+
+	return (sur_h0, sur_h1, sur_h2, sur_h12)
+
+end
+# rececive version
+function make_herb_sur_rec(mix_key::Tuple, s0::Float64, pr_ex::Float64,
+	sur_herb::Float64)
+
+	# survivals to reference by mk[G1] and mk[G2]
+	Hs = [1.0, sur_herb, sur_herb]
+
+	# a set of vectors to hold the survival of each G under each 
+	# herb combination, so 4 * 9 = 36 total survivals.
+	sur_h0 = ones(length(mix_key[G1])) * s0
+	sur_h1 = ((1 - pr_ex) * s0) + 
+		(pr_ex * s0 * Hs[mix_key[G1]])
+	sur_h2 = ((1 - pr_ex) * s0) + 
+		(pr_ex * s0 * Hs[mix_key[G2]])
+	sur_h12 = ((1 - pr_ex) * s0) + 
+		(pr_ex * s0 * Hs[mix_key[G1]] .* Hs[mix_key[G2]])
+
+	return (sur_h0, sur_h1, sur_h2, sur_h12)
+
+end
+
+
+###########################################################################
+# function that do stuff at iteration
+
+# makes the offspring for a given population repreented by mat and pat
+# in general pat should be a normalized version of mat
+function TSR_par_cross!(mat::Array{Float64, 1}, pat::Array{Float64, 1},
 	parents::Array{Float64, 1}, mix_key::Tuple{Array{Int64, 1}, 
 	Array{Int64, 1}, Array{Int64, 1}, Array{Int64, 1}})
 
@@ -205,11 +254,11 @@ function plow_inversion!(seedbank_1::Array{Float64, 2},
 	if plow
     
 		# seeds on the move
-		L1_2_L2 = seedbank_1[:, t] * inv_frac
-		L2_2_L1 = seedbank_2[:, t] * inv_frac
+		L1_2_L2 = seedbank_1[t, :] * inv_frac
+		L2_2_L1 = seedbank_2[t, :] * inv_frac
     
-		seedbank_1[:, t] = seedbank_1[:, t] .- L1_2_L2 .+ L2_2_L1
-		seedbank_2[:, t] = seedbank_2[:, t] .- L2_2_L1 .+ L1_2_L2
+		seedbank_1[t, :] = seedbank_1[t, :] .- L1_2_L2 .+ L2_2_L1
+		seedbank_2[t, :] = seedbank_2[t, :] .- L2_2_L1 .+ L1_2_L2
     
 	end
   
@@ -234,8 +283,130 @@ function germ_seed_sur!(seedbank_1::Array{Float64, 2},
 end
 
 # simulate the population advancing one time step
-function onestep!()
+function onestep!(SB1::Array{Float64, 2}, SB2::Array{Float64, 2}, 
+	ab_pop::Array{Float64, 2}, ab_pop_spot::Array{Float64, 2},
+	eff_pop::Array{Float64, 1}, mat_pop::Array{Float64, 1}, 
+	pat_pop::Array{Float64, 1}, offspr::Array{Float64, 1},
+	mix_kern::Array{Float64, 2}, 
+	mix_key::Tuple{Array{Int64, 1}, Array{Int64, 1}, Array{Int64, 1}, Array{Int64, 1}},
+	herb_sur::Tuple{Array{Float64, 1}, Array{Float64, 1}, Array{Float64, 1}, Array{Float64, 1}}, 
+	inv_frac::Float64, germ_prob::Float64,
+	seed_sur::Float64, sur_crop_alt::Float64, sur_spot::Float64,
+	fec_dd::Float64, fec_max::Float64,
+	herb_act::Int64, crop_act::Int64, plow::Bool, spot_act::Int64, 
+	t::Int64)
 
+	# plowing
+	plow_inversion!(SB1, SB2, t, plow, inv_frac)
+  
+	# germination and seed mortality 
+	germ_seed_sur!(SB1, SB2, ab_pop, t, germ_prob, seed_sur) 
+  
+	# survival
+	## turnin in to ifelse staments to cover all cropand spot cases (6)
+	if crop_act == CROP_FAL
+  
+		ab_pop[t, :] .= 0.0
+  
+	elseif crop_act == CROP_WW
+    
+		ab_pop[t, :] = ab_pop[t, :] .* herb_sur[herb_act]
+    
+	else
+    
+		ab_pop[t, :] = (ab_pop[t, :] .* herb_sur[herb_act]) * 
+			sur_crop_alt
+  
+	end
+  
+	# apply spot control, but store the pre spot control population to 
+	# calculate the cost of spot control
+	if spot_act == 1
+
+		ab_pop_spot[t, :] = ab_pop[t, :] * sur_spot
+
+	else
+
+		ab_pop_spot[t, :] = ab_pop[t, :] * 1.0
+
+	end
+
+	# post survial above ground pop number
+	tot_ab_pop = sum(ab_pop_spot[t, :])
+  
+	# get effective reporduction, taking into account density effects and 
+	# demographic costs of resistance
+	if tot_ab_pop == 0.0
+
+		eff_pop[:] .= 0.0
+
+	else
+
+		eff_pop[:] = (ab_pop_spot[t, :] ./ (1 + fec_dd * tot_ab_pop)) 
+		
+	end
+ 
+	# turn ab_pop to frequency dist for paternal distribution
+	if tot_ab_pop == 0.0
+
+		pat_pop[:] .= 0.0
+
+	else
+
+		pat_pop[:] = eff_pop ./ sum(eff_pop)
+
+	end
+  
+	mat_pop[:] = eff_pop * fec_max
+  
+	# mix seeds over (g1, g2), add the resulting offspring distribution 
+	# to seedbank
+	TSR_par_cross!(mat_pop, pat_pop, offspr, mix_key);
+
+	SB1[t, :] += mix_kern * offspr
+  
+	return nothing
 
 end
+
+function one_run!(SB1::Array{Float64, 2}, SB2::Array{Float64, 2}, 
+	ab_pop::Array{Float64, 2}, ab_pop_spot::Array{Float64, 2},
+	eff_pop::Array{Float64, 1}, mat_pop::Array{Float64, 1}, 
+	pat_pop::Array{Float64, 1}, offspr::Array{Float64, 1},
+	mix_kern::Array{Float64, 2}, 
+	mix_key::Tuple{Array{Int64, 1}, Array{Int64, 1}, Array{Int64, 1}, Array{Int64, 1}},
+	herb_sur::Tuple{Array{Float64, 1}, Array{Float64, 1}, Array{Float64, 1}, Array{Float64, 1}}, 
+	inv_frac::Float64, germ_prob::Float64,
+	seed_sur::Float64, sur_crop_alt::Float64, sur_spot::Float64,
+	fec_dd::Float64, fec_max::Float64,
+	herb_act_seq::Array{Int64, 1}, crop_act_seq::Array{Int64, 1},
+	plow_seq::Array{Bool, 1}, spot_act_seq::Array{Int64, 1},	  
+	int_SB1::Array{Float64, 1}, int_SB2::Array{Float64, 1}, T::Int64)
+  
+	# re-set all the values from the previous run that will be 
+	# over-written, just to make sure 
+	ab_pop[:, :] .= 0.0
+  
+	# set the intial seed bank
+	SB1[1, :] = deepcopy(int_SB1)
+	SB2[1, :] = deepcopy(int_SB2)
+  
+	for t in 2:(T + 1)
+  
+		SB1[t, :] = deepcopy(SB1[t - 1, :])
+		SB2[t, :] = deepcopy(SB2[t - 1, :])
+  
+		onestep!(SB1, SB2, ab_pop, ab_pop_spot, eff_pop, mat_pop, 
+			pat_pop, offspr, mix_kern, mix_key, herb_sur, inv_frac, 
+			germ_prob,seed_sur, sur_crop_alt, sur_spot, fec_dd, 
+			fec_max, herb_act_seq[t - 1], crop_act_seq[t - 1], 
+			plow_seq[t - 1], spot_act_seq[t - 1], t);
+
+	end
+  
+	return nothing
+
+end
+
+
 
