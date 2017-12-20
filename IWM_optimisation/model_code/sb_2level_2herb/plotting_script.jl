@@ -10,13 +10,14 @@ plot_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/o
 
 cd(code_loc)
 include("plotting_functions.jl"); 
+include("plotting_functions_TSR.jl"); 
 ##########################################################################
 # plots of different metrics and behaviour. Ultimatley ggplot2 will be
 # more flexible. So make functions that will generate longform dataframes
 # which is then passed to a R plotting function
 
 
-n_plt = 10
+n_plt = 1000;
 
 re_gen = reward_gen(sol[2], best_n_seq(n_plt, sol[2]))
 
@@ -28,7 +29,7 @@ plot(re_gen, label = reshape(repmat([""], n_plt), 1, n_plt),
 # good diversity for at least a good number of generations 
 A = make_action_space()
 
-sub_acts = actseq_subact(sol[1][30], A)
+sub_acts = actseq_subact(sol[1][70], A)
 
 lm = @layout grid(2, 2)
 
@@ -72,6 +73,10 @@ spot_seq = best_seq[ACT_SPOT][end, :];
 
 sim_pop = sim_act_seq(herb_seq, crop_seq, spot_seq, plow_seq_int, 
 		sol[3], low_g, up_g, dg)
+
+# TSR simulation
+sim_TSR = sim_act_seq(herb_seq, crop_seq, spot_seq, plow_seq_int, 
+		sol[3]);
 
 # plot the population over time under the best action sequence
 

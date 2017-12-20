@@ -6,120 +6,9 @@ code_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/m
 cd(code_loc)
 include("pop_process_2sb_2herb.jl"); 
 include("managment_functions.jl"); 
+include("act_seq_handelers.jl"); 
 
 ##########################################################################
-# some helper function to parse and unpack the solver results
-
-# takes an array of rewards, each element and array of rewards at each 
-# generation. Return the indicies of n best seqences in each generation 
-function best_n_seq(n::Int64, reward_arr::Array{Array, 1})
-
-	N_gen = length(reward_arr)
-	best_ind = Array{Int64, 2}(N_gen, n)
-
-	for g in 1:N_gen
-
-		si = sortperm(reward_arr[g], rev = true)
-		best_ind[g, :] = si[1:n]
-	
-	end
-
-	return best_ind
-
-end
-
-# pull out the rewards
-function reward_gen(reward_arr::Array{Array, 1}, ind::Array{Int64, 2})
-
-	N_gen = length(reward_arr)
-	N_series = size(ind)[2]
-
-	out = zeros(N_gen, N_series)
-	# run through each series by generation, pulling out the rewards
-	for g in 1:N_gen
-
-		out[g, :] = reward_arr[g][ind[g, :]]
-		
-	end
-
-	return out
-
-end
-
-# turn a seqence of action mumbers to seqences of herb, crop, plow, and spot
-function actseq_subact(actseq::Array{Int64, 2}, A::Tuple)
-
-	# holding arrays
-	herb_seq = Array{Int64, 2}(size(actseq))
-	crop_seq = Array{Int64, 2}(size(actseq))
-	plow_seq = Array{Int64, 2}(size(actseq))
-	spot_seq = Array{Int64, 2}(size(actseq))
-
-	for s in 1:size(actseq)[1]
-		
-		acts = act_seq_2_sub_act(A, actseq[s, :])
-
-		herb_seq[s, :] = acts[:, ACT_HERB]
-		crop_seq[s, :] = acts[:, ACT_CROP]
-		plow_seq[s, :] = acts[:, ACT_PLOW]
-		spot_seq[s, :] = acts[:, ACT_SPOT]
-
-	end
-
-	return (herb_seq, crop_seq, plow_seq, spot_seq)
-
-end
-
-# take the whole solution and output the best performing seqeunce in each 
-# generation, split into herb, crop, plow and spot
-function get_best_seq(sol_ob::Tuple, A::Tuple)
-
-	best_ind = best_n_seq(1, sol_ob[2])
-
-	N_gen = length(sol_ob[1])
-	N_t = size(sol_ob[1][1])[2]
-
-	herb = Array{Int64, 2}(N_gen, N_t)
-	crop = Array{Int64, 2}(N_gen, N_t)
-	plow = Array{Int64, 2}(N_gen, N_t)
-	spot = Array{Int64, 2}(N_gen, N_t)
-
-	for g in 1:N_gen
-
-		acts = act_seq_2_sub_act(A, sol_ob[1][g][best_ind[g], :])
-
-		herb[g, :] = acts[:, ACT_HERB]
-		crop[g, :] = acts[:, ACT_CROP]
-		plow[g, :] = acts[:, ACT_PLOW]
-		spot[g, :] = acts[:, ACT_SPOT]
-
-	end
-
-	return (herb, crop, plow, spot)
-
-end
-
-# show best single sequence, formatted for compact display using ggplot2
-# in R for easier faceting and labelling options (longform data.frame)
-function best_seq_2_df(sol_ob::Tuple, A::Tuple)
-
-	best_ind = best_n_seq(1, sol_ob[2])
-
-	N_t = size(sol_ob[1][1])[2]
-
-	acts = act_seq_2_sub_act(A, sol_ob[1][end][best_ind[end], :])
-
-	# make into long form dataframe for plotting 
-	return DataFrame(sub_act = @data(vcat(repmat(["herbicide"], N_t), 
-			repmat(["crop"], N_t), repmat(["plow"], N_t), 
-			repmat(["spot"], N_t))),
-		ts = @data(repmat(1:N_t, 4)),
-		best_act = @data(vcat(acts[:, ACT_HERB], 
-			acts[:, ACT_CROP], acts[:, ACT_PLOW],
-			acts[:, ACT_SPOT])))
-
-end
-
 # simulate a given action seqence to get the seed bank size and resistance 
 # at time step to then map that to the action seqence 
 function sim_act_seq(herb_seq::Array{Int64, 1}, crop_seq::Array{Int64, 1}, 
@@ -521,7 +410,7 @@ function get_spot_spend(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
 
 	pars = sol[3]
 
-	herb_sur_tup = survial_herb_setup(g1_vals, g2_vals, pars[:p_ex], 
+	herb_sur_tup = survial_herb_setup(g1_vals, g_vals, pars[:p_ex], 
 		pars[:s0], pars[:eff_h1], pars[:eff_h2], 
 		pars[:p_g1h1], pars[:p_g2h2])
 
@@ -964,8 +853,6 @@ function sim_herbcrop_cycle(pars::Dict{Symbol, Float64}, T::Int64, A::Tuple,
 	return df_temp
 
 end
-
-
 
 
 

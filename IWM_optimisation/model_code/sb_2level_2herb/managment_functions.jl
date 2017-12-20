@@ -1,29 +1,6 @@
 # managment and optimisation functions 
 using StatsBase
 
-# define action indexes that are const through whole script 
-const HERB0 = 1;
-const HERB1 = 2;
-const HERB2 = 3;
-const HERB12 = 4;
-
-const CROP_WW = 1;
-const CROP_ALT = 2;
-const CROP_FAL = 3;
-
-const PLOW0 = 1;
-const PLOW = 2;
-
-const SPOT0 = 0;
-const SPOT = 1;
-
-const ACT_HERB = 1;
-const ACT_CROP = 2;
-const ACT_PLOW = 3;
-const ACT_SPOT = 4;
-
-const plow_subact = [false, true];
-
 # create the actions space, really just hard coded 
 function make_action_space()
 
@@ -107,47 +84,6 @@ end
 function rand_act_pop(num_acts::Int64, time_hor::Int64, pop_num::Int64)
 
   return rand(1:num_acts, (pop_num, time_hor))
-
-end
-
-# takes an action seqence and an action space A and turns it into a 
-# seqence of [herb_seq, crop_seq, plow_seq].
-function act_seq_2_sub_act(A::Tuple, act_seq::Array{Int64, 1})
-  
-	a = Array{Int64, 2}(size(act_seq)[1], 4)
- 
-	for i in 1:size(act_seq)[1]
-    
-		a[i, ACT_HERB] = A[act_seq[i]][ACT_HERB]
-		a[i, ACT_CROP] = A[act_seq[i]][ACT_CROP]
-		a[i, ACT_PLOW] = A[act_seq[i]][ACT_PLOW]
-		a[i, ACT_SPOT] = A[act_seq[i]][ACT_SPOT]
-
-	end
-
-	return a
-
-end
-
-function sub_act_2_act_seq(A::Tuple, sub_act::Array{Int64, 2})
-
-	# put the Action space into a vectorised form to help searching
-	A_mat = reshape(vcat(A...), 4, length(A))
-
-	act_seq = Array{Int64, 1}(T)
-
-	for t in 1:T
-
-		herb_act = find(A_mat[ACT_HERB, :] .== sub_act[t, ACT_HERB])
-		crop_act = find(A_mat[ACT_CROP, :] .== sub_act[t, ACT_CROP])
-		plow_act = find(A_mat[ACT_PLOW, :] .== sub_act[t, ACT_PLOW])
-		spot_act = find(A_mat[ACT_SPOT, :] .== sub_act[t, ACT_SPOT])
-
-		act_seq[t] = intersect(herb_act, crop_act, plow_act, spot_act)[1]
-
-	end
-
-	return act_seq
 
 end
 
@@ -242,6 +178,13 @@ function economic_reward(N::Array{Float64, 1}, crop::Array{Int64, 1},
 	if crop[1] == CROP_WW
 
 		econ_reward[1] = (Y0 - slope * N[1]) 
+		
+		if econ_reward[1] < 0.0
+
+			econ_reward[1] = 0.0
+
+		end
+
 
 	elseif crop[1] == CROP_ALT
 
@@ -264,6 +207,12 @@ function economic_reward(N::Array{Float64, 1}, crop::Array{Int64, 1},
 
 			econ_reward[i] = (Y0 - slope * N[i]) *  
 				repeat_penelty(crop[i - 1], crop[i], rep_penelty)
+
+			if econ_reward[i] < 0.0
+
+				econ_reward[i] = 0.0
+
+			end
 
 		elseif crop[i] == CROP_ALT
 
@@ -767,7 +716,7 @@ function GA_solve_TSR(T::Int64, pop_size::Int64, num_gen::Int64, mut::Float64,
 		reward_list[g][:] = eval_act_seq_pop(pop_list[g], A, 
 			SB1, SB2, ab_pop, ab_pop_spot, mat_pop, pat_pop, 
 			eff_pop, par_mix, mix_key, mix_kern,  herb_sur, 
-			T, int_pop[1], int_pop[1], sur_crop_alt, inv_frac, 
+			T, int_pop[1], int_pop[2], sur_crop_alt, inv_frac, 
 			germ_prob, seed_sur, fec_max, fec_dd, sur_spot, 
 			dis_rates, Y0, Y_slope, Y_ALT, C, rep_pen, spot_fix, 
 			spot_var)

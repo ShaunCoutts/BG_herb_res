@@ -20,7 +20,7 @@ int_RR = 0.0;
 int_Rr = 0.1;
 int_AA = 0.0;
 int_Aa = 0.01;
-int_N = 100.0;
+int_N = 100000.0;
 
 # define parameters 
 pr_ex = 0.8;
@@ -33,7 +33,7 @@ inv_frac = 0.6;
 germ_prob = 0.5;
 seed_sur = 0.5;
 fec_max = 60.0; 
-fec_dd = 0.001;
+fec_dd = 0.0003;
 
 # reward function parameters
 dis_rate = 0.96;
@@ -109,8 +109,8 @@ spot_act_seq = repeat([0], inner = T);
 
 # test out the GA solver
 pop_size = 1000;
-num_gen = 50;
-mut = 0.05;
+num_gen = 100;
+mut = 0.03;
 
 @time sol =  GA_solve_TSR(T, pop_size, num_gen, mut,
 	cost_herb, cost_WW, cost_ALT, cost_FAL, cost_plow, spot_fix, spot_var, 
@@ -118,8 +118,7 @@ mut = 0.05;
 	int_N, int_RR, int_Rr, int_AA, int_Aa, 
 	inv_frac, germ_prob, seed_sur, fec_max, 
 	fec_dd, sur_spot, dis_rate, Y0,
-	Y_slope,Y_ALT, pr_ex, 
-	s0, rep_pen);
+	Y_slope,Y_ALT, pr_ex, s0, rep_pen);
 
 
 
