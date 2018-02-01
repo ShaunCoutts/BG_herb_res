@@ -233,6 +233,22 @@ function get_sur_rr(rr::Array{Float64, 3}, g_vals::Array{Float64, 1}, s0::Float6
   return out
   
 end
+
+# survival of TS susceptable population for a single time slice at a single location
+function get_sur_rr(rr::Array{Float64, 1}, g_vals::Array{Float64, 1}, s0::Float64,
+	herb_ef::Float64, g_pro::Float64, dg::Float64)
+
+	pre_herb = sum(rr) 
+  
+	sur = 1 ./ (1 + exp(-(s0 - (herb_ef - min(herb_ef, g_vals * g_pro)))))
+
+	sur_num = sum(rr .* sur)
+
+	return sur_num / pre_herb
+  
+end
+
+
 # get fiotness of a given population, distribuited over g and space
 function get_fitness(pop::Array{Float64, 3}, dg::Float64, sur_vec::Array{Float64, 1}, 
   fec_vec::Array{Float64, 1}, T::Int64)

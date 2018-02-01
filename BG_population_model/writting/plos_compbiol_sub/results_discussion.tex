@@ -1,0 +1,241 @@
+% Template for PLoS
+% Version 3.3 June 2016
+%
+% % % % % % % % % % % % % % % % % % % % % %
+%
+% -- IMPORTANT NOTE
+%
+% This template contains comments intended 
+% to minimize problems and delays during our production 
+% process. Please follow the template instructions
+% whenever possible.
+%
+% % % % % % % % % % % % % % % % % % % % % % % 
+%
+% Once your paper is accepted for publication, 
+% PLEASE REMOVE ALL TRACKED CHANGES in this file 
+% and leave only the final text of your manuscript. 
+% PLOS recommends the use of latexdiff to track changes during review, as this will help to maintain a clean tex file.
+% Visit https://www.ctan.org/pkg/latexdiff?lang=en for info or contact us at latex@plos.org.
+%
+%
+% There are no restrictions on package use within the LaTeX files except that 
+% no packages listed in the template may be deleted.
+%
+% Please do not include colors or graphics in the text.
+%
+% The manuscript LaTeX source should be contained within a single file (do not use \input, \externaldocument, or similar commands).
+%
+% % % % % % % % % % % % % % % % % % % % % % %
+%
+% -- FIGURES AND TABLES
+%
+% Please include tables/figure captions directly after the paragraph where they are first cited in the text.
+%
+% DO NOT INCLUDE GRAPHICS IN YOUR MANUSCRIPT
+% - Figures should be uploaded separately from your manuscript file. 
+% - Figures generated using LaTeX should be extracted and removed from the PDF before submission. 
+% - Figures containing multiple panels/subfigures must be combined into one image file before submission.
+% For figure citations, please use "Fig" instead of "Figure".
+% See http://journals.plos.org/plosone/s/figures for PLOS figure guidelines.
+%
+% Tables should be cell-based and may not contain:
+% - spacing/line breaks within cells to alter layout or alignment
+% - do not nest tabular environments (no tabular environments within tabular environments)
+% - no graphics or colored text (cell background color/shading OK)
+% See http://journals.plos.org/plosone/s/tables for table guidelines.
+%
+% For tables that exceed the width of the text column, use the adjustwidth environment as illustrated in the example table in text below.
+%
+% % % % % % % % % % % % % % % % % % % % % % % %
+%
+% -- EQUATIONS, MATH SYMBOLS, SUBSCRIPTS, AND SUPERSCRIPTS
+%
+% IMPORTANT
+% Below are a few tips to help format your equations and other special characters according to our specifications. For more tips to help reduce the possibility of formatting errors during conversion, please see our LaTeX guidelines at http://journals.plos.org/plosone/s/latex
+%
+% For inline equations, please be sure to include all portions of an equation in the math environment.  For example, x$^2$ is incorrect; this should be formatted as $x^2$ (or $\mathrm{x}^2$ if the romanized font is desired).
+%
+% Do not include text that is not math in the math environment. For example, CO2 should be written as CO\textsubscript{2} instead of CO$_2$.
+%
+% Please add line breaks to long display equations when possible in order to fit size of the column. 
+%
+% For inline equations, please do not include punctuation (commas, etc) within the math environment unless this is part of the equation.
+%
+% When adding superscript or subscripts outside of brackets/braces, please group using {}.  For example, change "[U(D,E,\gamma)]^2" to "{[U(D,E,\gamma)]}^2". 
+%
+% Do not use \cal for caligraphic font.  Instead, use \mathcal{}
+%
+% % % % % % % % % % % % % % % % % % % % % % % % 
+%
+% Please contact latex@plos.org with any questions.
+%
+% % % % % % % % % % % % % % % % % % % % % % % %
+
+\documentclass[10pt,letterpaper]{article}
+\usepackage[top=0.85in,left=2.75in,footskip=0.75in]{geometry}
+
+% amsmath and amssymb packages, useful for mathematical formulas and symbols
+\usepackage{amsmath,amssymb}
+
+% Use adjustwidth environment to exceed column width (see example table in text)
+\usepackage{changepage}
+
+% Use Unicode characters when possible
+\usepackage[utf8x]{inputenc}
+
+% textcomp package and marvosym package for additional characters
+\usepackage{textcomp,marvosym}
+
+% cite package, to clean up citations in the main text. Do not remove.
+\usepackage{cite}
+
+% makes the \textsubscript work on my older version of latex
+\usepackage{fixltx2e}
+
+% Use nameref to cite supporting information files (see Supporting Information section for more info)
+\usepackage{nameref,hyperref}
+
+% line numbers
+\usepackage[right]{lineno}
+
+% ligatures disabled
+\usepackage{microtype}
+\DisableLigatures[f]{encoding = *, family = * }
+
+% color can be used to apply background shading to table cells only
+\usepackage[table]{xcolor}
+\usepackage{multirow} %connecting columns in tables
+\usepackage{multicol}
+\usepackage{longtable}
+
+% array package and thick rules for tables
+\usepackage{array}
+
+% create "+" rule type for thick vertical lines
+\newcolumntype{+}{!{\vrule width 2pt}}
+
+% create \thickcline for thick horizontal lines of variable length
+\newlength\savedwidth
+\newcommand\thickcline[1]{%
+  \noalign{\global\savedwidth\arrayrulewidth\global\arrayrulewidth 2pt}%
+  \cline{#1}%
+  \noalign{\vskip\arrayrulewidth}%
+  \noalign{\global\arrayrulewidth\savedwidth}%
+}
+
+% \thickhline command for thick horizontal lines that span the table
+\newcommand\thickhline{\noalign{\global\savedwidth\arrayrulewidth\global\arrayrulewidth 2pt}%
+\hline
+\noalign{\global\arrayrulewidth\savedwidth}}
+
+
+% Remove comment for double spacing
+%\usepackage{setspace} 
+%\doublespacing
+
+% Text layout
+\raggedright
+\setlength{\parindent}{0.5cm}
+\textwidth 5.25in 
+\textheight 8.75in
+
+% Bold the 'Figure #' in the caption and separate it from the title/caption with a period
+% Captions will be left justified
+\usepackage[aboveskip=1pt,labelfont=bf,labelsep=period,justification=raggedright,singlelinecheck=off]{caption}
+\renewcommand{\figurename}{Fig}
+
+% Use the PLoS provided BiBTeX style
+\bibliographystyle{plos2015}
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+% Leave date blank
+\date{}
+
+% Header and Footer with logo
+\usepackage{lastpage,fancyhdr,graphicx}
+\usepackage{epstopdf}
+\pagestyle{myheadings}
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{27.023pt}
+\lhead{\includegraphics[width=2.0in]{PLOS-submission.eps}}
+\rfoot{\thepage/\pageref{LastPage}}
+\renewcommand{\footrule}{\hrule height 2pt \vspace{2mm}}
+\fancyheadoffset[L]{2.25in}
+\fancyfootoffset[L]{2.25in}
+\lfoot{\sf PLOS}
+
+%% Include all macros below
+
+\newcommand{\lorem}{{\bf LOREM}}
+\newcommand{\ipsum}{{\bf IPSUM}}
+
+%% END MACROS SECTION
+
+
+\begin{document}
+\vspace*{0.2in}
+% Results and Discussion can be combined.
+\section*{Results and Discussion}
+As expected, in the absence of target site resistance, quantitative resistance initially evolved very quickly (within 20 generations). Once quantitative resistance conferred at least 50\% survival we introduced target site resistance at a low frequency (\%R = 0.001). Once introduced target site resistance increased slowly, taking more than 75 generations before target site resistant alleles were 50\% of all target site alleles (solid pink line Fig. \ref{fig:simp_traj}a). In contrast, the control run, where quantitative resistance was forced to remain low (by setting $\rho = 0$), saw target site resistance evolve very quickly when introduced at the same relative frequency (dotted pink line Fig. \ref{fig:simp_traj}a). Quantitative resistance slowed the the evolution of target site resistance so much because it reduced the difference in fitness between target site resistant and target site susceptible individuals.      
+
+\begin{figure}[!h] 
+	\includegraphics[height=90mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/simp_trajectory_HSI.pdf}
+\caption{{\bf The evolutionary dynamics of target site (TSR) and quantitative resistance over time under herbicide application (a and b) and the population response (c).} The initial population of 10 seeds had no target site resistance and low quantitative resistance. This population was exposed to herbicide continuously, and target site resistant mutants where introduced (at a frequency of \%R = 0.001) in the first time step after quantitative resistance conferred more than 50\% survival under herbicide. We use three metrics to summarise the evolutionary dynamics, \%R, survival of $rr$ individuals (a) and the fitness advantage to target site resistant individuals (b). The dotted pink line in (a) shows the very rapid evolution of target site resistance under a control run where there was no quantitative resistance (i.e. $\rho = 0$).} 
+\label{fig:simp_traj}
+\end{figure}
+
+Target site resistant individuals produced nearly twice as many seeds as target site susceptible individuals under herbicide when first introduced (Fig. \ref{fig:simp_traj}b). However, that fitness advantage was quickly reduced to just 0.2 seeds per germinated individual by two processes. First, quantitative resistance continued to evolve after the introduction of target site resistance, increasing target site susceptible survival and thus their average reproduction (since survival is a prerequisite for reproduction). Secondly, fitness costs depend only on the quantitative resistance breeding value ($g$) and not target site resistance. As a result target site resistant individuals can inherit the fitness costs incurred by high quantitative resistance through crossing with target site susceptible individuals, which initially make up the vast majority of the population. These redundant (for target site resistant mutants) fitness costs keep the fitness difference between target site susceptible and resistant mutants low for a prolonged period (50 generations, Fig. \ref{fig:simp_traj}b). 
+
+While the initial evolution of quantitative resistance allowed rapid population growth under herbicide, the subsequent establishment of target site resistance occurred with little impact on the population (Fig. \ref{fig:simp_traj}c and Fig. \ref{fig:evo_pop}b; note the logged x-axis exaggerates population changes that happened after 10 generations). Even though the target site mutants had a large effect on the evolutionary dynamics (Fig \ref{fig:evo_pop}a). 
+
+\begin{figure}[!h] 
+	\includegraphics[height=70mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/evo_pop_plt.pdf}
+\caption{{\bf The evolutionary dynamics of target site (TSR) and quantitative resistance over time under herbicide application (a and c) and the population response (b and d) under different initial levels of quantitative resistance and frequency of target site resistance.} The initial population of 10 seeds had no target site resistance and low quantitative resistance. This population was exposed to herbicide continuously, and target site resistant mutants where introduced in the first time step after quantitative resistance conferred more than 50\% (HIGH scenario; a, b) or 1\% (LOW scenario; c, d) survival under herbicide. In plots of resistance trait space (a, c) points mark 2 generation intervals and numbers in the markers show 20 generation intervals, thus the closer markers are together the slower the evolutionary dynamics.} 
+\label{fig:evo_pop}
+\end{figure}
+
+As expected, the rate that target site resistance could evolve was very dependent on the genetic background into which the target site resistance was introduced [REF]. When quantitative resistance was low target site resistance evolved rapidly, reaching \%R $>$ 0.7 within 10 generations, unless target site resistant alleles ($R$) were introduced at a low frequency, and even then \%R $>$ 0.7 was reached within 20 generations (Fig. \ref{fig:evo_pop}c).
+
+When high quantitative resistance had already developed two different dynamics occur depending on the initial frequency of target site resistance (Fig. \ref{fig:evo_pop}a). When initial \%R = 0.1, target site resistance could develop rapidly, with target site resistant alleles making 50\% of all target site alleles within 10 generations (dark green, Fig. \ref{fig:evo_pop}a). At the same time quantitative resistance initially increases slightly, but then the dynamic seen in Fig. \ref{fig:simp_traj}b starts to drive down the level of quantitative resistance within four generations. 
+
+In contrast, when target site resistance was introduced at a lower frequency (\%R $\leq$ 0.01) quantitative resistance continued to increase rapidly for the next 10 generations, and did not begin to decline until after 20 generations. In these cases the decline in quantitative resistance started before substantial levels of target site resistance had built up in the population (\%R $<$ 0.1; Fig \ref{fig:evo_pop}a). To explore this dynamic in more detail we focus on the scenario where target site resistant alleles were introduced to a population that already had high quantitative resistance at a frequency of \%R = 0.001 in Fig. \ref{fig:G_fit}. 
+
+\begin{figure}[!h] 
+	\includegraphics[height=70mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/fit_fec_plt.pdf}
+\caption{{\bf The average reproductive performance (as a measure of fitness costs) of the three target site genotypes, $RR$, $Rr$, $rr$, as target site resistance (measured by \%R) evolves over time.} The initial population of 10 seeds had no target site resistance and low quantitative resistance. This population was exposed to herbicide continuously, and target site resistant mutants where introduced (at a frequency of \%R = 0.001) in the first time step after quantitative resistance conferred more than 50\% survival under herbicide. Points mark 2 generation intervals and numbers in the markers show 20 generation intervals. The closer markers are together the slower the evolutionary dynamics.} 
+\label{fig:G_fit}
+\end{figure}
+
+The average reproductive performance of each target site genotype shows the fitness costs incurred from quantitative resistance (Fig. \ref{fig:G_fit}). Initially the fitness costs of the target site resistant portion of the population increase rapidly as the fitness costs of the target site susceptible part of the population is crossed into the target site resistant part. This reduced the selection pressure for target site resistance and slowed its evolution (step initial drop in darker lines Fig. \ref{fig:G_fit}). The fitness (and by extension the breeding value of quantitative resistance $g$) moved in unison between the three target site genotypes because all three genotypes mixed quantitatively, although in the case of $RR$ and $rr$ this mixing occurred via an intermediate cross with $Rr$. A lower breeding value benefited target site resistant parents (since their survival is not dependent on $g$), but not the target site susceptible parents. The small fitness advantage for target site parents with a lower breeding value ($g$) selects for lower $g$ in that part of the population. This lower $g$ value is then mixed back into the target site susceptible part of the population. Although this mixing happens very slowly at first because target site resistance is rare, it starts off a weak feed back. As the lower breeding value mixes through the whole population it only decreases the survival of the target site susceptible part of the population, increasing the fitness advantage of target site resistant parents, and so increasing the rate of evolution of target site resistance.                           
+
+As in the non-spatial model, in the spatial model target site resistance evolved rapidly at the introduction location when the resident population had low levels of quantitative resistance, and evolved much more slowly when the resident population had high levels of quantitative resistance (Fig. \ref{fig_spread}). However, in both cases the spread of target site resistance across the landscape was much slower than its initial evolution at the introduction location. This lead to very steep clines in target site resistance. As an example, in Fig. \ref{fig_spread}c 10 generations after target site resistant alleles were introduced to the landscape they made up nearly 70\% of all target site alleles at the introduction site. It took 30 generations to reach a similar level of target site resistance at a location just 25m away, this is despite the pollen dispersal kernel being flat at this scale. 
+
+\begin{figure}[!h] 
+\includegraphics[height=80mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/space_time_rr_thresh.pdf} 
+\caption{{\bf The spread of target site resistance over a 1D landscape that already contains a target site susceptible population.} The resident population was exposed to herbicide continuously, and target site resistant mutants where introduced (at a frequency of \%R = 0.1) only to the center location in the landscape, in the first time step after quantitative resistance conferred more than 50\% (HIGH scenario; a, b) or 1\% (LOW scenario; c, d) survival under herbicide. Each line shows \%R at 10 generation intervals for each location.} 
+\label{fig_spread}
+\end{figure}
+
+This occurred because dispersal limitation meant that at the introduction location target site resistant parents were more likely to cross with each other, and their offspring were dispersed to nearby locations (and thus more likely to cross with each other). However, dispersal limitation also meant that target site resistance alleles arriving at a location away from the introduction location were swamped by the much higher frequency of locally produced target site susceptible alleles.
+
+The initial sate of the population also changed the direction of the effect of additive variance ($V_a$) on the evolution of target site resistance. When the resident population had low levels of quantitative resistance higher $V_a$ resulted in faster evolution of target site resistance (Fig. \ref{fig_spread}c,d). In this scenario the target site resistant genotype initially had an enormous fitness advantage (germinated target site resistant parents had fecundity more than 20 times higher than target site susceptible parents, mainly due to differences in survival). This allowed target site resistance to evolve very quickly at the introduction site (\%R $>$ 0.65 after 10 generations Fig. \ref{fig_spread}c). This reduced the evolution of quantitative resistance, as the target site resistant part of the population had a lower breeding value ($g$), which was mixed across the whole population (Fig. \ref{fig:G_fit}). This set up a race, the faster quantitative resistance could evolve from a low level (which occurred with higher values of $V_a$), the faster the fitness advantage of target site resistance was reduced. This slowed the initial (and thus also the subsequent) evolution of target site resistance across the landscape.             
+
+In contrast when the resident population had already evolved high levels of quantitative resistance before target site resistance was introduced higher values of $V_a$ lead to faster evolution and spread of target site resistance (Fig. \ref{fig_spread}). As in the non-spatial model the fitness advantage quickly dropped (Fig. \ref{fig:ts_TSR_adv}) as the target site resistant immigrants crossed with the resident population and inherited the fitness costs of high quantitative resistance. The fitness advantage only started to increase once the the population began to shed the fitness costs of quantitative resistance by evolving a lower breeding value, $g$ (via the same process as the non-spatial model, Fig. \ref{fig:G_fit}). This process was much faster when $V_a$ was higher (Fig. \ref{fig:ts_TSR_adv} dark vs light lines) because there was more variation in quantitative resistance to act on when $V_a$ was higher. Having a higher frequency of target site resistance also helped the population shed the fitness costs as it reduced the influence of the target site susceptible part of the population (which has a higher breeding value) on the breeding value of the whole population (recall the breeding value of all target site genotypes track each other; Fig. \ref{fig:G_fit}). 
+
+\begin{figure}[!h] 
+\includegraphics[height=60mm]{/home/shauncoutts/Dropbox/projects/MHR_blackgrass/BG_population_model/space_time_TSR_adv.pdf} 
+\caption{{\bf The fitness advantage of target site resistant plants as target site resistance evolves over time at the location target site resistance was introduced (a) and 30m from the introduction location (b).} The resident population was exposed to herbicide continuously, and target site resistant mutants where introduced (at a frequency of \%R = 0.1) only to the center location in the landscape, in the first time step after quantitative resistance conferred more than 50\% survival under herbicide (HIGH scenario). Points mark 2 generation intervals and numbers in the markers show 20 generation intervals. Thus the closer markers are together the slower the evolutionary dynamics.} 
+\label{fig:ts_TSR_adv}
+\end{figure}
+
+A lower breeding value, $g$, both decreased survival for the target site susceptible genotype, and increased fecundity for the target site resistant genotype, increasing the fitness advantage of target site resistance, further increasing the frequency of target site resistance. This positive feedback is why the increase in fitness advantage accelerates as \%R increased (curve upwards in Fig. \ref{fig:ts_TSR_adv}). This dynamic was much slower just 30m from the introduction site since the initial frequency of target site resistance alleles was lower in that part of the landscape, greatly slowing the initial evolution of target site resistance (Fig. \ref{fig:ts_TSR_adv}b).     
+
+
+
+\end{document}

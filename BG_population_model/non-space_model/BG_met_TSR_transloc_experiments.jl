@@ -85,11 +85,54 @@ names!(res_df, convert(Array{Symbol}, all_names));
 # write the parameter sweep to a .csv file so an R plotting script can be used
 cd(output_loc);
 writetable("single_pop_trajectory.csv", res_df);
- 
+
+# run the same thing but injecting TSR at a given quant gen
+HSI_Rfreq = 0.001;
+HSI_rr_thresh = 0.5;
+int_g = get_g_at_sur(0.0001, base_sur, herb_effect, g_prot);
+
+num_iter = 200;
+pro_exposed = 0.97;
+herb_app = repeat([2], outer = num_iter);
+
+HSI_single_run = run_wrapper_Rfreq(int_num_RR, int_num_Rr, int_num_rr, 
+	int_g, int_sd, HSI_Rfreq, HSI_rr_thresh, inj_g, inj_sd, 
+	num_iter, herb_app, germ_prob, fec0, fec_cost, fec_max, dd_fec, 
+	herb_effect, g_prot, seed_sur, pro_exposed, base_sur, offspring_sd,
+	g_vals, dg, resist_G);
+
+var_names = ["intRR", "intRr", "intrr", "HSI_Rfreq", "HSI_rr_th", "int_g", "int_sd", 
+	     "inj_g", "inj_sd", "first_herb", "last_herb", "germ_prob", "fec0", 
+	     "fec_cost", "fec_max", "dd_fec", "herb_effect", "g_pro", "seed_sur", 
+	     "pro_exposed", "s0", "off_sd", "measure"];
+
+all_names = vcat(var_names, [string("t", i) for i = 1:num_iter]);
+
+res_df1 = DataFrame(HSI_single_run);
+names!(res_df1, convert(Array{Symbol}, all_names));
+
+# run a control version where quant resistance is turned off (gives no protection)
+g_prot = 0.0;
+int_g = 0.0; 
+HSI_rr_thresh = 0.001;
+
+HSI_single_run = run_wrapper_Rfreq(int_num_RR, int_num_Rr, int_num_rr, 
+	int_g, int_sd, HSI_Rfreq, HSI_rr_thresh, inj_g, inj_sd, 
+	num_iter, herb_app, germ_prob, fec0, fec_cost, fec_max, dd_fec, 
+	herb_effect, g_prot, seed_sur, pro_exposed, base_sur, offspring_sd,
+	g_vals, dg, resist_G);
+
+res_df2 = DataFrame(HSI_single_run);
+names!(res_df2, convert(Array{Symbol}, all_names));
+
+# write the parameter sweep to a .csv file so an R plotting script can be used
+res_df = vcat(res_df1, res_df2);
+cd(output_loc);
+writetable("single_pop_HSI.csv", res_df);
 
 
 
-
+#####################################################################################
 # set a up a limited parameter to find a nice region of parameter space to work in
 g_pro = [1.0, 1.5, 2.0];
 Va = [0.5, 1.0, 1.5]; # addative variance, take sqrt() to standard deviation, which is the julia parameterisation

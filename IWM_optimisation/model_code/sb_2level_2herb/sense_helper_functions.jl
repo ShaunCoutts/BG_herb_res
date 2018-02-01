@@ -3,9 +3,6 @@
 
 using DataFrames
 
-code_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/model_code/sb_2level_2herb"
-data_loc = "/home/shauncoutts/Dropbox/projects/MHR_blackgrass/IWM_optimisation/outputs/GA_2level_sb_out/data_out"
-
 # make a summary of a single run for TSR from sense analysis 
 function make_sum_sense(sol_list::Array{Any, 1}, T_used::Int64)
 
@@ -13,6 +10,11 @@ function make_sum_sense(sol_list::Array{Any, 1}, T_used::Int64)
 	np = length(sol_list)
 
 	A = make_action_space()
+
+	N_G = 9 # number of genotypes 
+	mix_key = make_TSR_mix_index(N_G)
+
+	mix_kern = make_TSR_kernel(mix_key)
 
 	for i in 1:np
 
@@ -36,32 +38,26 @@ function make_sum_sense(sol_list::Array{Any, 1}, T_used::Int64)
 		plow_seq_int = best_seq[:, ACT_PLOW]
 		spot_seq = best_seq[:, ACT_SPOT]
 
-		N_G = 9 # number of genotypes 
-		mix_key = make_TSR_mix_index(N_G)
-
 		# re-build the populaiton at different snapshots
 		sim_pop = sim_act_seq(herb_seq, crop_seq, spot_seq, 
-			plow_seq_int, sol, mix_key)
+			plow_seq_int, sol, mix_kern, mix_key)
 
 		sim_noact = sim_act_seq(repeat([HERB0], inner = T_used),
 			repeat([CROP_WW], inner = T_used), 
 			repeat([SPOT0], inner = T_used),
 			repeat([PLOW0], inner = T_used), 
-			sol, mix_key)
+			sol, mix_kern, mix_key)
 		
-		ag_pop = get_above_ground(sim_pop, sol, herb_seq, crop_seq, spot_seq, 
-			mix_key)
-
 		#make the summaries	
 		df_temp[:proWW] = get_pro_WW(crop_seq, T_used)
 
 		df_temp[:proPlow] = get_pro_plow(plow_seq_int, T_used)
 
-		df_temp[:spot_spend] = get_spot_spend(ag_pop[:pre], sol, 
+		df_temp[:spot_spend] = get_spot_spend(sim_pop[:ag_pre], sol, 
 			spot_seq, T_used)
 
-		df_temp[:pro_max_reward] = get_reward_pro_max(ag_pop, sol, 
-			sub_acts, T_used)
+		df_temp[:pro_max_reward] = get_reward_pro_max(sim_pop, sol, 
+			best_seq, T_used)
 
 		df_temp[:herb_apps] = get_num_herb(herb_seq, T_used)
 		
@@ -80,7 +76,11 @@ function make_sum_sense(sol_list::Array{Any, 1}, T_used::Int64)
 
 		push!(df_list, df_temp)
 
-		print("$i\n")
+		if i % 500 == 0
+			
+			print("$i\n")
+
+		end
 
 	end
 	
@@ -102,56 +102,12 @@ function get_pro_plow(plow_seq::Array{Int64, 1}, T_used::Int64)
 	
 end 
 
-# take the simed population and infer above ground population from it
-function get_above_ground(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
-	pars::Dict, herb_seq::Array{Int64, 1}, crop_seq::Array{Int64, 1}, 
-	spot_seq::Array{Int64, 1}, mix_key::Tuple)
-	
-	T = size(sim_pop[1])[1]
-
-	herb_sur = make_herb_sur_dom(mix_key, pars[:s0], pars[:p_ex], 
-		pars[:sur_herb])
-
-	ab_pre_spot = sim_pop[1] * pars[:germ_prob]
-	ab_post_spot = zeros(size(ab_pre_spot))
-
-	for t in 2:T
-
-		if crop_seq[t - 1] == CROP_FAL
-	  
-			ab_pre_spot[t, :] .= 0.0
-	  
-		elseif crop_seq[t - 1] == CROP_WW
-	    
-			ab_pre_spot[t, :] = ab_pre_spot[t, :] .* 
-				herb_sur[herb_seq[t - 1]]
-	    
-		else
-	    
-			ab_pre_spot[t, :] = (ab_pre_spot[t, :] .* 
-				herb_sur[herb_seq[t - 1]]) * 
-				pars[:sur_alt]
-	  
-		end
-
-		if spot_seq[t - 1] == 0
-
-			ab_post_spot[t, :] = deepcopy(ab_pre_spot[t, :])  
-
-		end
-
- 	end
-  
-	return Dict(:pre => ab_pre_spot, :post => ab_post_spot)
-
-end
-
 function get_spot_spend(pre_spot_pop::Array{Float64, 2}, pars::Dict, 
 	spot_seq::Array{Int64, 1}, T_used::Int64)
 
 	spot_spend = zeros(T_used)
 
-	for t in 1:T_used
+	for t in 2:T_used
 
 		if spot_seq[t] == 1
 
@@ -166,14 +122,14 @@ function get_spot_spend(pre_spot_pop::Array{Float64, 2}, pars::Dict,
 
 end
 
-function get_undis_reward(ag_pop::Dict{Symbol, Array{Float64, 2}}, 
+function get_undis_reward(sim_pop::Dict{Symbol, Array{Float64, 2}}, 
 	pars::Dict{Symbol, Float64}, sub_acts::Array{Int64, 2})
 
 	# total population sizes 
-	tot_ab_pre = vcat(sum(ag_pop[:pre], 2)...)	
+	tot_ab_pre = vcat(sum(sim_pop[:ag_pre], 2)...)	
 	tot_ab_pre = tot_ab_pre[2:end]
 
-	tot_ab_post = vcat(sum(ag_pop[:post], 2)...)
+	tot_ab_post = vcat(sum(sim_pop[:ag_post], 2)...)
 	tot_ab_post = tot_ab_post[2:end]
 
 	# generate the costs for each action
@@ -191,11 +147,11 @@ function get_undis_reward(ag_pop::Dict{Symbol, Array{Float64, 2}},
 
 end
 
-function get_reward_pro_max(ag_pop::Dict{Symbol, Array{Float64, 2}}, 
+function get_reward_pro_max(sim_pop::Dict{Symbol, Array{Float64, 2}}, 
 	pars::Dict{Symbol, Float64}, sub_acts::Array{Int64, 2}, T_used::Int64)
 
 	# get undiscounted reward from action 
-	undis_rewards = get_undis_reward(ag_pop, pars, sub_acts)	
+	undis_rewards = get_undis_reward(sim_pop, pars, sub_acts)	
 
 	# get max possible reward assuming no black grass
 	# note a minor complication here is if the crop repeate i
@@ -242,7 +198,7 @@ function get_num_herb(herb_seq::Array{Int64, 1}, T_used::Int64)
 end
 
 # get a summary of the resistance in a population after t years
-function get_resist_profile(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}},
+function get_resist_profile(sim_pop::Dict{Symbol, Array{Float64, 2}},
 	pars::Dict{Symbol, Float64}, mix_key::Tuple, t::Int64) 
 
 	herb_sur = make_herb_sur_dom(mix_key, pars[:s0], pars[:p_ex], 
@@ -252,7 +208,7 @@ function get_resist_profile(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}
 	res_H2 = herb_sur[HERB2] .== pars[:s0]
 	res_H12 = herb_sur[HERB12] .== pars[:s0]
 
-	pop_t = deepcopy(sim_pop[1][t, :])
+	pop_t = deepcopy(sim_pop[:SB1][t, :])
 
 	tot_pop = sum(pop_t)
 
@@ -263,18 +219,18 @@ function get_resist_profile(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}
 
 end
 
-function get_SB_t(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}, 
+function get_SB_t(sim_pop::Dict{Symbol, Array{Float64, 2}}, 
 	t::Int64)
 
-	return sum(sim_pop[1][1:t, :])
+	return sum(sim_pop[:SB1][1:t, :])
 
 end
 
 # get the seed bank size up to t, reative to the seedbank if no action taken
-function get_realtive_SB(sim_pop::Tuple{Array{Float64, 2}, Array{Float64, 2}}, 
-	sim_noact::Tuple{Array{Float64, 2}, Array{Float64, 2}}, t::Int64)
+function get_realtive_SB(sim_pop::Dict{Symbol, Array{Float64, 2}}, 
+	sim_noact::Dict{Symbol, Array{Float64, 2}}, t::Int64)
 
-	return sum(sim_pop[1][2:(t + 1), :]) / sum(sim_noact[1][2:(t + 1), :])
+	return sum(sim_pop[:SB1][2:(t + 1), :]) / sum(sim_noact[:SB1][2:(t + 1), :])
 
 end
 

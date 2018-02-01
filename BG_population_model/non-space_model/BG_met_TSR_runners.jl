@@ -5,61 +5,80 @@
 using Distributions
 
 # one time step that up dates the population
-function pop_update!(RR_landscape::Array{Float64, 2}, Rr_landscape::Array{Float64, 2}, rr_landscape::Array{Float64, 2},
-  RR_ab_pop::Array{Float64, 1}, Rr_ab_pop::Array{Float64, 1}, rr_ab_pop::Array{Float64, 1}, 
-  eff_pop_holder::Array{Float64, 1}, RR_eff_pop::Array{Float64, 1}, Rr_eff_pop::Array{Float64, 1}, rr_eff_pop::Array{Float64, 1},
-  pollen_RR::Array{Float64, 1}, pollen_Rr::Array{Float64, 1}, pollen_rr::Array{Float64, 1},
-  RR_newseed::Array{Float64, 1}, Rr_newseed::Array{Float64, 1}, rr_newseed::Array{Float64, 1}, 
-  g_mixing_kernel::Array{Float64, 2}, g_mixing_index::Array{Int64, 2}, g_effect_fec::Array{Float64, 1}, 
-  sur_tup::Tuple{Float64, Array{Float64, 1}}, seed_sur::Float64, g_vals::Array{Float64, 1}, resist_G::Array{String, 1}, 
-  germ_prob::Float64, fec_max::Float64, dd_fec::Float64, dg::Float64, 
-  herb_application::Int64, t::Int64)
+function pop_update!(RR_landscape::Array{Float64, 2}, 
+		     Rr_landscape::Array{Float64, 2}, 
+		     rr_landscape::Array{Float64, 2},
+		     RR_ab_pop::Array{Float64, 1}, 
+		     Rr_ab_pop::Array{Float64, 1}, 
+		     rr_ab_pop::Array{Float64, 1}, 
+		     eff_pop_holder::Array{Float64, 1}, 
+		     RR_eff_pop::Array{Float64, 1}, 
+		     Rr_eff_pop::Array{Float64, 1}, 
+		     rr_eff_pop::Array{Float64, 1},
+		     pollen_RR::Array{Float64, 1}, 
+		     pollen_Rr::Array{Float64, 1}, 
+		     pollen_rr::Array{Float64, 1},
+		     RR_newseed::Array{Float64, 1}, 
+		     Rr_newseed::Array{Float64, 1}, 
+		     rr_newseed::Array{Float64, 1}, 
+		     g_mixing_kernel::Array{Float64, 2}, 
+		     g_mixing_index::Array{Int64, 2}, 
+		     g_effect_fec::Array{Float64, 1}, 
+		     sur_tup::Tuple{Float64, Array{Float64, 1}}, 
+		     seed_sur::Float64, 
+		     g_vals::Array{Float64, 1}, 
+		     resist_G::Array{String, 1}, 
+		     germ_prob::Float64, 
+		     fec_max::Float64, 
+		     dd_fec::Float64, 
+		     dg::Float64, 
+		     herb_application::Int64, t::Int64)
 
-  #move seeds to the next timestep, killing as we do so
-  seedbank_update!(RR_landscape, RR_landscape, t, seed_sur)
-  seedbank_update!(Rr_landscape, Rr_landscape, t, seed_sur)
-  seedbank_update!(rr_landscape, rr_landscape, t, seed_sur)
+	#move seeds to the next timestep, killing as we do so
+	seedbank_update!(RR_landscape, RR_landscape, t, seed_sur)
+	seedbank_update!(Rr_landscape, Rr_landscape, t, seed_sur)
+	seedbank_update!(rr_landscape, rr_landscape, t, seed_sur)
   
-  #germination   
-  new_plants!(RR_ab_pop, RR_landscape[:, t], germ_prob)
-  new_plants!(Rr_ab_pop, Rr_landscape[:, t], germ_prob)
-  new_plants!(rr_ab_pop, rr_landscape[:, t], germ_prob)
+	#germination   
+	new_plants!(RR_ab_pop, RR_landscape[:, t], germ_prob)
+	new_plants!(Rr_ab_pop, Rr_landscape[:, t], germ_prob)
+	new_plants!(rr_ab_pop, rr_landscape[:, t], germ_prob)
   
-  #above ground survival
-  survival_at_t!(RR_ab_pop, resist_G, "RR", herb_application, sur_tup)
-  survival_at_t!(Rr_ab_pop, resist_G, "Rr", herb_application, sur_tup)
-  survival_at_t!(rr_ab_pop, resist_G, "rr", herb_application, sur_tup)
+	#above ground survival
+	survival_at_t!(RR_ab_pop, resist_G, "RR", herb_application, sur_tup)
+	survival_at_t!(Rr_ab_pop, resist_G, "Rr", herb_application, sur_tup)
+	survival_at_t!(rr_ab_pop, resist_G, "rr", herb_application, sur_tup)
   
-  ## make effective pop by mult actual pop by resist and density effects
-  num_at_t = (sum(RR_ab_pop) + sum(Rr_ab_pop) + sum(rr_ab_pop)) * dg
+	## make effective pop by mult actual pop by resist and density effects
+	num_at_t = (sum(RR_ab_pop) + sum(Rr_ab_pop) + sum(rr_ab_pop)) * dg
   
-  if num_at_t > 0.0 # if there are some individuals alive above ground create seeds, other wise don't bother
+	if num_at_t > 0.0 # if some individuals alive above ground create seeds, other wise don't bother
     
-    eff_pop_holder[:] = density_effect(dd_fec, num_at_t) * g_effect_fec
-    RR_eff_pop[:] = RR_ab_pop .* eff_pop_holder   
-    Rr_eff_pop[:] = Rr_ab_pop .* eff_pop_holder   
-    rr_eff_pop[:] = rr_ab_pop .* eff_pop_holder   
-    
-    ## pollen for each g, normalise the pollen counts  
-    total_pollen = (sum(RR_eff_pop) + sum(Rr_eff_pop) + sum(rr_eff_pop)) * dg
-    
-    pollen_RR[:] = RR_eff_pop / total_pollen
-    pollen_Rr[:] = Rr_eff_pop / total_pollen
-    pollen_rr[:] = rr_eff_pop / total_pollen
-  
-    #create new seeds
-    new_seeds_at_t!(RR_newseed, Rr_newseed, rr_newseed, RR_eff_pop, Rr_eff_pop,
-      rr_eff_pop, pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, g_mixing_index,   
-      fec_max, dg)
-    
-    # add new seeds to the seed bank
-    RR_landscape[:, t] = RR_landscape[:, t] + RR_newseed 
-    Rr_landscape[:, t] = Rr_landscape[:, t] + Rr_newseed
-    rr_landscape[:, t] = rr_landscape[:, t] + rr_newseed
-  
-  end
+		eff_pop_holder[:] = density_effect(dd_fec, num_at_t) * g_effect_fec
+		RR_eff_pop[:] = RR_ab_pop .* eff_pop_holder   
+		Rr_eff_pop[:] = Rr_ab_pop .* eff_pop_holder   
+		rr_eff_pop[:] = rr_ab_pop .* eff_pop_holder   
 
-  return nothing
+		## pollen for each g, normalise the pollen counts  
+		total_pollen = (sum(RR_eff_pop) + sum(Rr_eff_pop) + sum(rr_eff_pop)) * dg
+
+		pollen_RR[:] = RR_eff_pop / total_pollen
+		pollen_Rr[:] = Rr_eff_pop / total_pollen
+		pollen_rr[:] = rr_eff_pop / total_pollen
+
+		#create new seeds
+		new_seeds_at_t!(RR_newseed, Rr_newseed, rr_newseed, RR_eff_pop, Rr_eff_pop,
+			rr_eff_pop, pollen_RR, pollen_Rr, pollen_rr, g_mixing_kernel, 
+			g_mixing_index, fec_max, dg)
+
+		# add new seeds to the seed bank
+		RR_landscape[:, t] = RR_landscape[:, t] + RR_newseed 
+		Rr_landscape[:, t] = Rr_landscape[:, t] + Rr_newseed
+		rr_landscape[:, t] = rr_landscape[:, t] + rr_newseed
+  
+	end
+
+	return nothing
     
 end
 
@@ -264,6 +283,124 @@ function multi_iter_HSI(int_pop_RR::Array{Float64, 1}, int_pop_Rr::Array{Float64
 
 end
 
+# version that injects a set frequency of R when quant gen reaches a given level
+function multi_iter_HSI_Rfreq(int_pop_RR::Array{Float64, 1}, 
+			       int_pop_Rr::Array{Float64, 1}, 
+			       int_pop_rr::Array{Float64, 1}, 
+			       HSI_Rfreq::Float64, 
+			       HSI_rr_thresh::Float64, 
+			       inj_g::Float64, 
+			       inj_sd::Float64,
+			       num_iter::Int64, 
+			       g_mixing_kernel::Array{Float64, 2}, 
+			       g_mixing_index::Array{Int64, 2}, 
+			       g_effect_fec::Array{Float64, 1}, 
+			       sur_tup::Tuple{Float64, Array{Float64, 1}}, 
+			       base_sur::Float64, 
+			       h_eff::Float64, 
+			       g_pro::Float64, 
+			       seed_sur::Float64, 
+			       g_vals::Array{Float64, 1}, 
+			       resist_G::Array{String, 1}, 
+			       germ_prob::Float64, 
+			       fec_max::Float64, 
+			       dd_fec::Float64, 
+			       dg::Float64, 
+			       herb_app::Array{Int64, 1})
+
+	#set aside a chunck of memory for the landscapes for each genotype 
+	RR_landscape = zeros(length(g_vals), num_iter)
+	Rr_landscape = zeros(length(g_vals), num_iter)
+	rr_landscape = zeros(length(g_vals), num_iter)
+
+	#sets the intial population for each G at the locations specified in int_pop_x_G. 
+	RR_landscape[:, 1] = deepcopy(int_pop_RR)
+	Rr_landscape[:, 1] = deepcopy(int_pop_Rr)
+	rr_landscape[:, 1] = deepcopy(int_pop_rr)
+
+	# a set of matrices to hold the above ground populations
+	RR_ab_pop = zeros(length(g_vals))
+	Rr_ab_pop = zeros(length(g_vals))
+	rr_ab_pop = zeros(length(g_vals))
+
+	## create the RR_eff_pop and do the pre calc effect of resist costs
+	RR_eff_pop = zeros(length(g_vals))
+	Rr_eff_pop = zeros(length(g_vals))
+	rr_eff_pop = zeros(length(g_vals))
+	eff_pop_holder = zeros(length(g_vals))
+
+	# a set of matrices to hold the total amount of pollen that arrives are each 
+	# location for each metabolic resitance score for each genotype
+	pollen_RR = zeros(length(g_vals))
+	pollen_Rr = zeros(length(g_vals))
+	pollen_rr = zeros(length(g_vals))
+	total_pollen = 0.0
+
+	#set of matrices to hold the new seeds produced at each location pre dispersal 
+	RR_newseed = zeros(length(g_vals))
+	Rr_newseed = zeros(length(g_vals))
+	rr_newseed = zeros(length(g_vals))
+
+	# iterate through the timesteps before seed injection
+	int_t = 0 # set t so julia keeps track of it, which is really nice
+	for int_t in 2:num_iter
+
+		pop_update!(RR_landscape, Rr_landscape, rr_landscape, RR_ab_pop, 
+			Rr_ab_pop, rr_ab_pop, eff_pop_holder, RR_eff_pop, 
+			Rr_eff_pop, rr_eff_pop, pollen_RR, pollen_Rr, pollen_rr, 
+			RR_newseed, Rr_newseed, rr_newseed, g_mixing_kernel, 
+			g_mixing_index, g_effect_fec, sur_tup, seed_sur, g_vals, 
+			resist_G, germ_prob, fec_max, dd_fec, dg, herb_app[int_t], 
+			int_t)
+
+		# check the level of quant gen if reaches the threshold, stop inital phase 
+		if get_sur_rr(rr_landscape[:, int_t], base_sur, h_eff, g_pro, g_vals, dg) >= 
+			HSI_rr_thresh 
+
+			break
+
+		end
+
+	end
+
+	# inject the desired frequency of RR seeds into the population
+	# get the total population size assuming at this point that all seeds are rr
+	pop_tot = get_pop_size(RR_landscape[:, int_t], Rr_landscape[:, int_t], 
+		rr_landscape[:, int_t], dg)
+	
+	# find the number of RR seeds that will result in frequency of HSI_Rfreq
+	# if p = populaion of rr, then 
+	# inj_num_RR = (HSI_R_freq * p) / (HSI_R_freq - 1)
+	# assumption: HSI_R_freq < 1 (i.e. we cannot try and replace the entire population)
+	# assumption: seeds are added as RR, will need slight adjustment to add Rr
+	inj_num_RR = -(HSI_Rfreq * pop_tot) / (HSI_Rfreq - 1)
+
+	# injected seeds
+	RR_landscape[:, int_t] = RR_landscape[:, int_t] + 
+		pdf(Normal(inj_g, inj_sd), g_vals) * inj_num_RR
+
+	# check the spefified sur_rr was reached in time 
+	if int_t < (num_iter - 2)
+		
+		for t in (int_t + 1):num_iter
+
+			pop_update!(RR_landscape, Rr_landscape, rr_landscape, 
+				RR_ab_pop, Rr_ab_pop, rr_ab_pop, 
+				eff_pop_holder, RR_eff_pop, Rr_eff_pop, rr_eff_pop, 
+				pollen_RR, pollen_Rr, pollen_rr, 
+				RR_newseed, Rr_newseed, rr_newseed, 
+				g_mixing_kernel, g_mixing_index, g_effect_fec, 
+				sur_tup, seed_sur, g_vals, resist_G, germ_prob, 
+				fec_max, dd_fec, dg, herb_app[t], t)
+
+		end
+	end
+
+	return (RR_landscape, Rr_landscape, rr_landscape)
+
+end
+
+
 # function to run the model experiment where a single parameter set is tested under both herbicide 
 # and no-herbicide
 # don't have the burnin period. Takes time and only give the sd, which then changes with selection anyway 
@@ -401,6 +538,61 @@ function model_run_hot_seed_injection(int_num_RR::Float64, int_num_Rr::Float64,
 	return herb_run 
 
 end
+
+function model_run_HSI_Rfreq(int_num_RR::Float64, 
+			     int_num_Rr::Float64, 
+			     int_num_rr::Float64, 
+			     int_g::Float64, 
+			     int_sd::Float64, 
+			     HSI_Rfreq::Float64, 
+			     HSI_rr_thresh::Float64,
+			     inj_g::Float64, 
+			     inj_sd::Float64,
+			     num_iter::Int64, 
+			     herb_app::Array{Int64, 1},
+			     germ_prob::Float64, 
+			     fec0::Float64, 
+			     fec_cost::Float64, 
+			     fec_max::Float64, 
+			     dd_fec::Float64, 
+			     h_effect::Float64, 
+			     g_prot::Float64, 
+			     seed_sur::Float64, 
+			     pro_exposed::Float64, 
+			     base_sur::Float64, 
+			     offspring_sd::Float64, 
+			     g_vals::Array{Float64, 1}, 
+			     dg::Float64, 
+			     resist_G::Array{String, 1})
+ 
+	#intial populations 
+	int_pop_RR = pdf(Normal(int_g, int_sd), g_vals) * int_num_RR
+	int_pop_Rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_Rr
+	int_pop_rr = pdf(Normal(int_g, int_sd), g_vals) * int_num_rr
+
+	# build the mixing kernel for metabolic resistance score every row is a offspring score
+	# every coloum is a g_m x g_p combination, so every coloumn is a normal dist with
+	# a mean of g_m*g_p and sd of offspring sd
+	g_mixing_kernel = zeros(length(g_vals), length(g_vals) ^ 2)
+	fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
+	g_mixing_index = generate_index_pairs(g_vals)
+
+	# give the effect of herb as a function of g, make it symetrical stabilising function, centered on 0
+	g_effect_fec = 1 ./ (1 + exp(-(fec0 - abs(g_vals) * fec_cost)))
+
+	#set up the survival vectors 
+	sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
+
+	herb_run =  multi_iter_HSI_Rfreq(int_pop_RR, int_pop_Rr,int_pop_rr, 
+		HSI_Rfreq, HSI_rr_thresh, inj_g, inj_sd, num_iter, 
+		g_mixing_kernel, g_mixing_index, g_effect_fec, sur_tup, 
+		base_sur, h_effect, g_prot, seed_sur, g_vals, resist_G, 
+		germ_prob, fec_max, dd_fec, dg, herb_app)
+
+	return herb_run 
+
+end
+
 
 
 # wrapper function to take the results of the herbicide run and make some populaton summaries for plotting 
@@ -597,8 +789,96 @@ function run_wrapper_bespoke(int_num_RR::Float64, int_num_Rr::Float64,
 
 end
 
+function run_wrapper_Rfreq(int_num_RR::Float64, int_num_Rr::Float64, 
+	int_num_rr::Float64, int_g::Float64, int_sd::Float64, 
+	HSI_Rfreq::Float64, HSI_rr_thresh::Float64, inj_g::Float64, inj_sd::Float64, 
+	num_iter::Int64, herb_app::Array{Int64, 1}, germ_prob::Float64, 
+	fec0::Float64, fec_cost::Float64, fec_max::Float64, dd_fec::Float64, 
+	herb_effect::Float64, g_prot::Float64, seed_sur::Float64, 
+	pro_exposed::Float64, base_sur::Float64, offspring_sd::Float64,
+	g_vals::Array{Float64, 1}, dg::Float64, resist_G::Array{String, 1})
 
+	pop_run  = model_run_HSI_Rfreq(int_num_RR, int_num_Rr, int_num_rr, 
+		int_g, int_sd, HSI_Rfreq, HSI_rr_thresh, inj_g, inj_sd,
+		num_iter, herb_app, germ_prob, fec0, fec_cost, fec_max, 
+		dd_fec, herb_effect, g_prot, seed_sur, pro_exposed, 
+		base_sur, offspring_sd, g_vals, dg, resist_G)
 
+	RR_pop = pop_run[1]
+	Rr_pop = pop_run[2]
+	rr_pop = pop_run[3]
+
+	param = [int_num_RR, int_num_Rr, int_num_rr, HSI_Rfreq, HSI_rr_thresh,  
+		 int_g, int_sd, inj_g, inj_sd, 
+		 findfirst(herb_app .== 2), findlast(herb_app .== 2), 
+		 germ_prob, fec0, fec_cost, fec_max, dd_fec, herb_effect, g_prot, 
+		 seed_sur, pro_exposed, base_sur, offspring_sd]
+
+	p_len = length(param)
+
+	out = Array{Any, 2}(13, p_len + 1 + num_iter)
+
+	# fill in parameter values and scenario
+	for i in 1:size(out)[1]
+
+		out[i, 1:p_len] = param
+
+	end
+
+	sur_pre = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
+
+	# fill in the different measures
+	out[1, p_len + 1] = "sur_rr"
+	out[1, (p_len + 2):end] = get_sur_rr(rr_pop, base_sur, herb_effect, g_prot, 
+		g_vals , dg)
+
+	out[2, p_len + 1] = "sur_Rr"
+	out[2, (p_len + 2):end] = get_sur_rr(Rr_pop, base_sur, herb_effect, g_prot, 
+		g_vals , dg)
+	
+	out[3, p_len + 1] = "sur_RR"
+	out[3, (p_len + 2):end] = get_sur_rr(RR_pop, base_sur, herb_effect, g_prot, 
+		g_vals , dg)
+
+	out[4, p_len + 1] = "pro_R"
+	out[4, (p_len + 2):end] = get_pro_R(RR_pop, Rr_pop, rr_pop, dg) 
+
+	out[5, p_len + 1] = "pop_sur"
+	out[5, (p_len + 2):end] = get_pop_sur(RR_pop, Rr_pop, rr_pop, dg,
+		sur_pre)
+
+	out[6, p_len + 1] = "pop_size"
+	out[6, (p_len + 2):end] = get_pop_size(RR_pop, Rr_pop, rr_pop, dg)
+
+	out[7, p_len + 1] = "ab_sur_pop"
+	out[7, (p_len + 2):end] = get_post_herb_pop(RR_pop, Rr_pop, rr_pop, dg,
+		sur_pre, germ_prob)
+
+	out[8, p_len + 1] = "mean_g_rr"
+	out[8, (p_len + 2):end] = get_mean_g(rr_pop, g_vals, dg) 
+
+	out[9, p_len + 1] = "var_g_rr"
+	out[9, (p_len + 2):end] = get_var_g(rr_pop, g_vals, dg) 
+
+	out[10, p_len + 1] = "TSR_adv"
+	out[10, (p_len + 2):end] = get_TSR_adv(RR_pop, Rr_pop, rr_pop, dg,
+		base_sur, herb_effect, g_prot, fec0, fec_cost, g_vals) 
+	
+	out[11, p_len + 1] = "fec_RR"
+	out[11, (p_len + 2):end] = get_mean_seeds(RR_pop, g_vals, dg,
+		fec0, fec_cost, fec_max, sur_pre, 1)
+
+	out[12, p_len + 1] = "fec_Rr"
+	out[12, (p_len + 2):end] = get_mean_seeds(Rr_pop, g_vals, dg,
+		fec0, fec_cost, fec_max, sur_pre, 1)
+
+	out[13, p_len + 1] = "fec_rr"
+	out[13, (p_len + 2):end] = get_mean_seeds(rr_pop, g_vals, dg,
+		fec0, fec_cost, fec_max, sur_pre, 2)
+
+	return out
+
+end
 
 # functions to make summaries of the distributions
 # single time slice
@@ -701,9 +981,12 @@ function get_pro_R(RR_pop::Array{Float64, 2}, Rr_pop::Array{Float64, 2}, rr_pop:
 end
 
 # single time slice
-function get_pop_size(RR_pop::Array{Float64, 1}, Rr_pop::Array{Float64, 1}, rr_pop::Array{Float64, 1}, dg::Float64)
+function get_pop_size(RR_pop::Array{Float64, 1}, 
+		      Rr_pop::Array{Float64, 1}, 
+		      rr_pop::Array{Float64, 1}, 
+		      dg::Float64)
 
-  return (sum(RR_pop) + sum(Rr_pop) + sum(rr_pop)) * dg
+	  return (sum(RR_pop) + sum(Rr_pop) + sum(rr_pop)) * dg
   
 end
 # all time steps
@@ -892,3 +1175,37 @@ function get_g_at_sur(targ_sur::Float64, base_sur::Float64, h_eff::Float64, g_pr
 
 end
   
+# get the number of seeds per mature plant for a given distribution of g
+function get_mean_seeds(pop::Array{Float64, 2}, g_vals::Array{Float64, 1}, dg::Float64,
+	fec0::Float64, fec_cost::Float64, fec_max::Float64, 
+	sur_tup::Tuple{Float64, Array{Float64, 1}}, G_ind::Int64)
+
+	# effect of g on fecundity
+	g_effect_fec = fec_max ./ (1 + exp(-(fec0 - abs(g_vals) * fec_cost)))
+
+	#survival becuase only the survivours make up the maternal pop
+	pop_sur = pop .* sur_tup[G_ind]
+
+	# total population at each time step
+	N = sum(pop_sur, 1) * dg
+
+	# total number of seeds at each time step
+	pop_norm = pop_sur ./ N
+
+	# seeds from the normalised population
+	N_seeds = pop_norm .* g_effect_fec
+
+	return vec(sum(N_seeds, 1)) * dg
+
+end
+	
+
+
+
+
+
+
+
+
+
+

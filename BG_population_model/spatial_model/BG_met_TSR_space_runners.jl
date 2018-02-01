@@ -527,7 +527,177 @@ function run_scene_trans(g_vals::Array{Float64, 1}, x_dim::Int64, dg::Float64, d
   
 end
 
+# simpler version that just injects seeds into a population once a certin quant res 
+# threshold reached
+function run_HSI_space(g_vals::Array{Float64, 1}, 
+		       x_dim::Int64, 
+		       dg::Float64, 
+		       dx::Float64, 
+		       num_iter::Int64, 
+		       HSI_rr_thresh::Float64, 
+		       HSI_Rfreq::Float64, 
+		       inject_mean_g::Float64, 
+		       inject_sd_g::Float64, 
+		       inject_locs::Array{Int64, 1}, 
+		       int_rr::Float64, 
+		       int_mean_g::Float64,
+		       int_sd_g::Float64, 
+		       seed_sur::Float64, 
+		       germ_prob::Float64, 
+		       resist_G::Array{String, 1}, 
+		       fec_max::Float64, 
+		       dd_fec::Float64, 
+		       fec0::Float64, 
+		       fec_cost::Float64, 
+		       base_sur::Float64, 
+		       herb_effect::Float64, 
+		       g_prot::Float64, 
+		       pro_exposed::Float64, 
+		       seed_pro_short::Float64, 
+		       seed_mean_dist_short::Float64, 
+		       pro_seeds_to_mean_short::Float64, 
+		       seed_mean_dist_long::Float64, 
+		       pro_seeds_to_mean_long::Float64, 
+		       scale_pollen::Float64, 
+		       shape_pollen::Float64, 
+		       offspring_sd::Float64)
 
+	# set of temporary holdoing matricies to set aside some memory, so 
+	# these don't have to be rebuilt at each iteration
+	# a set of matrices to hold the above ground populations
+	RR_ab_pop = zeros(length(g_vals), x_dim)
+	Rr_ab_pop = zeros(length(g_vals), x_dim)
+	rr_ab_pop = zeros(length(g_vals), x_dim)
+
+	## create the RR_eff_pop and do the pre calc effect of resist costs
+	RR_eff_pop = zeros(length(g_vals), x_dim)
+	Rr_eff_pop = zeros(length(g_vals), x_dim)
+	rr_eff_pop = zeros(length(g_vals), x_dim)
+	eff_pop_holder = zeros(length(g_vals), x_dim)
+  
+	# a set of matrices to hold the total amount of pollen that arrives are each location for each metabolic 
+	# resitance score for each genotype
+	pollen_RR = zeros(length(g_vals), x_dim)
+	pollen_Rr = zeros(length(g_vals), x_dim)
+	pollen_rr = zeros(length(g_vals), x_dim)
+	total_pollen = zeros(x_dim)
+
+	#set of matrices to hold the new seeds produced at each location pre dispersal 
+	RR_newseed = zeros(length(g_vals), x_dim)
+	Rr_newseed = zeros(length(g_vals), x_dim)
+	rr_newseed = zeros(length(g_vals), x_dim)
+
+	# set up the seed and pollen dispersal kernels 
+	seed_disp_mat_1D = zeros(x_dim, x_dim)
+	seed_disp_mat_builder_1D!(seed_disp_mat_1D, dx, seed_pro_short, 
+		seed_mean_dist_short, pro_seeds_to_mean_short, seed_mean_dist_long, 
+		pro_seeds_to_mean_long)
+
+	pollen_disp_mat = zeros(x_dim, x_dim)
+	pollen_disp_mat_builder_1D!(pollen_disp_mat, res = dx, a = scale_pollen, 
+		c = shape_pollen)
+
+	# build the mixing kernel for metabolic resistance score every row is a offspring score
+	# every coloum is a g_m x g_p combination, so every coloumn is a normal dist with
+	# a mean of g_m*g_p and sd of offspring sd
+	g_mixing_kernel = zeros(length(g_vals), length(g_vals) ^ 2)
+	fill_g_mixing_kernel!(g_mixing_kernel, offspring_sd, g_vals)
+	g_mixing_index = generate_index_pairs(g_vals)
+  
+	# give the effect of herb as a function of g, make it symetrical stabilising function, centered on 0
+	g_effect_fec = resist_cost_pre_calc(fec0, fec_cost, g_vals);
+
+	# set up the survival vectors 
+	sur_tup = survival_pre_calc(base_sur, g_vals, herb_effect, g_prot, pro_exposed)
+
+	# set aside a chunck of memory for the landscapes for each genotype 
+	RR_expos = zeros(length(g_vals), x_dim, num_iter)
+	Rr_expos = zeros(length(g_vals), x_dim, num_iter)
+	rr_expos = zeros(length(g_vals), x_dim, num_iter)
+
+	# intitilase the population on the full landscapes in the first time slice
+	for x in 1:x_dim
+
+		rr_expos[:, x, 1] = pdf(Normal(int_mean_g, int_sd_g), g_vals) * int_rr
+		
+	end 
+  
+	#herb application for navie and exposed populations
+	herb_app_expos = convert(Array{Int64, 1}, ones(x_dim))  
+	herb_app_expos += 1 #adds one to the locations where herbicide is going to be applied 
+  
+	# run the burnin period on the exposed and niave pops
+	int_t = 0
+	for int_t in 2:num_iter
+  
+		# step through the exposed population letting it develope
+		one_step_foward!(int_t, RR_expos,  Rr_expos, rr_expos,  
+			RR_ab_pop, Rr_ab_pop, rr_ab_pop, 
+			RR_eff_pop, Rr_eff_pop, rr_eff_pop, eff_pop_holder, 
+			pollen_RR, pollen_Rr, pollen_rr, total_pollen, 
+			RR_newseed, Rr_newseed, rr_newseed, 
+			dg, seed_sur, germ_prob, sur_tup, resist_G, herb_app_expos, 
+			pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+			g_mixing_kernel, g_mixing_index, g_effect_fec)
+
+		# check the level of quant gen if reaches the threshold, stop inital phase 
+		if get_sur_rr(rr_expos[:, inject_locs[1], int_t], g_vals, base_sur,
+			herb_effect, g_prot, dg) >= HSI_rr_thresh 
+
+			break
+
+		end
+
+	end
+
+	# find the number of seeds to inject at each location and put the 
+	# desired number of seeds to get HSI_Rfreq at each location
+	for loc in inject_locs
+
+		# get total pop size
+		pop_tot = sum(RR_expos[:, loc, int_t] + 
+			      Rr_expos[:, loc, int_t] +
+			      rr_expos[:, loc, int_t]) * dg
+
+		# find the number of RR seeds that will result in frequency of HSI_Rfreq
+		# if p = populaion of rr, then 
+		# inj_num_RR = (HSI_R_freq * p) / (HSI_R_freq - 1)
+		# assumption: HSI_R_freq < 1 (i.e. we cannot try and replace the entire population)
+		# assumption: seeds are added as RR, will need slight adjustment to add Rr
+		inj_num_RR = -(HSI_Rfreq * pop_tot) / (HSI_Rfreq - 1)
+
+		# injected seeds
+		RR_expos[:, loc, int_t] = RR_expos[:, loc, int_t] + 
+			pdf(Normal(inject_mean_g, inject_sd_g), g_vals) * inj_num_RR
+
+	end
+
+	# test the quant res was reached in time
+	if int_t < (num_iter - 2)
+
+		# now iterate foward with TSR
+		for t in (int_t + 1):num_iter
+  
+			# step through the exposed population
+			one_step_foward!(t, RR_expos,  Rr_expos, rr_expos, 
+				RR_ab_pop, Rr_ab_pop, rr_ab_pop, 
+				RR_eff_pop, Rr_eff_pop, rr_eff_pop, eff_pop_holder, 
+				pollen_RR, pollen_Rr, pollen_rr, total_pollen, 
+				RR_newseed, Rr_newseed, rr_newseed, 
+				dg, seed_sur, germ_prob, sur_tup, resist_G, herb_app_expos, 
+				pollen_disp_mat, seed_disp_mat_1D, fec_max, dd_fec, 
+				g_mixing_kernel, g_mixing_index, g_effect_fec)
+      
+		end
+
+	end
+  
+	output_expos = snapshot_space_time(RR_expos,  Rr_expos, rr_expos, 
+		g_vals, dg, herb_effect, base_sur , g_prot, fec0, fec_cost)
+  
+	return output_expos
+  
+end
 
 
 # run an entire sceanrio to produce a set of data for a plot of three measures of populaiton 

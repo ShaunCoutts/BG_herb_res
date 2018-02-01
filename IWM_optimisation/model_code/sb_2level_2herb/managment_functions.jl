@@ -419,6 +419,62 @@ function eval_act_seq_pop(pop_act_seq::Array{Int64, 2},
 
 end
 
+# verbose version used for trouble shooting that records the SBs as it goes
+function eval_act_seq_pop_verbose(pop_act_seq::Array{Int64, 2}, 
+	act_space::Tuple, SB1::Array{Float64, 2}, SB2::Array{Float64, 2}, 
+	ab_pop::Array{Float64, 2}, ab_pop_spot::Array{Float64, 2}, 
+	mat_pop::Array{Float64, 1}, pat_pop::Array{Float64, 1}, 
+	eff_pop::Array{Float64, 1}, offspr::Array{Float64, 1}, 
+	mix_key::Tuple{Array{Int64, 1}, Array{Int64, 1},Array{Int64, 1}, Array{Int64, 1}}, 
+  	mix_kern::Array{Float64, 2},  
+  	herb_sur::Tuple{Array{Float64, 1}, Array{Float64, 1}, Array{Float64, 1}, Array{Float64, 1}}, 
+	T::Int64, int_SB1::Array{Float64, 1}, int_SB2::Array{Float64, 1}, 
+	sur_crop_alt::Float64, inv_frac::Float64, germ_prob::Float64, 
+	seed_sur::Float64, fec_max::Float64, fec_dd::Float64, 
+	sur_spot::Float64, dis_rates::Array{Float64, 1}, 
+	Y0::Float64, Y_slope::Float64, Y_ALT::Float64, 
+	cost_space::Tuple{Array{Float64, 1}, Array{Float64, 1}, Array{Float64, 1}}, 
+	rep_pen::Float64, spot_fix::Float64, spot_var::Float64, 
+	SB1_list::Array{Array{Float64, 2}, 1}, SB2_list::Array{Array{Float64, 2}, 1},
+	ab_pre_list::Array{Array{Float64, 2}, 1}, ab_post_list::Array{Array{Float64, 2}, 1})
+
+	act_pop_size = size(pop_act_seq)[1]
+	rewards = zeros(act_pop_size)
+    
+	for i in 1:act_pop_size
+
+		# get action sequences
+		sub_acts = act_seq_2_sub_act(act_space, pop_act_seq[i, :])
+		crop_act_seq = sub_acts[:, ACT_CROP]
+		spot_act_seq = sub_acts[:, ACT_SPOT]
+		plow_seq = plow_subact[sub_acts[:, ACT_PLOW]]
+		herb_act_seq = sub_acts[:, ACT_HERB]
+
+		# run under act_seq_pop[i, :] to get Ns
+		one_run!(SB1, SB2, ab_pop, ab_pop_spot, eff_pop, mat_pop, 
+			pat_pop, offspr, mix_kern, mix_key, herb_sur, 
+			inv_frac, germ_prob, seed_sur, sur_crop_alt, 
+			sur_spot, fec_dd, fec_max, herb_act_seq, 
+			crop_act_seq, plow_seq, spot_act_seq, int_SB1, 
+			int_SB2, T)
+
+		# some recorded quantites held for testing
+		SB1_list[i] = deepcopy(SB1)
+		SB2_list[i] = deepcopy(SB2)
+		ab_pre_list[i] = deepcopy(ab_pop)
+		ab_post_list[i] = deepcopy(ab_pop_spot)
+
+		# get the rewards given act_seq_pop[i, :]
+		rewards[i] = reward_TSR(ab_pop, ab_pop_spot, dis_rates, 
+			Y0, Y_slope, Y_ALT, rep_pen, sub_acts, cost_space, 
+			spot_fix, spot_var)
+
+	end
+ 
+  return rewards
+
+end
+
 
 # tournament selection to get indicies of the survivours 
 function tourn_select(rewards::Array{Float64, 1})
@@ -770,6 +826,155 @@ function GA_solve_TSR(T::Int64, pop_size::Int64, num_gen::Int64, mut::Float64,
 			:cost_herb => cost_herb)
 
 	return (pop_list, reward_list, par_dict)
+
+end
+
+# a verbose version of the function to help with trouble shooting and testing 
+function GA_solve_verbose_TSR(T::Int64, pop_size::Int64, num_gen::Int64, mut::Float64,
+	cost_herb::Float64, cost_WW::Float64, cost_ALT::Float64, 
+	cost_FAL::Float64, cost_plow::Float64, spot_fix::Float64, spot_var::Float64, 
+	sur_crop_alt::Float64, sur_herb::Float64,
+	int_N::Float64, int_RR::Float64, int_Rr::Float64, int_AA::Float64, int_Aa::Float64, 
+	inv_frac::Float64, germ_prob::Float64, seed_sur::Float64, fec_max::Float64, 
+	fec_dd::Float64, sur_spot::Float64, dis_rate::Float64, Y0::Float64,
+	Y_slope::Float64,Y_ALT::Float64, pr_ex::Float64, 
+	s0::Float64, rep_pen::Float64)
+
+	# hold the population actions 
+	pop_list = Array{Array, 1}(num_gen)
+	for g in 1:num_gen
+
+		pop_list[g] = Array{Int64, 2}(pop_size, T)
+
+	end
+	
+	# hold the rewards for each action sequence 
+	reward_list = Array{Array, 1}(num_gen)
+	for g in 1:num_gen
+
+		reward_list[g] = zeros(pop_size)
+
+	end
+
+	# create a set of spaces and holding arrays
+	A = make_action_space()
+	C = make_cost_space(cost_herb, cost_WW, cost_ALT, cost_FAL,
+		cost_plow)
+
+	# mixing kernels and indexing keys
+	N_G = 9; # number of genotypes 
+	mix_key = make_TSR_mix_index(N_G);
+
+	herb_sur = make_herb_sur_dom(mix_key, s0, pr_ex, sur_herb)
+
+	dis_rates = make_dis_rate(T, dis_rate)
+ 
+	mix_kern = make_TSR_kernel(mix_key);
+
+	# seedbanks T by Ng in size
+	SB1 = zeros(T + 1, N_G) 
+	SB2 = zeros(T + 1, N_G) 
+
+	# hold the seed bank arrays. Only for last generation to keep it more manageable
+	SB1_list = Array{Array{Float64, 2}, 1}(pop_size)
+	SB2_list = Array{Array{Float64, 2}, 1}(pop_size)
+	ab_pre_list = Array{Array{Float64, 2}, 1}(pop_size)
+	ab_post_list = Array{Array{Float64, 2}, 1}(pop_size)
+	
+	for i in 1:pop_size
+
+		SB1_list[i] = zeros(size(SB1))
+		SB2_list[i] = zeros(size(SB2))
+		ab_pre_list[i] = zeros(size(SB1)) 
+		ab_post_list[i] = zeros(size(SB1)) 
+
+	end
+
+	# above ground populations 
+	ab_pop = zeros(T + 1, N_G)
+	ab_pop_spot = zeros(T + 1, N_G)
+
+	# temp holding, rewritten eacbh time step
+	mat_pop = zeros(N_G)
+	pat_pop = zeros(N_G)
+	eff_pop = zeros(N_G)
+	par_mix = zeros(length(mix_key[1]))
+
+	int_pop = make_int_pop(int_N, int_N, int_RR, int_Rr, int_AA, int_Aa, 
+		mix_key);
+
+	# get number of acts, it is used a few times
+	N_acts = length(A)
+
+	# make the first populaiton random sequences
+	pop_list[1][:, :] = rand_act_pop(N_acts, T, pop_size)
+	
+	# evaluate the sequences 
+	for g in 1:(num_gen - 1)
+
+		# evaluate each sequence
+		reward_list[g][:] = eval_act_seq_pop(pop_list[g], A, 
+			SB1, SB2, ab_pop, ab_pop_spot, mat_pop, pat_pop, 
+			eff_pop, par_mix, mix_key, mix_kern,  herb_sur, 
+			T, int_pop[1], int_pop[2], sur_crop_alt, inv_frac, 
+			germ_prob, seed_sur, fec_max, fec_dd, sur_spot, 
+			dis_rates, Y0, Y_slope, Y_ALT, C, rep_pen, spot_fix, 
+			spot_var)
+
+		# indicies of sequences that performed well  
+		win_ind = tourn_select(reward_list[g])
+		
+		# make the next generation of action sequences through 
+		# cross and mutation
+		next_gen!(pop_list[g], pop_list[g + 1], win_ind, mut, N_acts)
+
+	end
+
+	# evaluate final sequence
+	reward_list[end][:] = eval_act_seq_pop_verbose(pop_list[end], A, 
+		SB1, SB2, ab_pop, ab_pop_spot, mat_pop, pat_pop, 
+		eff_pop, par_mix, mix_key, mix_kern,  herb_sur, 
+		T, int_pop[1], int_pop[1], sur_crop_alt, inv_frac, 
+		germ_prob, seed_sur, fec_max, fec_dd, sur_spot, 
+		dis_rates, Y0, Y_slope, Y_ALT, C, rep_pen, spot_fix, 
+		spot_var, SB1_list, SB2_list, ab_pre_list, ab_post_list)
+
+	# put the parameter values in a Dict for easy use later in 
+	# plotting
+	par_dict = Dict(:int_N => int_N, 
+			:int_RR => int_RR, 
+			:int_Rr => int_Rr, 
+			:int_AA => int_AA, 
+			:int_Aa => int_Aa,
+			:p_ex => pr_ex, 
+			:s0 => s0,
+			:sur_herb => sur_herb,
+			:sur_alt => sur_crop_alt, 
+			:inv_frac => inv_frac, 
+			:germ_prob => germ_prob, 
+			:seed_sur => seed_sur, 
+			:fec_max => fec_max, 
+			:fec_dd => fec_dd, 
+			:sur_spot => sur_spot, 
+			:dis_rate => dis_rate, 
+			:Y0 => Y0, 
+			:Y_slope => Y_slope,  
+			:Y_alt => Y_ALT, 
+			:rep_pen => rep_pen, 
+			:cost_WW => cost_WW, 
+			:cost_alt => cost_ALT, 
+			:cost_fal => cost_FAL, 
+			:cost_plow => cost_plow, 
+			:spot_fix => spot_fix,
+			:spot_var => spot_var,
+			:cost_herb => cost_herb)
+
+	track_dict = Dict(:SB1_fin => SB1_list, 
+			  :SB2_fin => SB2_list, 
+			  :ab_pre_fin => ab_pre_list, 
+			  :ab_post_fin => ab_post_list)
+
+	return (pop_list, reward_list, par_dict, track_dict)
 
 end
 
