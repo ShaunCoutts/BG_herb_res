@@ -1,0 +1,112 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{setspace, graphicx, lineno, caption, color, float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amstext} %to enter text in mathematical formulae
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage{natbib}
+\usepackage{hyperref}
+
+\usepackage[left=2.5cm,top=2.5cm,right=2.5cm, bottom=2.5cm,nohead]{geometry}
+%paragraph formatting
+\setlength{\parskip}{12pt}
+\setlength{\parindent}{0cm}
+
+\setcounter{equation}{0}
+\renewcommand{\theequation}{S\arabic{equation}}
+
+\begin{document}
+\section*{Appendix 2: Population Model}
+The population links management actions to the response of the \textit{A. myosuroides} population, and its impact of wheat yields. The action $a_j$ is how the manager effects the population model, and thus the reward they get. Each action is a tuple of four sub-actions $a_j = \langle a_h, a_b, a_k, a_s \rangle$. 
+
+The processes included in the population model limit the scope of the IPM strategies found. We use a deterministic model, and so our IPM strategies can only deal with average expected population responses, ignoring demographic uncertainty, and environmental and market variability. Also, our IPM strategies can only deal herbicide resistance that is already present in the population because \textit{de nova} mutation is a fundamentally stochastic process. The the population model also limits the range of management options that can be included. A commonly recommended \citep{REX2013} and applied \citep{Hick2018} strategy to combat resistance is to apply xenobiotics that impair different cellar pathways (i.e. modes of action), either sequentially (cycling) or concurrently (stacking). To allow this behaviour we use a discrete time, spatially implicit model, where two independent alleles ($R$ and $Q$), each confer target site resistance to a separate herbicide. \textit{A. myosuroides} is a diploid species and so each target site gene has three variants $g_1 \in \{RR, Rr, rr\}$ and $g_2 \in \{QQ, Qq, qq\}$ (lower case denotes susceptible alleles). Since there are two target site genes, with three variants, there are nine resistance genotypes 
+\begin{align*}
+	G \in \{(RR, QQ), (RR, Qq), (RR, qq), &(Rr, QQ), (Rr, Qq),\\
+		&(Rr, qq), (rr, QQ), (rr, Qq), (rr, qq)\}.  
+\end{align*}
+We assume that the inheritance of each resistance gene is Mendelian and independent of the other. The model must also be flexible enough to accommodate non-chemical control. We include a two level seed bank (to allow plowing to take seeds out of the germinating population) and model survival as a function of resistance, herbicide choice, crop choice and spot control.
+
+We model the \textit{A. myosuroides} population using a yearly time step, starting at the beginning of the growing season before any seeds have emerged. The seed bank at depth level $L \in \{1, 2\}$, time $t$, is $\mathbf{b}(t, L)$, a 1 by 9 column vector where each element is the number of seeds with resistance genotype $G$. Plowing moves seeds from one level of the seed bank to the other and is modelled as
+\begin{subequations}
+\label{eq:sb_pp}
+\begin{align}
+	\mathbf{b}'(t, 1) &= \mathbf{b}(t, 1) - \mathbf{b}(t, 1) I a_b + \mathbf{b}(t, 2) I a_b \\
+	\mathbf{b}'(t, 2) &= \mathbf{b}(t, 2) - \mathbf{b}(t, 2) I a_b + \mathbf{b}(t, 1) I a_b
+\end{align}
+\end{subequations} 
+where sub-action $a_b \in \{0, 1\}$ indicates if plowing was carried out or not and $I \in [0, 1]$ is the portion of seeds moved to the other seed bank depth if plowing is carried out. 
+
+To get the number of seeds produced by each genotype $G$ we find the survivors after management interventions to act as parents. Note that here we address each genotype in $\mathbf{b}'(t, 1)$ separately and break $G$ into its individual resistance genes $(g_1, g_2)$ to allow the herbicide action, $a_h$, to affect each genotype separately. The starting point is the germination and emergence of new plants from the top level of the seed bank
+\begin{equation}\label{eq:ag}
+	n(g_1, g_2, t) = b'(g_1, g_2, t, 1)\phi_e
+\end{equation}
+Where $\phi_e$ is the germination rate. The survivors after all management except spot treatments ($a_s$) are
+\begin{equation}\label{eq:ab_sur}
+	n'(g_1, g_2, t) = n(g_1, g_2, t)S(g_1, g_2, a_h, a_k) 
+\end{equation}
+where the survival function $S(g_1, g_2, a_h, a_k)$ incorporates resistance genotype $\{g_1, g_2\}$, herbicide applications ($a_h$) and crop choice ($a_k$).
+\begin{equation}\label{eq:sur}
+	S(g_1, g_2, a_h, a_k) = \begin{cases}
+		s_0 K(a_k) &~\text{if} ~ a_h = 0 \\
+		\big((1 - \theta)s_0 + \theta s_0 H(g_1)\big) K(a_k) &~\text{if}~a_h = 1 \\
+		\big((1 - \theta)s_0 + \theta s_0 H(g_2) \big) K(a_k) &~ \text{if} ~ a_h = 2 \\
+		\big((1 - \theta)s_0 + \theta s_0 H(g_1) H(g_2)\big) K(a_k) &~ \text{if} ~ a_h = \text{both} \\	
+	\end{cases} 
+\end{equation}
+where $s_0$ is survival without herbicide under winter wheat. Survival under herbicide $i$ is 
+\begin{equation}
+	H(g_i) = \begin{cases}
+		1 &~\text{if}~g_i \in g*\\
+		s_h &~\text{otherwise}
+	\end{cases}
+\end{equation}
+where $g*$ is the set of resistant genotypes. We assume resistance to both herbicides is dominant so $g* = \{RR, Rr, QQ, Qq\}$. Survival of susceptible individuals exposed to herbicide is $s_h$, and $\theta$ is the proportion of individuals that are exposed to herbicide due to emerging after spray, or unevenness in herbicide application over space. This function assumes that target site resistance confers perfect resistance, and that multiple herbicides are used as a single application mixture with in one year. Finally, crop choice affects survival of above ground individuals through the function
+\begin{equation}\label{eq:crop}
+	K(a_k) = \begin{cases}
+		1~\text{if}~a_k = \text{wheat}\\
+		\alpha~\text{if}~a_k = \text{alt}\\
+		0~\text{if}~a_k = \text{fallow}		
+	\end{cases}
+\end{equation}	
+where $\alpha$ is the survival of \textit{A. myosuroides} in the alternative crop, relative to its survival in winter wheat. Survival might be reduced because the alternative crop is highly competitive against \textit{A. myosuroides} or because differences in sowing and emergence times mean some \textit{A. myosuroides} can be exposed to broad spectrum herbicides or cultivation. Reductions in fecundity due to increased competition under an alternative crop are subsumed into $\alpha$, because \textit{A. myosuroides} is an annual any reduction in fecundity is equivalent to a reduction in survival. Survival under a fallow rotation is assumed to be 0 since broad spectrum herbicides or cultivation can be used to control any black grass that emerges. 
+
+After other control methods have been applied spot control can be applied. Recall that $n'(G, t) = n'(g1, g2, t)$. The final post spot control population of each genotype is 
+\begin{equation}\label{eq:spot_cont}
+	n''(G, t) = n'(G, t)a_s
+\end{equation}   
+where spot control action is $a_s \in \{\beta, 1\}$ and $\beta$ is the survival under spot control (for example plants may go undetected).
+
+The population is closed by adding seeds back into the seed bank. \textit{A. myosuroides} is an out-crossing species and $n''(G, t)$ is included in both the maternal and paternal populations. We assume pollen is always abundant and only its relative frequency changes, thus
+\begin{equation}
+	n_p''(G_p, t) = \frac{n''(G_p, t)}{\sum_{\forall G} n''(G, t) }
+\end{equation}
+
+The maternal population for each genotype is simply $n''(G, t)$. We assume random mating so that each parental cross is the number of individuals of each genotype (maternal parent) by the frequency of each genotype in population (paternal parent). We further assume density dependent seed production, so the number of seeds produced by each parental cross is 
+\begin{equation}\label{eq:seed_pro}
+	p_{G_m}^{G_p}(t) = \left(\frac{1}{1 + f_d\sum_{\forall G} n''(G, t)}\right) \cdot n''(G_m, t)f_m n_p''(G_p, t)   
+\end{equation}
+Where $f_d$ controls the strength of density dependence and is the reciprocal of the population at which plants start to interfere with each other. 
+
+The entire parental population is $\mathbf{P}(t)$ a 1 by 81 column vector (there are 9 resistance genotypes $G$, and thus 81 $G_m \times G_p$ crosses). Each element of $\mathbf{P}(t)$ is the number of seeds produced by each cross (i.e. $p_{G_m}^{G_p}(t)$). The seeds produced by each cross are distributed to the appropriate resistance genotype, $G$, with
+\begin{equation}
+	\mathbf{f}(t) = \mathbf{M} \bullet \mathbf{P}(t)
+\end{equation}  
+where $\mathbf{M}$ is a 9 row by 81 column mixing kernel, where each column gives the proportion of seeds from each cross that result in a given resistance genotype (9 rows). 
+
+We complete the life cycle by adding these seeds to the top level of the seed bank after seed mortality has occurred. 
+\begin{subequations}
+\label{eq:seedbank_update}
+\begin{align}
+	\mathbf{b}(t + 1, 1) &= \mathbf{b}'(t, 1)\phi_b(1 - \phi_e) + \mathbf{f}(t)\\
+	\mathbf{b}(t + 1, 2) &= \mathbf{b}'(t, 2)\phi_b   
+\end{align}
+\end{subequations}
+$\mathbf{f}(t)$ is a 1 by 9 column vector where each element is the number of seeds of genotype $G$ produced in time $t$. $\phi_b$ is the proportion of seeds that survive one year and $(1 - \phi_e)$ is the proportion of seeds that did not germinate.
+
+\bibliographystyle{/Users/shauncoutts/Dropbox/shauns_paper/referencing/bes}
+\bibliography{/Users/shauncoutts/Dropbox/shauns_paper/referencing/refs} 
+
+\end{document}

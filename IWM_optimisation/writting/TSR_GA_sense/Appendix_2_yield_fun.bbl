@@ -1,0 +1,40 @@
+\begin{thebibliography}{5}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{Bates \emph{et~al.}(2015)Bates, M{\"a}chler, Bolker \&
+  Walker}]{Bate2015}
+Bates, D., M{\"a}chler, M., Bolker, B. \& Walker, S. (2015) Fitting linear
+  mixed-effects models using {lme4}. \emph{Journal of Statistical Software},
+  \textbf{67}(1), 1--48.
+
+\bibitem[{Hicks \emph{et~al.}(2018)Hicks, Comont, Coutts, Crook, Hull, Norris,
+  Neve, Childs \& Freckleton}]{Hick2018}
+Hicks, H.L., Comont, D., Coutts, S.R., Crook, L., Hull, R., Norris, K., Neve,
+  P., Childs, D.Z. \& Freckleton, R.P. (2018) The factors driving evolved
+  herbicide resistance at a national scale. \emph{Nature ecology \& evolution},
+  \textbf{2}(3), 529.
+
+\bibitem[{Queenborough \emph{et~al.}(2011)Queenborough, Burnet, Sutherland,
+  Watkinson \& Freckleton}]{Quee2011}
+Queenborough, S.A., Burnet, K.M., Sutherland, W.J., Watkinson, A.R. \&
+  Freckleton, R.P. (2011) From meso-to macroscale population dynamics: a new
+  density-structured approach. \emph{Methods in Ecology and Evolution},
+  \textbf{2}(3), 289--302.
+
+\bibitem[{{R Core Team}(2013)}]{Rstat}
+{R Core Team} (2013) \emph{R: A Language and Environment for Statistical
+  Computing}. R Foundation for Statistical Computing, Vienna, Austria,
+  \urlprefix\url{http://www.R-project.org/}.
+
+\bibitem[{Redman(2016)}]{Nix2016}
+Redman, G. (2016) \emph{John Nix Farm Managment Pocketbook}, 47th edn. Agro
+  Business Consultants Ltd, UK.
+
+\end{thebibliography}

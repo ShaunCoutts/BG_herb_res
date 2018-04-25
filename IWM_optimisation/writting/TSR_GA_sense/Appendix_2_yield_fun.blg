@@ -1,0 +1,47 @@
+This is BibTeX, Version 0.99d (TeX Live 2017)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: Appendix_2_yield_fun.aux
+The style file: /Users/shauncoutts/Dropbox/shauns_paper/referencing/bes.bst
+Database file #1: /Users/shauncoutts/Dropbox/shauns_paper/referencing/refs.bib
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+You've used 5 entries,
+            3226 wiz_defined-function locations,
+            707 strings with 6308 characters,
+and the built_in function-call counts, 3289 in all, are:
+= -- 257
+> -- 173
+< -- 5
++ -- 67
+- -- 60
+* -- 271
+:= -- 518
+add.period$ -- 10
+call.type$ -- 5
+change.case$ -- 45
+chr.to.int$ -- 14
+cite$ -- 5
+duplicate$ -- 237
+empty$ -- 223
+format.name$ -- 71
+if$ -- 637
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 52
+newline$ -- 25
+num.names$ -- 20
+pop$ -- 97
+preamble$ -- 1
+purify$ -- 40
+quote$ -- 0
+skip$ -- 76
+stack$ -- 0
+substring$ -- 114
+swap$ -- 136
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 42
+warning$ -- 0
+while$ -- 21
+width$ -- 0
+write$ -- 65

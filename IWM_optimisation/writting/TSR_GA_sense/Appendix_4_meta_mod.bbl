@@ -1,0 +1,32 @@
+\begin{thebibliography}{4}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{Coutts \& Yokomizo(2014)}]{Cout2014}
+Coutts, S.R. \& Yokomizo, H. (2014) Meta-models as a straightforward approach
+  to the sensitivity analysis of complex models. \emph{Population Ecology},
+  \textbf{56}(1), 7--19.
+
+\bibitem[{Goslee \& Urban(2007)}]{Gosl2007}
+Goslee, S.C. \& Urban, D.L. (2007) The ecodist package for dissimilarity-based
+  analysis of ecological data. \emph{Journal of Statistical Software},
+  \textbf{22}, 1--19.
+
+\bibitem[{Miller \emph{et~al.}(2016)Miller, Lubke, McArtor \&
+  Bergeman}]{Mill2016}
+Miller, P.J., Lubke, G.H., McArtor, D.B. \& Bergeman, C. (2016) Finding
+  structure in data using multivariate tree boosting. \emph{Psychological
+  methods}, \textbf{21}(4), 583.
+
+\bibitem[{Toohey(2015)}]{Tooh2015}
+Toohey, K. (2015) \emph{SimilarityMeasures: Trajectory Similarity Measures}.
+  \urlprefix\url{https://CRAN.R-project.org/package=SimilarityMeasures}. R
+  package version 1.4.
+
+\end{thebibliography}

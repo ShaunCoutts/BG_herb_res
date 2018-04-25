@@ -1,0 +1,52 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{setspace, lineno, caption, color, float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amstext} %to enter text in mathematical formulae
+\usepackage{algorithm}
+\usepackage{algpseudocode}%psuedo code and 
+
+\usepackage[left=2.5cm,top=2.5cm,right=2.5cm, bottom=2.5cm,nohead]{geometry}
+%paragraph formatting
+\setlength{\parskip}{12pt}
+\setlength{\parindent}{0cm}
+
+\begin{document}
+
+\section*{Appendix 4: Genetic Algorithm}
+{\setstretch{1.0}
+\begin{algorithm}[H]
+\caption{Genetic algorithm used to find good sequences of management actions}
+\begin{algorithmic}[1]
+	\For{rep = 1 \textbf{to} rep = number\_reps}	
+		\State Randomly generate initial population $P$ of action sequences $\textbf{a}$.
+		\For{gen = 1 \textbf{to} gen = number\_gen}
+			\ForAll{$\textbf{a} \in P$}
+				\State Initialize population in state $n_0$
+				\For{$t = 1~\textbf{to}~t = T$} 
+					\State Run the population model under action sequence $\textbf{a}$ 
+					\State Record $N''(\mathbf{a}, n_0, t)$ at each step.
+				\EndFor
+				\State Calculate $R(\mathbf{a}, n_0)$
+			\EndFor
+			\State Randomly pair each $\textbf{a} \in P$
+			\State For each pair put the $\textbf{a}$ with the highest $R(\mathbf{a}, n_0)$ into population  $P'$.
+			\State Randomly pair each $\textbf{a} \in P'$
+			\ForAll{pairs}
+				\State Copy each sequence in the pair to $\textbf{a}_1^*$ and $\textbf{a}_2^*$ 
+				\State Randomly select a point $t^* \in 2:(T - 1)$
+				\State Swap section $\textbf{a}_1^*[1:t^*]$ and $\textbf{a}_2^*[1:t^*]$
+				\State $\forall a^t \in \textbf{a}_j^*$, $a^t \gets a^{t*} \in \textbf{A}$ with probability $m$  
+				\State Put $\textbf{a}_j^*$ into $P'$.   
+			\EndFor
+			\State $P \gets P'$    
+		\EndFor	 
+	\EndFor
+	\State Compare $\textbf{a}$ with highest $R(\mathbf{a}, n_0)$ from each $P$ in the final generation between reps to check they have converged on the same action sequence.   
+\end{algorithmic}
+\end{algorithm}}  
+
+\end{document}
