@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2018.2.20)  16 APR 2018 16:09
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2018.2.20)  26 APR 2018 10:21
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -339,52 +339,144 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 )
 \Hy@SectionHShift=\skip52
 )
+(/usr/local/texlive/2017/texmf-dist/tex/latex/multirow/multirow.sty
+Package: multirow 2016/11/25 v2.2 Span multiple rows of a table
+\multirow@colwidth=\skip53
+\multirow@cntb=\count127
+\multirow@dima=\skip54
+\bigstrutjot=\dimen146
+)
+(/usr/local/texlive/2017/texmf-dist/tex/latex/tools/multicol.sty
+Package: multicol 2017/04/11 v1.8q multicolumn formatting (FMi)
+\c@tracingmulticols=\count128
+\mult@box=\box31
+\multicol@leftmargin=\dimen147
+\c@unbalance=\count129
+\c@collectmore=\count130
+\doublecol@number=\count131
+\multicoltolerance=\count132
+\multicolpretolerance=\count133
+\full@width=\dimen148
+\page@free=\dimen149
+\premulticols=\dimen150
+\postmulticols=\dimen151
+\multicolsep=\skip55
+\multicolbaselineskip=\skip56
+\partial@page=\box32
+\last@line=\box33
+\maxbalancingoverflow=\dimen152
+\mult@rightbox=\box34
+\mult@grightbox=\box35
+\mult@gfirstbox=\box36
+\mult@firstbox=\box37
+\@tempa=\box38
+\@tempa=\box39
+\@tempa=\box40
+\@tempa=\box41
+\@tempa=\box42
+\@tempa=\box43
+\@tempa=\box44
+\@tempa=\box45
+\@tempa=\box46
+\@tempa=\box47
+\@tempa=\box48
+\@tempa=\box49
+\@tempa=\box50
+\@tempa=\box51
+\@tempa=\box52
+\@tempa=\box53
+\@tempa=\box54
+\c@columnbadness=\count134
+\c@finalcolumnbadness=\count135
+\last@try=\dimen153
+\multicolovershoot=\dimen154
+\multicolundershoot=\dimen155
+\mult@nat@firstbox=\box55
+\colbreak@box=\box56
+\mc@col@check@num=\count136
+)
+(/usr/local/texlive/2017/texmf-dist/tex/latex/tools/longtable.sty
+Package: longtable 2014/10/28 v4.11 Multi-page Table package (DPC)
+\LTleft=\skip57
+\LTright=\skip58
+\LTpre=\skip59
+\LTpost=\skip60
+\LTchunksize=\count137
+\LTcapwidth=\dimen156
+\LT@head=\box57
+\LT@firsthead=\box58
+\LT@foot=\box59
+\LT@lastfoot=\box60
+\LT@cols=\count138
+\LT@rows=\count139
+\c@LT@tables=\count140
+\c@LT@chunks=\count141
+\LT@p@ftn=\toks30
+)
+(/usr/local/texlive/2017/texmf-dist/tex/latex/makecell/makecell.sty
+Package: makecell 2009/08/03 V0.1e Managing of Tab Column Heads and Cells
+
+(/usr/local/texlive/2017/texmf-dist/tex/latex/tools/array.sty
+Package: array 2016/10/06 v2.4d Tabular extension package (FMi)
+\col@sep=\dimen157
+\extrarowheight=\dimen158
+\NC@list=\toks31
+\extratabsurround=\skip61
+\backup@length=\skip62
+)
+\rotheadsize=\dimen159
+\c@nlinenum=\count142
+\TeXr@lab=\toks32
+)
 (/usr/local/texlive/2017/texmf-dist/tex/latex/geometry/geometry.sty
 Package: geometry 2010/09/12 v5.6 Page Geometry
-\Gm@cnth=\count127
-\Gm@cntv=\count128
-\c@Gm@tempcnt=\count129
-\Gm@bindingoffset=\dimen146
-\Gm@wd@mp=\dimen147
-\Gm@odd@mp=\dimen148
-\Gm@even@mp=\dimen149
-\Gm@layoutwidth=\dimen150
-\Gm@layoutheight=\dimen151
-\Gm@layouthoffset=\dimen152
-\Gm@layoutvoffset=\dimen153
-\Gm@dimlist=\toks30
+\Gm@cnth=\count143
+\Gm@cntv=\count144
+\c@Gm@tempcnt=\count145
+\Gm@bindingoffset=\dimen160
+\Gm@wd@mp=\dimen161
+\Gm@odd@mp=\dimen162
+\Gm@even@mp=\dimen163
+\Gm@layoutwidth=\dimen164
+\Gm@layoutheight=\dimen165
+\Gm@layouthoffset=\dimen166
+\Gm@layoutvoffset=\dimen167
+\Gm@dimlist=\toks33
 )
-(./Appendix_4_meta_mod.aux)
+(./Appendix_4_meta_mod.aux
+
+LaTeX Warning: Label `tab:pars' multiply defined.
+
+)
 \openout1 = `Appendix_4_meta_mod.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-
-(/usr/local/texlive/2017/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 29.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 29.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 29.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 29.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 29.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 29.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 29.
+LaTeX Font Info:    ... okay on input line 29.
+ (/usr/local/texlive/2017/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count130
-\scratchdimen=\dimen154
-\scratchbox=\box31
-\nofMPsegments=\count131
-\nofMParguments=\count132
-\everyMPshowfont=\toks31
-\MPscratchCnt=\count133
-\MPscratchDim=\dimen155
-\MPnumerator=\count134
-\makeMPintoPDFobject=\count135
-\everyMPtoPDFconversion=\toks32
+\scratchcounter=\count146
+\scratchdimen=\dimen168
+\scratchbox=\box61
+\nofMPsegments=\count147
+\nofMParguments=\count148
+\everyMPshowfont=\toks34
+\MPscratchCnt=\count149
+\MPscratchDim=\dimen169
+\MPnumerator=\count150
+\makeMPintoPDFobject=\count151
+\everyMPtoPDFconversion=\toks35
 ) (/usr/local/texlive/2017/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
 
@@ -405,9 +497,14 @@ e
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: float package is loaded.
 Package caption Info: hyperref package is loaded.
+Package caption Info: longtable package is loaded.
+
+(/usr/local/texlive/2017/texmf-dist/tex/latex/caption/ltcaption.sty
+Package: ltcaption 2013/06/09 v1.4-94 longtable captions (AR)
+)
 Package caption Info: End \AtBeginDocument code.
-\AtBeginShipoutBox=\box32
-Package hyperref Info: Link coloring OFF on input line 23.
+\AtBeginShipoutBox=\box62
+Package hyperref Info: Link coloring OFF on input line 29.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
@@ -415,11 +512,11 @@ Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
 (/usr/local/texlive/2017/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
 Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
-\c@section@level=\count136
+\c@section@level=\count152
 )
-LaTeX Info: Redefining \ref on input line 23.
-LaTeX Info: Redefining \pageref on input line 23.
-LaTeX Info: Redefining \nameref on input line 23.
+LaTeX Info: Redefining \ref on input line 29.
+LaTeX Info: Redefining \pageref on input line 29.
+LaTeX Info: Redefining \nameref on input line 29.
 
 (./Appendix_4_meta_mod.out) (./Appendix_4_meta_mod.out)
 \@outlinefile=\write3
@@ -461,70 +558,217 @@ LaTeX Info: Redefining \nameref on input line 23.
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 
-Overfull \hbox (9.08356pt too wide) in paragraph at lines 24--24
+Overfull \hbox (9.08356pt too wide) in paragraph at lines 30--30
 [][]\OT1/cmr/bx/n/17.28 Appendix 5: Find-ing which ini-tial con-di-tions and mo
 del
  []
 
-LaTeX Font Info:    Try loading font information for U+msa on input line 25.
+LaTeX Font Info:    Try loading font information for U+msa on input line 31.
 (/usr/local/texlive/2017/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 25.
+LaTeX Font Info:    Try loading font information for U+msb on input line 31.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1
 
 {/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (0.72443pt too wide) in paragraph at lines 31--32
+Overfull \hbox (0.72443pt too wide) in paragraph at lines 37--38
 []\OT1/cmr/m/n/12 We use multi-variate boosted re-gres-sion trees (mvBRT) as ou
 r meta-model. mvBRTs
  []
 
-<MS_figs/dend_9clust_NMDS_8D.pdf, id=36, 867.24pt x 433.62pt>
+<MS_figs/dend_9clust_NMDS_8D.pdf, id=37, 867.24pt x 433.62pt>
 File: MS_figs/dend_9clust_NMDS_8D.pdf Graphic file (type pdf)
 
 <use MS_figs/dend_9clust_NMDS_8D.pdf>
-Package pdftex.def Info: MS_figs/dend_9clust_NMDS_8D.pdf used on input line 36.
+Package pdftex.def Info: MS_figs/dend_9clust_NMDS_8D.pdf used on input line 42.
 
 (pdftex.def)             Requested size: 483.69684pt x 241.85292pt.
 
-Overfull \hbox (28.45273pt too wide) in paragraph at lines 36--37
+Overfull \hbox (28.45273pt too wide) in paragraph at lines 42--43
 [][] 
  []
 
-(./Appendix_4_meta_mod.bbl [2 <./MS_figs/dend_9clust_NMDS_8D.pdf>])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 48.
- [3]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 48.
+[2 <./MS_figs/dend_9clust_NMDS_8D.pdf>]
+Overfull \hbox (8.14284pt too wide) in alignment at lines 50--57
+ [] [] [] [] [] 
+ []
 
-(./Appendix_4_meta_mod.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 48.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 48.
+
+Underfull \hbox (badness 10000) in paragraph at lines 60--61
+[]\OT1/cmr/m/n/12 Thomp-son \OT1/cmr/m/it/12 et al.[]
+ []
+
+
+Underfull \hbox (badness 1540) in paragraph at lines 61--61
+[]|\OT1/cmr/m/n/12 Survival prob-a-bil-ity with-
+ []
+
+
+Underfull \hbox (badness 7362) in paragraph at lines 61--62
+[]|\OT1/cmr/m/n/12 Assumed fixed and
+ []
+
+
+Underfull \hbox (badness 3942) in paragraph at lines 61--62
+\OT1/cmr/m/n/12 high so den-sity ef-
+ []
+
+
+Underfull \hbox (badness 2951) in paragraph at lines 61--62
+\OT1/cmr/m/n/12 fects only ex-pressed
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 63--63
+\OT1/cmr/m/it/12 myosuroides \OT1/cmr/m/n/12 ex-posed to
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 65--66
+[]|\OT1/cmr/m/n/12 tested over wide
+ []
+
+
+Overfull \vbox (70.48329pt too high) detected at line 66
+ []
+
+
+Underfull \hbox (badness 7415) in paragraph at lines 68--68
+[]|\OT1/cmr/m/n/12 The pro-por-tion of seed
+ []
+
+
+Underfull \hbox (badness 1406) in paragraph at lines 68--68
+\OT1/cmr/m/n/12 lev-els by plough-ing (sub-
+ []
+
+
+Underfull \hbox (badness 2253) in paragraph at lines 71--71
+[]|\OT1/cmr/m/n/12 Yield from win-ter wheat
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 71--72
+[]|\OT1/cmr/m/n/12 Upper limit up-per
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 71--72
+\OT1/cmr/m/n/12 func-tion ([]Ap-pendix
+ []
+
+
+Underfull \hbox (badness 4429) in paragraph at lines 71--72
+\OT1/cmr/m/n/12 low pro-duc-tion sce-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 72--73
+[]|\OT1/cmr/m/n/12 95% con-fi-dence in-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 72--73
+\OT1/cmr/m/n/12 ter-val from fit-ted
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 72--73
+\OT1/cmr/m/n/12 yield func-tion, see
+ []
+
+
+Overfull \hbox (8.14284pt too wide) in alignment at lines 57--73
+ [] [] [] [] [] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 73--73
+[]|\OT1/cmr/m/n/12 Yield of spring bar-ley,
+ []
+
+
+Underfull \hbox (badness 2119) in paragraph at lines 73--73
+\OT1/cmr/m/n/12 an al-ter-na-tive crop com-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 73--74
+[]|[]\OT1/cmr/m/n/12 Redman[] ([]2016[],
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 76--77
+[]|[]\OT1/cmr/m/n/12 Redman[] ([]2016[],
+ []
+
+
+Underfull \hbox (badness 7722) in paragraph at lines 79--79
+[]|\OT1/cmr/m/n/12 Cost of grow-ing win-ter
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 80--81
+[]|[]\OT1/cmr/m/n/12 Redman[] ([]2016[],
+ []
+
+
+Underfull \hbox (badness 7362) in paragraph at lines 81--81
+[]|\OT1/cmr/m/n/12 Cost of a fal-low ro-ta-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 81--82
+[]|[]\OT1/cmr/m/n/12 Redman[] ([]2016[],
+ []
+
+
+Overfull \hbox (8.14284pt too wide) in alignment at lines 73--87
+ [] [] [] [] [] 
+ []
+
+[3] [4] (./Appendix_4_meta_mod.bbl)
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 102.
+ [5]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 102.
+ (./Appendix_4_meta_mod.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 102.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 102.
 Package rerunfilecheck Info: File `Appendix_4_meta_mod.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 48.
+
+
+LaTeX Warning: There were multiply-defined labels.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 102.
  ) 
 Here is how much of TeX's memory you used:
- 8566 strings out of 492995
- 129727 string characters out of 6132704
- 229092 words of memory out of 5000000
- 12008 multiletter control sequences out of 15000+600000
- 9714 words of font info for 37 fonts, out of 8000000 for 9000
+ 9080 strings out of 492995
+ 136569 string characters out of 6132704
+ 253196 words of memory out of 5000000
+ 12489 multiletter control sequences out of 15000+600000
+ 10009 words of font info for 38 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 36i,6n,39p,1902b,434s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 36i,12n,49p,1902b,441s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 ></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb>
 </usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></
 usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></us
-r/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/l
-ocal/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/lo
-cal/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on Appendix_4_meta_mod.pdf (3 pages, 1109232 bytes).
+r/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/l
+ocal/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/loca
+l/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local
+/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/t
+exlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/tex
+live/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/local/texl
+ive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/local/texli
+ve/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmu10.pfb>
+Output written on Appendix_4_meta_mod.pdf (5 pages, 1165745 bytes).
 PDF statistics:
- 86 PDF objects out of 1000 (max. 8388607)
- 71 compressed objects within 1 object stream
- 18 named destinations out of 1000 (max. 500000)
+ 164 PDF objects out of 1000 (max. 8388607)
+ 141 compressed objects within 2 object streams
+ 30 named destinations out of 1000 (max. 500000)
  6 words of extra memory for PDF output out of 10000 (max. 10000000)
 

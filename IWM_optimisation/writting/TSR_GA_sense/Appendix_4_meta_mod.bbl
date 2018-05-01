@@ -1,4 +1,4 @@
-\begin{thebibliography}{4}
+\begin{thebibliography}{11}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\urlprefix}{URL }
@@ -7,6 +7,19 @@
   \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
   \urlstyle{rm}\Url}\fi
 \providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{Cavan \emph{et~al.}(1999)Cavan, Cussans \& Moss}]{Cava1999}
+Cavan, G., Cussans, J. \& Moss, S.R. (1999) Modelling strategies to prevent
+  resistance in black-grass (alopecurus myosuroides). \emph{1999 Brighton
+  Conference: Weeds, Vols 1-3}, 777--782.
+
+\bibitem[{Colbach \emph{et~al.}(2006)Colbach, Busset, Yamada, Durr \&
+  Caneill}]{Colb2006}
+Colbach, N., Busset, H., Yamada, O., Durr, C. \& Caneill, J. (2006) {ALOMYSYS}:
+  Modelling black-grass (\textit{Alopecurus myosuroides} huds.) germination and
+  emergence, in interaction with seed characteristics, tillage and soil climate
+  - ii. evaluation. \emph{European Journal of Agronomy}, \textbf{24}(2),
+  113--128.
 
 \bibitem[{Coutts \& Yokomizo(2014)}]{Cout2014}
 Coutts, S.R. \& Yokomizo, H. (2014) Meta-models as a straightforward approach
@@ -18,11 +31,37 @@ Goslee, S.C. \& Urban, D.L. (2007) The ecodist package for dissimilarity-based
   analysis of ecological data. \emph{Journal of Statistical Software},
   \textbf{22}, 1--19.
 
+\bibitem[{Grundy \emph{et~al.}(1999)Grundy, Mead \& Burston}]{Grun1999}
+Grundy, A., Mead, A. \& Burston, S. (1999) Modelling the effect of cultivation
+  on seed movement with application to the prediction of weed seedling
+  emergence. \emph{Journal of Applied Ecology}, \textbf{36}(5), 663--678.
+
+\bibitem[{Lutman \emph{et~al.}(2013)Lutman, Moss, Cook \& Welham}]{Lutm2013}
+Lutman, P., Moss, S., Cook, S. \& Welham, S. (2013) A review of the effects of
+  crop agronomy on the management of \textit{Alopecurus myosuroides}.
+  \emph{Weed Research}, \textbf{53}(5), 299--313.
+
 \bibitem[{Miller \emph{et~al.}(2016)Miller, Lubke, McArtor \&
   Bergeman}]{Mill2016}
 Miller, P.J., Lubke, G.H., McArtor, D.B. \& Bergeman, C. (2016) Finding
   structure in data using multivariate tree boosting. \emph{Psychological
   methods}, \textbf{21}(4), 583.
+
+\bibitem[{Queenborough \emph{et~al.}(2011)Queenborough, Burnet, Sutherland,
+  Watkinson \& Freckleton}]{Quee2011}
+Queenborough, S.A., Burnet, K.M., Sutherland, W.J., Watkinson, A.R. \&
+  Freckleton, R.P. (2011) From meso-to macroscale population dynamics: a new
+  density-structured approach. \emph{Methods in Ecology and Evolution},
+  \textbf{2}(3), 289--302.
+
+\bibitem[{Redman(2016)}]{Nix2016}
+Redman, G. (2016) \emph{John Nix Farm Managment Pocketbook}, 47th edn. Agro
+  Business Consultants Ltd, UK.
+
+\bibitem[{Thompson \emph{et~al.}(1997)Thompson, Bakker \& Bekker}]{Thom1997}
+Thompson, K., Bakker, J.P. \& Bekker, R.M. (1997) \emph{The soil seed banks of
+  North West Europe: methodology, density and longevity}, vol.~1. Cambridge
+  university press.
 
 \bibitem[{Toohey(2015)}]{Tooh2015}
 Toohey, K. (2015) \emph{SimilarityMeasures: Trajectory Similarity Measures}.

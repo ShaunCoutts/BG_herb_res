@@ -9,6 +9,10 @@
 \usepackage[retainorgcmds]{IEEEtrantools}
 \usepackage{natbib}
 \usepackage{hyperref} % for linking refferences to supps
+\usepackage{multirow} %connecting columns in tables
+\usepackage{multicol}
+\usepackage{longtable}
+\usepackage{makecell}
 
 %page set up
 \usepackage[left=2.5cm,top=2.5cm,right=2.5cm, bottom=2.5cm,nohead]{geometry}
@@ -19,12 +23,14 @@
 
 \setcounter{figure}{0}
 \renewcommand{\thefigure}{S\arabic{figure}}
+\setcounter{table}{0}
+\renewcommand{\thetable}{S\arabic{table}}
 
 \begin{document}
 \section*{Appendix 5: Finding which initial conditions and model parameters lead to which IPM strategies}
 It is unlikely a given IPM strategy will perform well in all scenarios, for example strategy that works well in cases where the yield penalty ($Y_D$) of the weed is very low is unlikely to be good in cases where the yield penalty is very high. To find the parameters and initial conditions ($n_0$) that most influence what makes a good IPM strategy we extend the meta-modelling approach outlined in \citep{Cout2014} to complex multivariate time series outputs (i.e. the sequences of the four sub actions). The meta-modelling approach to global sensitivity analysis is very flexible, and only requires building a function that predicts a models output given a set of parameters. The complication in this case is that the model output is a time series of actions, rather than a single number. To address this we carry out the sensitivity analysis as follows:
 \begin{enumerate}
-\item We use latin hypercube sampling to generate 15000 parameter combinations. We treat the initial conditions as parameters ($Rr_\text{int}$, $Qq_\text{int}$ and $N_\text{int}$). 
+\item We use latin hypercube sampling to generate 15000 parameter combinations, see Table \ref{tab:pars} for upper and lower limits of each parameter. We treat the initial conditions as parameters ($Rr_\text{int}$, $Qq_\text{int}$ and $N_\text{int}$). 
 \item For each parameter combination we run the genetic algorithm (\nameref{app:GA}) for 100 iterations, experience showed that improvements to the best solution found dramatically slowed down after 60 iterations with a solution set size of 100 and mutation rate or 0.03. After 100 iterations we choose the action sequence with the highest reward as the best action sequence.     
 \item This resulted in 15000 action sequences. We only use the first 10 time steps of each action sequence, although the reward was calculated over 25 time steps. This ensured that the action chosen at each time step was done so considering rewards from at least 15 time steps in to the future. To make sense of this mass of data we organised these action sequences by finding how they differed in relation to one another. The first step in this process was to build a dissimilarity matrix of each action sequence to all the other action sequences. We use a distance metric from text analysis, longest common sub-sequence, calculated with the 'SimilarityMeasures' \citep{Tooh2015} package in R. We allow a positional displacement of one time step, that is actions in sequence 1 are allowed to be matched to actions in sequence 2 that are separated in time by at most one time step. This allows out of phase cycles to have very high similarity. Two action sequences where the same combinations of actions are used, but at different times will have low similarity. We use non-metric multi-dimensional scaling (NMDS), implemented with the 'ecodist' package \citep{Gosl2007} to project this very high dimensional dissimilarity matrix into a lower dimensional space. We call this the solution space and we found that we could project the dissimilarity matrix into an eight dimensional solution space, with a stress of 0.09. Stress measures the difference between the relative location of each solution in the solution space, and the dissimilarity matrix lower values are better. We found that 8 dimensions was a good trade-off between low stress and a manageable number of dimensions. Figure \ref{fig:clust_NMDS} shows how the matches up to a separate hierarchical clustering (using the wardD2 method) we carried out to confirm and aid visualisation of the NMDS.                  
 \item We recorded the eight co-ordinates of each solution in the solution space, along with the parameter set that generated that solution. This built a dataset 15000 rows long, where each row was a parameter set and a location in the solution space.
@@ -38,7 +44,55 @@ It is unlikely a given IPM strategy will perform well in all scenarios, for exam
 	\label{fig:clust_NMDS}
 \end{figure}
 
+\newpage 
+
+% table of parameters and ranges used
+\begin{longtable}{c c c p{5cm} p{4cm}}
+	\caption{Parameter descriptions and the range each parameter was tested over}
+	\label{tab:pars}
+	\\
+	\hline
+	\makecell{\textbf{Para-}\\\textbf{meter}} & \textbf{Units} & \textbf{Range} & \textbf{Description} & \textbf{Source} \\
+	\hline
+	\endhead
+	\multicolumn{5}{l}{\textit{Population Model  see \nameref{app:pop_model}}}\\
+	$\phi_e$ & prob. & 0.45--0.6 & germination probability & \citet{Colb2006} \\ 
+	$\phi_b$ & prob. & 0.2--0.86 & Probability a seed survives one year & \citet{Colb2006}, \citet{Thom1997}, \citet{Cava1999}\\
+	$s_0$ & prob. & fixed 0.99 & Survival probability without herbicide & Assumed fixed and high so density effects only expressed through fecundity.\\
+	$\theta$ & prob. & 0.7--1 & \multicolumn{2}{l}{\parbox[t]{9cm}{Proportion of \textit{A. myosuroides} population exposed to herbicide under sub-action $a_h$ = herb R, herb Q or both. plants may be missed spatially or temporally, or spraying may be affected by rain. Tested over wide range.}} \\       
+	$s_h$ & prob. & 0.01 & Survival of susceptible \textit{A. myosuroides} exposed to herbicide ($a_h$ & herbicide assumed to be effective.\\
+	$\alpha$ & prob. & 0.22--0.04 & Survival probability under the alternative crop ($a_k$ = alt), spring barley. & \citet{Lutm2013}\\
+	$\beta$ & prob. & 0.05--0.2 & Survival under spot control (sub-action $a_s$), for example because plants are missed & tested over wide range.\\
+	$f_m$ & \makecell[t]{seeds$\cdot$\\plant$^{-1}$} & 30--300 & \multicolumn{2}{l}{\multirow{2}{9cm}{\parbox[t]{9cm}{Number of seeds produced when density is 0 ($f_m$) and The effect of density on seed production ($f_d$) interact to determine maximum population size. Values chosen to keep the max population close to the maximum population seen in \citet{Quee2011} so yield is not extrapolated outside the observed range.}}} \\
+	$f_d$ & $\frac{1}{plants\cdot ha^{-1}}$ & 0.001--0.0001 &  \\\\\\\\\\\\
+	$I$ & prob. & 0.5--0.9 & The proportion of seed moved between seed bank levels by ploughing (sub-action $a_b$) & \citet{Grun1999} \\ 
+	\multicolumn{5}{l}{\textit{Reward function see \nameref{app:Re_fun}}}\\
+	$\gamma$ & & 0.75--1 & discount rate on future returns & tested over wide range\\
+	$Y_0$ & \pounds $\cdot ha^{-1}$ & 968--1758 & Yield from winter wheat when \textit{A. myosuroides} is absent. & Upper limit upper 95\% confidence interval from fitted yield function (\nameref{app:Re_fun}). Lower limit from low production scenario \citet[pp.~9]{Nix2016}.\\
+	$Y_D$ & \makecell[t]{\pounds$\cdot$plant$\cdot$\\$ha^{-1}$} & 0.0002--0.006 & reduction in yield caused by each \textit{A. myosuroides}. & 95\% confidence interval from fitted yield function, see \nameref{app:Re_fun}. \\
+	$\vartheta$ & \pounds$\cdot ha^{-1}$ & 672--920 & Yield of spring barley, an alternative crop commonly used to control \textit{A. myosuroides}. & \citet[pp.~12]{Nix2016}\\
+	 $\varpi$ & prop. & 0.85--1 & proportion of yield achieved if crop $a_k$ is repeated & \citet[pp.~9]{Nix2016} \\
+	 $\eta_h$ & \pounds$\cdot ha^{-1}$ & 50--100 & Cost of a single herbicide application & \citet[pp.~9]{Nix2016}\\
+	 $\eta_b$ & \pounds$\cdot ha^{-1}$ & 55--92 & Cost of ploughing & \citet[pp.~202]{Nix2016}\\
+	 $\eta_s^0$ & \pounds$\cdot ha^{-1}$ & 10--100 & Cost of spot control even when \textit{A. myosuroides} density is 0 & tested over wide range\\
+	 $\eta_s$ & \makecell[t]{\pounds$\cdot$plant$\cdot$\\$ha^{-1}$} & 10--100 & Increase in spot control cost for each \textit{A. myosuroides} & tested over wide range\\
+	 $\eta_\text{wheat}$ & \pounds$\cdot ha^{-1}$ & 383 & Cost of growing winter wheat not associated with \textit{A. myosuroides} control & \citet[pp.~9]{Nix2016}\\ 
+	 $\eta_\text{alt}$ & \pounds$\cdot ha^{-1}$ & 273 & Cost of growing the alternative crop, spring barley. & \citet[pp.~12]{Nix2016}\\	    
+	 $\eta_\text{fal}$ & \pounds$\cdot ha^{-1}$ & 36 & Cost of a fallow rotation. Based on two applications of glyphosate to control any germinating \textit{A. myosuroides}. &  \citet[pp.~202 and 284]{Nix2016}\\
+	\multicolumn{5}{l}{\textit{Initial Conditions}}\\
+	$R_\text{int}$ & & 0--1 & Initial frequency of R alleles & \\
+	$Q_\text{int}$ & & 0--1 & Initial frequency of Q alleles & \\ 
+	$N_\text{int}$ & & \makecell[t]{100--\\100000} & Initial number of seeds in each level of the seed bank & \\
+	\hline
+\end{longtable}
+
+\paragraph*{Appendix 2}
+\label{app:pop_model}
+Population Model
 \paragraph*{Appendix 3}
+\label{app:Re_fun}
+Reward Function
+\paragraph*{Appendix 4}
 \label{app:GA}
 Genetic Algorithm
 

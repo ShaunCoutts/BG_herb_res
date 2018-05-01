@@ -1,4 +1,4 @@
-\begin{thebibliography}{39}
+\begin{thebibliography}{41}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\urlprefix}{URL }
@@ -18,6 +18,10 @@ B{\"u}y{\"u}ktahtak{\i}n, {\.{I}}.E. \& Haight, R.G. (2017) A review of
   challenges, and future directions. \emph{Annals of Operations Research},
   1--47.
 
+\bibitem[{CAAV(2017)}]{CAAV2017}
+CAAV (2017) \emph{Agricultural Land Occupation Survey 2016}. Central
+  Association of Agricultural Valuers, UK.
+
 \bibitem[{Carrasco \emph{et~al.}(2010)Carrasco, Mumford, MacLeod, Knight \&
   Baker}]{Carr2010}
 Carrasco, L., Mumford, J., MacLeod, A., Knight, J. \& Baker, R. (2010)
@@ -25,11 +29,6 @@ Carrasco, L., Mumford, J., MacLeod, A., Knight, J. \& Baker, R. (2010)
   species. \emph{Ecological Economics}, \textbf{69}(6), 1303 -- 1312. Special
   Section - Payments for Environmental Services: Reconciling Theory and
   Practice.
-
-\bibitem[{Cavan \emph{et~al.}(1999)Cavan, Cussans \& Moss}]{Cava1999}
-Cavan, G., Cussans, J. \& Moss, S.R. (1999) Modelling strategies to prevent
-  resistance in black-grass (alopecurus myosuroides). \emph{1999 Brighton
-  Conference: Weeds, Vols 1-3}, 777--782.
 
 \bibitem[{Chad{\`e}s \emph{et~al.}(2011)Chad{\`e}s, Martin, Nicol, Burgman,
   Possingham \& Buckley}]{Chads2011}
@@ -49,14 +48,6 @@ Chesson, H.W., Kirkcaldy, R.D., Gift, T.L., Owusu-Edusei~Jr, K. \& Weinstock,
   H.S. (2018) An illustration of the potential health and economic benefits of
   combating antibiotic-resistant gonorrhea. \emph{Sexually transmitted
   diseases}, \textbf{45}(4), 250--253.
-
-\bibitem[{Colbach \emph{et~al.}(2006)Colbach, Busset, Yamada, Durr \&
-  Caneill}]{Colb2006}
-Colbach, N., Busset, H., Yamada, O., Durr, C. \& Caneill, J. (2006) {ALOMYSYS}:
-  Modelling black-grass (\textit{Alopecurus myosuroides} huds.) germination and
-  emergence, in interaction with seed characteristics, tillage and soil climate
-  - ii. evaluation. \emph{European Journal of Agronomy}, \textbf{24}(2),
-  113--128.
 
 \bibitem[{Cousens(1985)}]{Cous1985}
 Cousens, R. (1985) A simple model relating yield loss to weed density.
@@ -82,6 +73,10 @@ Doyle, C.J., Cousens, R. \& Moss, S.R. (1986) A model of the economics of
   controlling alopecurus-myosuroides huds in winter-wheat. \emph{Crop
   Protection}, \textbf{5}(2), 143--150.
 
+\bibitem[{Duke(2012)}]{Duke2012}
+Duke, S.O. (2012) Why have no new herbicide modes of action appeared in recent
+  years? \emph{Pest management science}, \textbf{68}(4), 505--512.
+
 \bibitem[{Epanchin-Niell \& Hastings(2010)}]{EpanN2010}
 Epanchin-Niell, R.S. \& Hastings, A. (2010) Controlling established invaders:
   integrating economics and spread dynamics to determine optimal management.
@@ -102,17 +97,22 @@ Goslee, S.C. \& Urban, D.L. (2007) The ecodist package for dissimilarity-based
   analysis of ecological data. \emph{Journal of Statistical Software},
   \textbf{22}, 1--19.
 
-\bibitem[{Grundy \emph{et~al.}(1999)Grundy, Mead \& Burston}]{Grun1999}
-Grundy, A., Mead, A. \& Burston, S. (1999) Modelling the effect of cultivation
-  on seed movement with application to the prediction of weed seedling
-  emergence. \emph{Journal of Applied Ecology}, \textbf{36}(5), 663--678.
-
 \bibitem[{Hicks \emph{et~al.}(2018)Hicks, Comont, Coutts, Crook, Hull, Norris,
   Neve, Childs \& Freckleton}]{Hick2018}
 Hicks, H.L., Comont, D., Coutts, S.R., Crook, L., Hull, R., Norris, K., Neve,
   P., Childs, D.Z. \& Freckleton, R.P. (2018) The factors driving evolved
   herbicide resistance at a national scale. \emph{Nature ecology \& evolution},
   \textbf{2}(3), 529.
+
+\bibitem[{Hull \emph{et~al.}(2014)Hull, J, L \& Moss}]{Hull2014}
+Hull, R., J, C.S., L, W. \& Moss, S.R. (2014) The efficacy of flufenacet based
+  herbicides on \textit{Alopecurus myosuroides} (blackgrass): analysis of data
+  from 375 field trials. \emph{Aspects of Applied Biology}, \textbf{127},
+  49--55.
+
+\bibitem[{Hurley \& Frisvold(2016)}]{Hurl2016}
+Hurley, T.M. \& Frisvold, G. (2016) Economic barriers to herbicide-resistance
+  management. \emph{Weed Science}, \textbf{64}(sp1), 585--594.
 
 \bibitem[{Januchowski-Hartley \emph{et~al.}(2011)Januchowski-Hartley, Visconti
   \& Pressey}]{Janu2011}
@@ -132,10 +132,11 @@ Livingston, M., Fernandez-Cornejo, J. \& Frisvold, G.B. (2016) Economic returns
   to herbicide resistance management in the short and long run: The role of
   neighbor effects. \emph{Weed Science}, \textbf{64}(sp1), 595--608.
 
-\bibitem[{Lutman \emph{et~al.}(2013)Lutman, Moss, Cook \& Welham}]{Lutm2013}
-Lutman, P., Moss, S., Cook, S. \& Welham, S. (2013) A review of the effects of
-  crop agronomy on the management of \textit{Alopecurus myosuroides}.
-  \emph{Weed Research}, \textbf{53}(5), 299--313.
+\bibitem[{Llewellyn \emph{et~al.}(2006)Llewellyn, Pannell, Lindner \&
+  Powles}]{Llew2006}
+Llewellyn, R., Pannell, D., Lindner, R. \& Powles, S. (2006) Targeting key
+  perceptions when planning and evaluating extension. \emph{Australian Journal
+  of Experimental Agriculture}, \textbf{45}(12), 1627--1633.
 
 \bibitem[{Meisner \emph{et~al.}(2016)Meisner, Rosenheim \&
   Tagkopoulos}]{Meis2016}
@@ -148,6 +149,11 @@ Meisner, M.H., Rosenheim, J.A. \& Tagkopoulos, I. (2016) A data-driven, machine
 Miller, P.J., Lubke, G.H., McArtor, D.B. \& Bergeman, C. (2016) Finding
   structure in data using multivariate tree boosting. \emph{Psychological
   methods}, \textbf{21}(4), 583.
+
+\bibitem[{Moss \& Hull(2009)}]{Moss2009}
+Moss, S.R. \& Hull, R. (2009) The value of pre-emergence herbicides for
+  combating herbicide-resistant \textit{Alopecurus myosuroides} (black-grass).
+  \emph{Aspects of Applied Biology}, \textbf{91}, 79--86.
 
 \bibitem[{Okumura \emph{et~al.}(2016)Okumura, Riveros, Gomes-da Silva \&
   Veroneze}]{Okum2016}
@@ -197,11 +203,6 @@ Taylor, C.M. \& Hastings, A. (2004) Finding optimal control strategies for
   invasive species: a density structured model for \textit{Spartina
   alterniflora}. \emph{Journal of Applied Ecology}, \textbf{41}(6), 1049--1057.
 
-\bibitem[{Thompson \emph{et~al.}(1997)Thompson, Bakker \& Bekker}]{Thom1997}
-Thompson, K., Bakker, J.P. \& Bekker, R.M. (1997) \emph{The soil seed banks of
-  North West Europe: methodology, density and longevity}, vol.~1. Cambridge
-  university press.
-
 \bibitem[{Toohey(2015)}]{Tooh2015}
 Toohey, K. (2015) \emph{SimilarityMeasures: Trajectory Similarity Measures}.
   \urlprefix\url{https://CRAN.R-project.org/package=SimilarityMeasures}. R
@@ -216,6 +217,12 @@ Wiese, A.F., Salisbury, C.D., Bean, B.W., Schoenhals, M.G. \& Amosson, S.
 \bibitem[{Willyard \emph{et~al.}(2017)}]{Willy2017}
 Willyard, C. \emph{et~al.} (2017) Drug-resistant bacteria ranked.
   \emph{Nature}, \textbf{543}(7643), 15.
+
+\bibitem[{Wilson \emph{et~al.}(2008)Wilson, Tucker, Hooker, LeJeune \&
+  Doohan}]{Wils2008}
+Wilson, R.S., Tucker, M.A., Hooker, N.H., LeJeune, J.T. \& Doohan, D. (2008)
+  Perceptions and beliefs about weed management: perspectives of ohio grain and
+  produce farmers. \emph{Weed Technology}, \textbf{22}(2), 339--350.
 
 \bibitem[{Yokomizo \emph{et~al.}(2009)Yokomizo, Possingham, Thomas \&
   Buckley}]{Yoko2009}
