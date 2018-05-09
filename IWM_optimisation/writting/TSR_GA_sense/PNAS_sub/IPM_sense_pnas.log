@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2018.2.20)  1 MAY 2018 14:20
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2018.2.20)  4 MAY 2018 17:05
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1959,19 +1959,19 @@ LaTeX Font Info:    Font shape `T1/phv/b/n' will be
 Package microtype Info: Character `029' is missing
 (microtype)             in font `T1/lmr/m/sc/9'.
 (microtype)             Ignoring protrusion settings for this character.
-Package mdframed Info: mdframed works in twoside mode on input line 65.
+Package mdframed Info: mdframed works in twoside mode on input line 63.
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 9.49997pt on input line 65.
+(Font)              scaled to size 9.49997pt on input line 63.
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <10> not available
-(Font)              Font shape `T1/phv/b/n' tried instead on input line 65.
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 63.
 LaTeX Font Info:    Font shape `T1/phv/b/n' will be
-(Font)              scaled to size 9.49997pt on input line 65.
+(Font)              scaled to size 9.49997pt on input line 63.
 Package mdframed Info: mdframed inside float 
- mdframed uses option nobreak mdframed on input line 65.
+ mdframed uses option nobreak mdframed on input line 63.
 Package mdframed Info: mdframed inside a box 
- mdframed uses option nobreak mdframed on input line 65.
+ mdframed uses option nobreak mdframed on input line 63.
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 5.69998pt on input line 65.
+(Font)              scaled to size 5.69998pt on input line 63.
 LaTeX Font Info:    Try loading font information for T1+bch on input line 69.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/psnfss/t1bch.fd
@@ -1992,15 +1992,16 @@ LaTeX Font Info:    Font shape `T1/phv/b/n' will be
 
 
 ]
-<rel_inf_mean.pdf, id=86, 216.81pt x 433.62pt>
+<rel_inf_mean.pdf, id=92, 361.35pt x 505.89pt>
 File: rel_inf_mean.pdf Graphic file (type pdf)
  <use rel_inf_mean.pdf>
 Package pdftex.def Info: rel_inf_mean.pdf used on input line 74.
-(pdftex.def)             Requested size: 113.81041pt x 227.62204pt.
+(pdftex.def)             Requested size: 162.58945pt x 227.62204pt.
 
-<MS_act_seq_YD_Y0.pdf, id=96, 650.43pt x 397.485pt>
+<MS_act_seq_YD_Y0.pdf, id=101, 650.43pt x 397.485pt>
 File: MS_act_seq_YD_Y0.pdf Graphic file (type pdf)
- <use MS_act_seq_YD_Y0.pdf>
+
+<use MS_act_seq_YD_Y0.pdf>
 Package pdftex.def Info: MS_act_seq_YD_Y0.pdf used on input line 82.
 (pdftex.def)             Requested size: 246.09686pt x 150.39082pt.
 LaTeX Font Info:    Font shape `T1/phv/m/it' in size <7> not available
@@ -2008,84 +2009,49 @@ LaTeX Font Info:    Font shape `T1/phv/m/it' in size <7> not available
 LaTeX Font Info:    Font shape `T1/phv/m/sl' will be
 (Font)              scaled to size 6.64998pt on input line 83.
 
-<dis_rate_SB_strat.pdf, id=102, 1156.32pt x 650.43pt>
+<dis_rate_SB_strat.pdf, id=109, 1156.32pt x 505.89pt>
 File: dis_rate_SB_strat.pdf Graphic file (type pdf)
 
 <use dis_rate_SB_strat.pdf>
 Package pdftex.def Info: dis_rate_SB_strat.pdf used on input line 89.
-(pdftex.def)             Requested size: 506.45905pt x 284.88pt.
+(pdftex.def)             Requested size: 506.45905pt x 221.57333pt.
 
 Overfull \hbox (0.7653pt too wide) in paragraph at lines 89--90
 [][] 
  []
 
 [2 <./rel_inf_mean.pdf> <./MS_act_seq_YD_Y0.pdf>]
-Underfull \vbox (badness 5274) has occurred while \output is active []
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
-<int_res_strat_resist.pdf, id=154, 1156.32pt x 361.35pt>
+<int_res_strat_resist.pdf, id=170, 1156.32pt x 289.08pt>
 File: int_res_strat_resist.pdf Graphic file (type pdf)
 
 <use int_res_strat_resist.pdf>
-Package pdftex.def Info: int_res_strat_resist.pdf used on input line 103.
-(pdftex.def)             Requested size: 506.45905pt x 158.26668pt.
+Package pdftex.def Info: int_res_strat_resist.pdf used on input line 102.
+(pdftex.def)             Requested size: 506.45905pt x 126.61333pt.
 
-Overfull \hbox (0.7653pt too wide) in paragraph at lines 103--104
+Overfull \hbox (0.7653pt too wide) in paragraph at lines 102--103
 [][] 
  []
 
 [3 <./dis_rate_SB_strat.pdf>]
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 7.59998pt on input line 121.
-LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 7.12497pt on input line 122.
-LaTeX Font Info:    Calculating math sizes for size <7.5> on input line 122.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7.5> on input line 122.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5.24997> on input line 122.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <3.75> on input line 122.
-LaTeX Font Info:    Font shape `T1/phv/m/it' in size <7.5> not available
-(Font)              Font shape `T1/phv/m/sl' tried instead on input line 126.
-LaTeX Font Info:    Font shape `T1/phv/m/sl' will be
-(Font)              scaled to size 7.12497pt on input line 126.
-
-
-Package natbib Warning: Author undefined for citation`Quee2011' 
-(natbib)                on page 4 on input line 134.
-
-
-Overfull \vbox (28.58525pt too high) detected at line 134
- []
-
-LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 4.98744pt on input line 149.
-LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 3.56248pt on input line 149.
+(Font)              scaled to size 7.59998pt on input line 119.
 LaTeX Font Info:    Font shape `T1/phv/bx/it' in size <8> not available
-(Font)              Font shape `T1/phv/b/it' tried instead on input line 156.
+(Font)              Font shape `T1/phv/b/it' tried instead on input line 119.
 LaTeX Font Info:    Font shape `T1/phv/b/it' in size <8> not available
-(Font)              Font shape `T1/phv/b/sl' tried instead on input line 156.
+(Font)              Font shape `T1/phv/b/sl' tried instead on input line 119.
 LaTeX Font Info:    Font shape `T1/phv/b/sl' will be
-(Font)              scaled to size 7.59998pt on input line 156.
+(Font)              scaled to size 7.59998pt on input line 119.
 
-Underfull \hbox (badness 10000) in paragraph at lines 157--162
+Underfull \hbox (badness 10000) in paragraph at lines 120--125
 
  []
 
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 202.
-[4 <./int_res_strat_resist.pdf>]
-
-Package natbib Warning: Author undefined for citation`Cout2014' 
-(natbib)                on page 5 on input line 202.
-
-
-Package natbib Warning: Author undefined for citation`Gosl2007' 
-(natbib)                on page 5 on input line 202.
-
-(./IPM_sense_pnas.bbl
+(Font)              <8> on input line 164.
+[4 <./int_res_strat_resist.pdf>] (./IPM_sense_pnas.bbl
 LaTeX Font Info:    Font shape `T1/phv/m/it' in size <6> not available
 (Font)              Font shape `T1/phv/m/sl' tried instead on input line 6.
 LaTeX Font Info:    Font shape `T1/phv/m/sl' will be
@@ -2096,36 +2062,36 @@ Underfull \hbox (badness 2393) in paragraph at lines 18--20
 ary force.  \T1/phv/m/sl/6 Sci-ence
  []
 
-[5]) 
+) 
 AED: lastpage setting LastPage
 - LAST -
-Extra skip:8.06842pt
-Left:289.0pt/1.26822pt
-Right:281.0pt/1.1998pt
-Output:289.5pt
-[6]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 216.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 216.
+Extra skip:6.58508pt
+Left:680.78488pt/0.0pt
+Right:673.0pt/1.1998pt
+Output:680.4886pt
+[5]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 178.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 178.
  (./IPM_sense_pnas.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 216.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 216.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 178.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 178.
 Package rerunfilecheck Info: File `IPM_sense_pnas.out' has not changed.
 (rerunfilecheck)             Checksum: E2E616883C6C841678D5073D21283D3D;67.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 216.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 178.
  ) 
 Here is how much of TeX's memory you used:
- 32649 strings out of 492995
- 603018 string characters out of 6132704
- 726603 words of memory out of 5000000
- 35276 multiletter control sequences out of 15000+600000
- 172968 words of font info for 251 fonts, out of 8000000 for 9000
+ 32596 strings out of 492995
+ 601962 string characters out of 6132704
+ 773325 words of memory out of 5000000
+ 35224 multiletter control sequences out of 15000+600000
+ 141445 words of font info for 226 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 82i,16n,75p,10455b,1039s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/local/
-texlive/2017/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/local/texlive/20
+ 81i,15n,73p,10455b,1036s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/lo
+cal/texlive/2017/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/texlive/20
 17/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2017/texmf-d
-ist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/texlive/2017/texmf-dist/fonts/enc/
-dvips/lm/lm-mathit.enc}{/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base
+ist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/local/texlive/2017/texmf-dist/fonts/
+enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base
 /8r.enc}</usr/local/texlive/2017/texmf-dist/fonts/type1/bitstrea/charter/bchb8a
 .pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/lm/lmbx8.pfb></usr/
 local/texlive/2017/texmf-dist/fonts/type1/public/lm/lmex10.pfb></usr/local/texl
@@ -2144,14 +2110,15 @@ local/texlive/2017/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb></usr/local/te
 xlive/2017/texmf-dist/fonts/type1/public/lm/lmsy5.pfb></usr/local/texlive/2017/
 texmf-dist/fonts/type1/public/lm/lmsy6.pfb></usr/local/texlive/2017/texmf-dist/
 fonts/type1/public/lm/lmsy7.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1
-/public/lm/lmsy8.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/helvet
-ic/uhvb8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/helvetic/uhvb
-o8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb
-></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/helvetic/uhvro8a.pfb>
-Output written on IPM_sense_pnas.pdf (6 pages, 386320 bytes).
+/public/lm/lmsy8.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/lm/
+lmsy9.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.p
+fb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/helvetic/uhvbo8a.pfb></u
+sr/local/texlive/2017/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/loca
+l/texlive/2017/texmf-dist/fonts/type1/urw/helvetic/uhvro8a.pfb>
+Output written on IPM_sense_pnas.pdf (5 pages, 384206 bytes).
 PDF statistics:
- 339 PDF objects out of 1000 (max. 8388607)
- 292 compressed objects within 3 object streams
+ 346 PDF objects out of 1000 (max. 8388607)
+ 300 compressed objects within 3 object streams
  56 named destinations out of 1000 (max. 500000)
- 56873 words of extra memory for PDF output out of 61914 (max. 10000000)
+ 51753 words of extra memory for PDF output out of 61914 (max. 10000000)
 

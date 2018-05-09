@@ -1,4 +1,4 @@
-\begin{thebibliography}{41}
+\begin{thebibliography}{39}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\urlprefix}{URL }
@@ -7,6 +7,11 @@
   \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
   \urlstyle{rm}\Url}\fi
 \providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{Bigelow \emph{et~al.}(2016)Bigelow, Borchers \& Hubbs}]{Bige2016}
+Bigelow, D., Borchers, A. \& Hubbs, T. (2016) \emph{US Farmland Ownership,
+  Tenure, and Transfer}. United States Department of Agriculture, Economic
+  Research Service.
 
 \bibitem[{Bottrell \emph{et~al.}(1979)}]{Bott1979}
 Bottrell, D.R. \emph{et~al.} (1979) \emph{Integrated pest management.} United
@@ -30,13 +35,6 @@ Carrasco, L., Mumford, J., MacLeod, A., Knight, J. \& Baker, R. (2010)
   Section - Payments for Environmental Services: Reconciling Theory and
   Practice.
 
-\bibitem[{Chad{\`e}s \emph{et~al.}(2011)Chad{\`e}s, Martin, Nicol, Burgman,
-  Possingham \& Buckley}]{Chads2011}
-Chad{\`e}s, I., Martin, T.G., Nicol, S., Burgman, M.A., Possingham, H.P. \&
-  Buckley, Y.M. (2011) General rules for managing and surveying networks of
-  pests, diseases, and endangered species. \emph{Proceedings of the National
-  Academy of Sciences}, \textbf{108}(20), 8323--8328.
-
 \bibitem[{Chalak \& Pannell(2015)}]{Chal2015}
 Chalak, M. \& Pannell, D.J. (2015) Optimal integrated strategies to control an
   invasive weed. \emph{Canadian Journal of Agricultural Economics/Revue
@@ -57,6 +55,11 @@ Cousens, R. (1985) A simple model relating yield loss to weed density.
 Coutts, S.R. \& Yokomizo, H. (2014) Meta-models as a straightforward approach
   to the sensitivity analysis of complex models. \emph{Population Ecology},
   \textbf{56}(1), 7--19.
+
+\bibitem[{Coutts \emph{et~al.}(2013)Coutts, Yokomizo \& Buckley}]{Cout2013}
+Coutts, S.R., Yokomizo, H. \& Buckley, Y.M. (2013) The behavior of multiple
+  independent managers and ecological traits interact to determine prevalence
+  of weeds. \emph{Ecological Applications}, \textbf{23}(3), 523--536.
 
 \bibitem[{Dana \emph{et~al.}(2014)Dana, Jeschke \& García-de Lomas}]{Dana2014}
 Dana, E.D., Jeschke, J.M. \& García-de Lomas, J. (2014) Decision tools for
@@ -82,15 +85,14 @@ Epanchin-Niell, R.S. \& Hastings, A. (2010) Controlling established invaders:
   integrating economics and spread dynamics to determine optimal management.
   \emph{Ecology letters}, \textbf{13}(4), 528--541.
 
-\bibitem[{Epanchin-Niell \& Wilen(2012)}]{EpaN2012}
-Epanchin-Niell, R.S. \& Wilen, J.E. (2012) Optimal spatial control of
-  biological invasions. \emph{Journal of Environmental Economics and
-  Management}, \textbf{63}(2), 260 -- 270.
-
 \bibitem[{Fraser(2004)}]{Fras2004}
 Fraser, E.D. (2004) Land tenure and agricultural management: soil conservation
   on rented and owned fields in southwest british columbia. \emph{Agriculture
   and Human Values}, \textbf{21}(1), 73--79.
+
+\bibitem[{Friedman(2001)}]{Frie2001}
+Friedman, J.H. (2001) Greedy function approximation: a gradient boosting
+  machine. \emph{Annals of statistics}, 1189--1232.
 
 \bibitem[{Goslee \& Urban(2007)}]{Gosl2007}
 Goslee, S.C. \& Urban, D.L. (2007) The ecodist package for dissimilarity-based
@@ -113,12 +115,6 @@ Hull, R., J, C.S., L, W. \& Moss, S.R. (2014) The efficacy of flufenacet based
 \bibitem[{Hurley \& Frisvold(2016)}]{Hurl2016}
 Hurley, T.M. \& Frisvold, G. (2016) Economic barriers to herbicide-resistance
   management. \emph{Weed Science}, \textbf{64}(sp1), 585--594.
-
-\bibitem[{Januchowski-Hartley \emph{et~al.}(2011)Januchowski-Hartley, Visconti
-  \& Pressey}]{Janu2011}
-Januchowski-Hartley, S.R., Visconti, P. \& Pressey, R.L. (2011) A systematic
-  approach for prioritizing multiple management actions for invasive species.
-  \emph{Biological Invasions}, \textbf{13}(5), 1241--1253.
 
 \bibitem[{Laxminarayan \emph{et~al.}(2016)Laxminarayan, Matsoso, Pant, Brower,
   R{\o}ttingen, Klugman \& Davies}]{Laxm2016}
@@ -165,20 +161,6 @@ Okumura, L.M., Riveros, B.S., Gomes-da Silva, M.M. \& Veroneze, I. (2016) A
 \bibitem[{Palumbi(2001)}]{Palu2001}
 Palumbi, S.R. (2001) Humans as the world's greatest evolutionary force.
   \emph{Science}, \textbf{293}(5536), 1786--1790.
-
-\bibitem[{Pichancourt \emph{et~al.}(2012)Pichancourt, Chades, Firn, van Klinken
-  \& Martin}]{Pich2012}
-Pichancourt, J.B., Chades, I., Firn, J., van Klinken, R.D. \& Martin, T.G.
-  (2012) Simple rules to contain an invasive species with a complex life cycle
-  and high dispersal capacity. \emph{Journal of Applied Ecology},
-  \textbf{49}(1), 52--62.
-
-\bibitem[{Queenborough \emph{et~al.}(2011)Queenborough, Burnet, Sutherland,
-  Watkinson \& Freckleton}]{Quee2011}
-Queenborough, S.A., Burnet, K.M., Sutherland, W.J., Watkinson, A.R. \&
-  Freckleton, R.P. (2011) From meso-to macroscale population dynamics: a new
-  density-structured approach. \emph{Methods in Ecology and Evolution},
-  \textbf{2}(3), 289--302.
 
 \bibitem[{Redman(2016)}]{Nix2016}
 Redman, G. (2016) \emph{John Nix Farm Managment Pocketbook}, 47th edn. Agro

@@ -4,44 +4,44 @@ The top-level auxiliary file: GA_opt_TSR_2level_seedbank.aux
 The style file: /Users/shauncoutts/Dropbox/shauns_paper/referencing/bes.bst
 Database file #1: /Users/shauncoutts/Dropbox/shauns_paper/referencing/refs.bib
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
-You've used 41 entries,
+You've used 39 entries,
             3226 wiz_defined-function locations,
-            997 strings with 14176 characters,
-and the built_in function-call counts, 25673 in all, are:
-= -- 2151
-> -- 1093
+            973 strings with 13189 characters,
+and the built_in function-call counts, 23776 in all, are:
+= -- 2005
+> -- 977
 < -- 24
-+ -- 441
-- -- 378
-* -- 2153
-:= -- 3950
-add.period$ -- 84
-call.type$ -- 41
-change.case$ -- 329
-chr.to.int$ -- 50
-cite$ -- 41
-duplicate$ -- 1865
-empty$ -- 1890
-format.name$ -- 509
-if$ -- 5022
++ -- 397
+- -- 336
+* -- 1964
+:= -- 3671
+add.period$ -- 80
+call.type$ -- 39
+change.case$ -- 304
+chr.to.int$ -- 48
+cite$ -- 39
+duplicate$ -- 1738
+empty$ -- 1772
+format.name$ -- 457
+if$ -- 4662
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 405
-newline$ -- 133
-num.names$ -- 164
-pop$ -- 704
+missing$ -- 374
+newline$ -- 127
+num.names$ -- 156
+pop$ -- 657
 preamble$ -- 1
-purify$ -- 288
+purify$ -- 266
 quote$ -- 0
-skip$ -- 552
+skip$ -- 527
 stack$ -- 0
-substring$ -- 1305
-swap$ -- 1095
+substring$ -- 1206
+swap$ -- 1000
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 360
+type$ -- 339
 warning$ -- 0
-while$ -- 186
+while$ -- 175
 width$ -- 0
-write$ -- 457
+write$ -- 433
