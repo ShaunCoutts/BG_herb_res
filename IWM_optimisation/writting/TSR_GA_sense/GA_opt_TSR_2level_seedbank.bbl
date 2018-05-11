@@ -17,12 +17,6 @@ Bigelow, D., Borchers, A. \& Hubbs, T. (2016) \emph{US Farmland Ownership,
 Bottrell, D.R. \emph{et~al.} (1979) \emph{Integrated pest management.} United
   States Government Printing Office.
 
-\bibitem[{B{\"u}y{\"u}ktahtak{\i}n \& Haight(2017)}]{Buyu2017}
-B{\"u}y{\"u}ktahtak{\i}n, {\.{I}}.E. \& Haight, R.G. (2017) A review of
-  operations research models in invasive species management: state of the art,
-  challenges, and future directions. \emph{Annals of Operations Research},
-  1--47.
-
 \bibitem[{CAAV(2017)}]{CAAV2017}
 CAAV (2017) \emph{Agricultural Land Occupation Survey 2016}. Central
   Association of Agricultural Valuers, UK.
@@ -46,6 +40,14 @@ Chesson, H.W., Kirkcaldy, R.D., Gift, T.L., Owusu-Edusei~Jr, K. \& Weinstock,
   H.S. (2018) An illustration of the potential health and economic benefits of
   combating antibiotic-resistant gonorrhea. \emph{Sexually transmitted
   diseases}, \textbf{45}(4), 250--253.
+
+\bibitem[{Colbach \emph{et~al.}(2006)Colbach, Busset, Yamada, Durr \&
+  Caneill}]{Colb2006}
+Colbach, N., Busset, H., Yamada, O., Durr, C. \& Caneill, J. (2006) {ALOMYSYS}:
+  Modelling black-grass (\textit{Alopecurus myosuroides} huds.) germination and
+  emergence, in interaction with seed characteristics, tillage and soil climate
+  - ii. evaluation. \emph{European Journal of Agronomy}, \textbf{24}(2),
+  113--128.
 
 \bibitem[{Cousens(1985)}]{Cous1985}
 Cousens, R. (1985) A simple model relating yield loss to weed density.
@@ -99,6 +101,10 @@ Goslee, S.C. \& Urban, D.L. (2007) The ecodist package for dissimilarity-based
   analysis of ecological data. \emph{Journal of Statistical Software},
   \textbf{22}, 1--19.
 
+\bibitem[{Heap(2014)}]{Heap2014}
+Heap, I. (2014) Global perspective of herbicide-resistant weeds. \emph{Pest
+  Management Science}, \textbf{70}(9), 1306--1315.
+
 \bibitem[{Hicks \emph{et~al.}(2018)Hicks, Comont, Coutts, Crook, Hull, Norris,
   Neve, Childs \& Freckleton}]{Hick2018}
 Hicks, H.L., Comont, D., Coutts, S.R., Crook, L., Hull, R., Norris, K., Neve,
@@ -134,11 +140,12 @@ Llewellyn, R., Pannell, D., Lindner, R. \& Powles, S. (2006) Targeting key
   perceptions when planning and evaluating extension. \emph{Australian Journal
   of Experimental Agriculture}, \textbf{45}(12), 1627--1633.
 
-\bibitem[{Meisner \emph{et~al.}(2016)Meisner, Rosenheim \&
-  Tagkopoulos}]{Meis2016}
-Meisner, M.H., Rosenheim, J.A. \& Tagkopoulos, I. (2016) A data-driven, machine
-  learning framework for optimal pest management in cotton. \emph{Ecosphere},
-  \textbf{7}(3).
+\bibitem[{Mar{\'e}chal \emph{et~al.}(2012)Mar{\'e}chal, Henriet, Vancutsem \&
+  Bodson}]{Mare2012}
+Mar{\'e}chal, P.Y., Henriet, F., Vancutsem, F. \& Bodson, B. (2012) Ecological
+  review of black-grass (alopecurus myosuroides huds.) propagation abilities in
+  relationship with herbicide resistance. \emph{Biotechnologie, Agronomie,
+  Soci{\'e}t{\'e} et Environnement}, \textbf{16}(1), 103.
 
 \bibitem[{Miller \emph{et~al.}(2016)Miller, Lubke, McArtor \&
   Bergeman}]{Mill2016}
@@ -151,12 +158,10 @@ Moss, S.R. \& Hull, R. (2009) The value of pre-emergence herbicides for
   combating herbicide-resistant \textit{Alopecurus myosuroides} (black-grass).
   \emph{Aspects of Applied Biology}, \textbf{91}, 79--86.
 
-\bibitem[{Okumura \emph{et~al.}(2016)Okumura, Riveros, Gomes-da Silva \&
-  Veroneze}]{Okum2016}
-Okumura, L.M., Riveros, B.S., Gomes-da Silva, M.M. \& Veroneze, I. (2016) A
-  cost-effectiveness analysis of two different antimicrobial stewardship
-  programs. \emph{Brazilian Journal of Infectious Diseases}, \textbf{20}(3),
-  255--261.
+\bibitem[{Moss \emph{et~al.}(2007)Moss, Perryman \& Tatnell}]{Moss2007}
+Moss, S.R., Perryman, S.A.M. \& Tatnell, L.V. (2007) Managing
+  herbicide-resistant blackgrass (alopecurus myosuroides): Theory and practice.
+  \emph{Weed Technology}, \textbf{21}(2), 300--309.
 
 \bibitem[{Palumbi(2001)}]{Palu2001}
 Palumbi, S.R. (2001) Humans as the world's greatest evolutionary force.
@@ -205,11 +210,5 @@ Willyard, C. \emph{et~al.} (2017) Drug-resistant bacteria ranked.
 Wilson, R.S., Tucker, M.A., Hooker, N.H., LeJeune, J.T. \& Doohan, D. (2008)
   Perceptions and beliefs about weed management: perspectives of ohio grain and
   produce farmers. \emph{Weed Technology}, \textbf{22}(2), 339--350.
-
-\bibitem[{Yokomizo \emph{et~al.}(2009)Yokomizo, Possingham, Thomas \&
-  Buckley}]{Yoko2009}
-Yokomizo, H., Possingham, H.P., Thomas, M.B. \& Buckley, Y.M. (2009) Managing
-  the impact of invasive species: the value of knowing the density--impact
-  curve. \emph{Ecological Applications}, \textbf{19}(2), 376--386.
 
 \end{thebibliography}

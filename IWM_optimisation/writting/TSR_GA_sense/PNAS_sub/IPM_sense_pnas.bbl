@@ -35,11 +35,6 @@ Chesson HW, Kirkcaldy RD, Gift TL, Owusu-Edusei~Jr K, Weinstock HS (2018) An
   antibiotic-resistant gonorrhea.
 \newblock {\em Sexually transmitted diseases} 45(4):250--253.
 
-\bibitem{REX2013}
-{REX Consortium} (2013) Heterogeneity of selection and the evolution of
-  resistance.
-\newblock {\em Trends in ecology \& evolution} 28(2):110--118.
-
 \bibitem{Bott1979}
 Bottrell DR, , et~al. (1979) {\em Integrated pest management.}
 \newblock (United States Government Printing Office.).
@@ -60,22 +55,16 @@ Epanchin-Niell RS, Hastings A (2010) Controlling established invaders:
   integrating economics and spread dynamics to determine optimal management.
 \newblock {\em Ecology letters} 13(4):528--541.
 
-\bibitem{Meis2016}
-Meisner MH, Rosenheim JA, Tagkopoulos I (2016) A data-driven, machine learning
-  framework for optimal pest management in cotton.
-\newblock {\em Ecosphere} 7(3).
+\bibitem{Swin1994}
+Swinton SM, Buhler DD, Forcella F, Gunsolus JL, King RP (1994) Estimation of
+  crop yield loss due to interference by multiple weed species.
+\newblock {\em Weed Science} 42(1):103--109.
 
-\bibitem{Okum2016}
-Okumura LM, Riveros BS, Gomes-da Silva MM, Veroneze I (2016) A
-  cost-effectiveness analysis of two different antimicrobial stewardship
-  programs.
-\newblock {\em Brazilian Journal of Infectious Diseases} 20(3):255--261.
-
-\bibitem{Buyu2017}
-B{\"u}y{\"u}ktahtak{\i}n {\.{I}}E, Haight RG (2017) A review of operations
-  research models in invasive species management: state of the art, challenges,
-  and future directions.
-\newblock {\em Annals of Operations Research} pp. 1--47.
+\bibitem{Llew2006}
+Llewellyn R, Pannell D, Lindner R, Powles S (2006) Targeting key perceptions
+  when planning and evaluating extension.
+\newblock {\em Australian Journal of Experimental Agriculture}
+  45(12):1627--1633.
 
 \bibitem{Moss2007}
 Moss SR, Perryman SAM, Tatnell LV (2007) Managing herbicide-resistant
@@ -85,6 +74,11 @@ Moss SR, Perryman SAM, Tatnell LV (2007) Managing herbicide-resistant
 \bibitem{Heap2014}
 Heap I (2014) Global perspective of herbicide-resistant weeds.
 \newblock {\em Pest Management Science} 70(9):1306--1315.
+
+\bibitem{REX2013}
+{REX Consortium} (2013) Heterogeneity of selection and the evolution of
+  resistance.
+\newblock {\em Trends in ecology \& evolution} 28(2):110--118.
 
 \bibitem{Tayl2004GA}
 Taylor CM, Hastings A (2004) Finding optimal control strategies for invasive
@@ -128,16 +122,6 @@ Doyle CJ, Cousens R, Moss SR (1986) A model of the economics of controlling
   alopecurus-myosuroides huds in winter-wheat.
 \newblock {\em Crop Protection} 5(2):143--150.
 
-\bibitem{Swin1994}
-Swinton SM, Buhler DD, Forcella F, Gunsolus JL, King RP (1994) Estimation of
-  crop yield loss due to interference by multiple weed species.
-\newblock {\em Weed Science} 42(1):103--109.
-
-\bibitem{Yoko2009}
-Yokomizo H, Possingham HP, Thomas MB, Buckley YM (2009) Managing the impact of
-  invasive species: the value of knowing the density--impact curve.
-\newblock {\em Ecological Applications} 19(2):376--386.
-
 \bibitem{Wies1996}
 Wiese AF, Salisbury CD, Bean BW, Schoenhals MG, Amosson S (1996) Economic
   evaluation of field bindweed (\textit{Convolvulus arvensis}) control in a
@@ -170,12 +154,6 @@ Wilson RS, Tucker MA, Hooker NH, LeJeune JT, Doohan D (2008) Perceptions and
   beliefs about weed management: perspectives of ohio grain and produce
   farmers.
 \newblock {\em Weed Technology} 22(2):339--350.
-
-\bibitem{Llew2006}
-Llewellyn R, Pannell D, Lindner R, Powles S (2006) Targeting key perceptions
-  when planning and evaluating extension.
-\newblock {\em Australian Journal of Experimental Agriculture}
-  45(12):1627--1633.
 
 \bibitem{Moss2009}
 Moss SR, Hull R (2009) The value of pre-emergence herbicides for combating
