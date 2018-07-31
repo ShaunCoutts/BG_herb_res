@@ -15,21 +15,21 @@
 \setlength{\parskip}{12pt}
 \setlength{\parindent}{0cm}
 
-\setcounter{equation}{0}
+\setcounter{equation}{12}
 \renewcommand{\theequation}{S\arabic{equation}}
 
 \begin{document}
-\section*{Appendix 2: Population Model}
-The population links management actions to the response of the \textit{A. myosuroides} population, and its impact of wheat yields. The action $a_j$ is how the manager effects the population model, and thus the reward they get. Each action is a tuple of four sub-actions $a_j = \langle a_h, a_b, a_k, a_s \rangle$. 
+\section*{Appendix 5: Population Model}
+The population model links management actions, $a_j$, to the \textit{A. myosuroides} population, and thus wheat yields. Each action is a tuple of four sub-actions $a_j = \langle a_h, a_b, a_k, a_s \rangle$. 
 
-The processes included in the population model limit the scope of the IPM strategies found. We use a deterministic model, and so our IPM strategies can only deal with average expected population responses, ignoring demographic uncertainty, and environmental and market variability. Also, our IPM strategies can only deal herbicide resistance that is already present in the population because \textit{de nova} mutation is a fundamentally stochastic process. The the population model also limits the range of management options that can be included. A commonly recommended \citep{REX2013} and applied \citep{Hick2018} strategy to combat resistance is to apply xenobiotics that impair different cellar pathways (i.e. modes of action), either sequentially (cycling) or concurrently (stacking). To allow this behaviour we use a discrete time, spatially implicit model, where two independent alleles ($R$ and $Q$), each confer target site resistance to a separate herbicide. \textit{A. myosuroides} is a diploid species and so each target site gene has three variants $g_1 \in \{RR, Rr, rr\}$ and $g_2 \in \{QQ, Qq, qq\}$ (lower case denotes susceptible alleles). Since there are two target site genes, with three variants, there are nine resistance genotypes 
+The processes included in the population model limit the scope of the IPM strategies found. We use a deterministic model, and so our IPM strategies can only deal with average expected population responses, ignoring demographic uncertainty, and environmental and market variability. Also, our IPM strategies can only deal with herbicide resistance that is already present in the population because \textit{de nova} mutation is a fundamentally stochastic process. The population model also limits the range of management options that can be included. A commonly recommended \citep{REX2013} and applied \citep{Hick2018} strategy to combat resistance is to use xenobiotics that impair different cellar pathways (i.e. modes of action), either sequentially (cycling) or concurrently (stacking). To allow this behavior we use a discrete time, spatially implicit model, where two independent alleles ($R$ and $Q$), each confer target site resistance to a separate herbicide. \textit{A. myosuroides} is a diploid species and so each target site gene has three variants $g_1 \in \{RR, Rr, rr\}$ and $g_2 \in \{QQ, Qq, qq\}$ (lower case denotes susceptible alleles). Since there are two target site genes, with three variants, there are nine resistance genotypes 
 \begin{align*}
 	G \in \{(RR, QQ), (RR, Qq), (RR, qq), &(Rr, QQ), (Rr, Qq),\\
 		&(Rr, qq), (rr, QQ), (rr, Qq), (rr, qq)\}.  
 \end{align*}
-We assume that the inheritance of each resistance gene is Mendelian and independent of the other. The model must also be flexible enough to accommodate non-chemical control. We include a two level seed bank (to allow plowing to take seeds out of the germinating population) and model survival as a function of resistance, herbicide choice, crop choice and spot control.
+We assume that the inheritance of each resistance gene is Mendelian and independent of the other. The model must also be flexible enough to accommodate non-chemical control. We include a two level seed bank to allow plowing to take seeds out of the germinating population. We model survival as a function of resistance, herbicide choice, crop choice and spot control.
 
-We model the \textit{A. myosuroides} population using a yearly time step, starting at the beginning of the growing season before any seeds have emerged. The seed bank at depth level $L \in \{1, 2\}$, time $t$, is $\mathbf{b}(t, L)$, a 1 by 9 column vector where each element is the number of seeds with resistance genotype $G$. Plowing moves seeds from one level of the seed bank to the other and is modelled as
+We model the \textit{A. myosuroides} population using a yearly time step, starting at the beginning of the growing season before any seeds have emerged. The seed bank at depth level $L \in \{1, 2\}$, time $t$, is $\mathbf{b}(t, L)$, a 1 by 9 column vector where each element is the number of seeds with resistance genotype $G$. Plowing moves seeds from one level of the seed bank to the other and is modeled as
 \begin{subequations}
 \label{eq:sb_pp}
 \begin{align}
@@ -63,7 +63,7 @@ where $s_0$ is survival without herbicide under winter wheat. Survival under her
 		s_h &~\text{otherwise}
 	\end{cases}
 \end{equation}
-where $g*$ is the set of resistant genotypes. We assume resistance to both herbicides is dominant so $g* = \{RR, Rr, QQ, Qq\}$. Survival of susceptible individuals exposed to herbicide is $s_h$, and $\theta$ is the proportion of individuals that are exposed to herbicide due to emerging after spray, or unevenness in herbicide application over space. This function assumes that target site resistance confers perfect resistance, and that multiple herbicides are used as a single application mixture with in one year. Finally, crop choice affects survival of above ground individuals through the function
+where $g*$ is the set of resistant genotypes. We assume resistance to both herbicides is dominant so $g* = \{RR, Rr, QQ, Qq\}$. Survival of susceptible individuals exposed to herbicide is $s_h$, and $\theta$ is the proportion of individuals that are exposed to herbicide. Individuals may be missed due to emerging after spray, or unevenness in herbicide application over space. This function assumes that target site resistance confers perfect resistance, and that multiple herbicides are used as a single application mixture with in one year. Finally, crop choice affects survival of above ground individuals through the function
 \begin{equation}\label{eq:crop}
 	K(a_k) = \begin{cases}
 		1~\text{if}~a_k = \text{wheat}\\

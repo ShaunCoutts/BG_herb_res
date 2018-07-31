@@ -15,7 +15,7 @@
 \setlength{\parskip}{12pt}
 \setlength{\parindent}{0cm}
 
-\setcounter{equation}{11}
+\setcounter{equation}{0}
 \renewcommand{\theequation}{S\arabic{equation}}
 
 \begin{document}
@@ -25,19 +25,21 @@ The reward function measures how good a given IPM strategy is given a initial st
 Income from the crop in year $t$ is    
 \begin{equation}\label{eq:yield}
 	Y(N'', a_k^t, a_k^{t-1}) = \begin{cases} 
-		W(a_k^t, a_k^{t-1})(Y_0 - \beta_D N''\rho &~\text{if}~a_k^t = \text{wheat}\\
+		W(a_k^t, a_k^{t-1})(Y_0 - Y_D N'' &~\text{if}~a_k^t = \text{wheat}\\
 		W(a_k^t, a_k^{t-1})\vartheta &~\text{if}~a_k^t = \text{alt}\\
 		0 &~\text{if}~a_k^t = \text{fallow}\\
 	\end{cases}
 \end{equation}   
-where $Y_0$ is the yield of winter wheat (in t/ha) when the density of black grass after management ($N''$) is 0, $\beta_D$ is the rate at which yield decreases with increasing black grass density. To estimate this yield function We use yield data from combine harvesters for 10 fields in England for which we also have estimates of \textit{A. myosuroides} density (see \citealt{Hick2018} for survey methodology). Yield estimates are $Y_0 = 11.43$ (CI: 10.8--12.04) t/ha and $\beta_D = 0.0000223$ (CI: 0.00000145--0.0000425) t/plant/ha, see section \ref{Y_fun} for parameter estimation. $\rho$ is the price of winter wheat, taken from \citet[pp.~9]{Nix2016} as £146/t. Yield of a crop can be affected by planting the same crop two years in a row, largely due to species specific parasites and pathogens in the soil [REF Kwadjo]. We use the weighting function 
+where $Y_0$ is the yield of winter wheat (in \pounds $\cdot ha^{-1}$) when the density of black grass after management ($N''$) is 0, $Y_D$ is the rate at which yield decreases with increasing \textit{Alopecurus myosuroides} density. The yield function for wheat is fitted to empirical data, detailed in sub-section \textit{\nameref{Y_fun}}. We convert yield estimated from ton$\cdot ha^{-1}$ to \pounds $\cdot ha^{-1}$ using a wheat price of \pounds 146$\cdot$ton$^{-1}$, taken from \citet[pp.~9]{Nix2016}. 
+
+The yield of a crop can be affected by planting the same crop two years in a row, largely due to species specific parasites and pathogens in the soil. We use the weighting function 
 \begin{equation}
 	W(a_k^t, a_k^{t-1}) = \begin{cases}
 		\varpi &~\text{if}~a_k^t = a_k^{t-1}\\
 		1 &~\text{otherwise}
 	\end{cases}
 \end{equation} 
-to reduce yield if the same crop is used two times in succession, where $\varpi \in [0, 1]$ is the proportional yield achieved when the same crop is used, following [REF Kwadjo] we use $\varpi = 0.9$. We assume the yield of the alternative crop, $\varphi$, is not affected by black grass. The alternative crop is based on spring barley, a common spring crop used in the UK for the control of black grass. The average income from spring barley is \pounds 796/ha \citep[pp.~12]{Nix2016}.   
+to reduce yield if the same crop is used two times in succession, where $\varpi \in [0, 1]$ is the proportional yield achieved when the same crop is used, following we use $\varpi = 0.9$. We assume the yield of the alternative crop, $\varphi$, is not affected by black grass. The alternative crop is based on spring barley, a common spring crop used in the UK for the control of black grass. The average income from spring barley is \pounds 796/ha \citep[pp.~12]{Nix2016}.   
 
 Costs depend on both the action chosen and non-weed control costs, such as fertilizer, seed and other sprays such as fungicides. We assume these other variable costs change with crop choice ($a_k$), but are constant from year to year within a crop choice. Thus the cost of action is $a_q$  
 \begin{equation}
@@ -71,7 +73,7 @@ Finally the cost function for spot control is assumed to increase proportionally
 \begin{equation}
 	c(a_s, t) = a_s\left(\eta_s^0 + \eta_s \sum_{\forall G} n'(G, t)\right)
 \end{equation}  
-where $\delta_0$ combines the costs of spot control incurred even when there is no \textit{A. myosuroides}) and $\delta$ controls how quickly the costs of spot control increase with black grass density. This functional form assumes the costs of spot control increase linearly with \textit{A. myosuroides} density. $a_s \in \{0, 1\}$ is a switch, so that the cost is incurred only if the action is taken.       
+where $\eta_s^0$ combines the costs of spot control incurred even when there is no \textit{A. myosuroides} and $\eta_s$ controls how quickly the costs of spot control increase with \textit{A. myosuroides} density. This functional form assumes the costs of spot control increase linearly with \textit{A. myosuroides} density. $a_s \in \{0, 1\}$ is a switch, so that the cost is incurred only if the action is taken.       
 
 To explicitly link the above ground population to the reward function we define $N''(\mathbf{a}, n_0, t)$, the total above ground population after all control actions, at time $t$ given an initial population $n_0$ and a sequence of actions 
 \begin{equation}
@@ -83,7 +85,7 @@ where $a_j^t$ is the action $a_j \in \mathbf{A}$ taken at time $t$ and $T$ is th
 \end{equation}
 where $R(\mathbf{a}, n_0)$ is the time discounted reward for action sequence $\mathbf{a}$ given starting population $n_0$, $\gamma \in [0, 1]$ is the discount rate. When $\gamma = 0$ only the reward in the first time step is considered, when $\gamma = 1$ returns in all future time steps up to $T$ are valued equally.
 
-\subsection{Parametrization of yield function} \label{Y_fun}
+\subsection*{Parametrization of yield function} \label{Y_fun}
 To fit the yield function we use data from 10 fields where harvesters recorded wheat yield for every 20m by 20m gird square of the field. We also have black grass density estimates for each grid square from state structured surveys \citep{Hick2018}. These density states were calibrated to plants/m$^2$ by \citet{Quee2011}: the density states were absent (0 [0--0.1667] plants/m$^2$)(median[inter-quartile range]), low (0.5000 [0.1667--1.5000] plants/m$^2$), medium (2.6666 [1.3333--4.7500] plants/m$^2$), high (5.0833 [3.0000--7.7916] plants/m$^2$), and very high (9.6666 [7.1250--13.1666] plants/m$^2$). We fit a linear yield function to the median plants/m$^2$ of each density state, $D$. 
 \begin{subequations}
 \label{eq:est_yield}
@@ -91,14 +93,14 @@ To fit the yield function we use data from 10 fields where harvesters recorded w
  Y_i \sim N(\widehat{Y_i}, \sigma_y)
 \end{equation}
 \begin{equation}
-	\widehat{Y_i} = Y_0 + Y_0^j + (\beta_D + \beta_D^j)D 
+	\widehat{Y_i} = Y_0 + Y_0^j + (Y_D + Y_D^j)D 
 \end{equation}
 \end{subequations}
-We assume the yield for grid square $i$ ($Y_i$, in t/ha) is drawn from a normal distribution with standard deviation $\sigma_y$. Predicted yield ($\widehat{Y_i}$) is a linear function of black grass density, where $Y_0$ is the average winter wheat yield across all fields and $Y_0^j \sim N(0, \sigma_y^0)$ is the random effect of field $j$ on the intercept of field, drawn from a normal distribution with mean of 0 and standard deviation of $\sigma_y^0$. $\beta_D$ is the change in yield when black grass density ($D$) changes by 1 plant/$m^2$, averaged across all fields, and $\beta_D^j \sim N(0, \sigma_y^D)$ is the effect of field on the relationship between black grass density and yield. This model was fit with the 'lme4' package \citep{Bate2015} in the R statistical language \citep{Rstat}. We assume our population exists in a 1ha field. Converting from plants/m$^2$ to plants/ha the yield loss function becomes 
+We assume the yield for grid square $i$ ($Y_i$, in ton$\cdot$ha$^{-1}$) is drawn from a normal distribution with standard deviation $\sigma_y$. Predicted yield ($\widehat{Y_i}$) is a linear function of black grass density, where $Y_0$ is the average winter wheat yield across all fields and $Y_0^j \sim N(0, \sigma_y^0)$ is the random effect of field $j$ on the intercept of field, drawn from a normal distribution with mean of 0 and standard deviation of $\sigma_y^0$. $Y_D$ is the change in yield when black grass density ($D$) changes by 1 plant$\cdot$m$^2$, averaged across all fields, and $Y_D^j \sim N(0, \sigma_y^D)$ is the effect of field on the relationship between black grass density and yield. This model was fit with the 'lme4' package \citep{Bate2015} in the R statistical language \citep{Rstat}. We assume our population exists in a 1ha field. Converting from plant$\cdot$m$^2$ to plants$\cdot$ha$^{-1}$ the yield loss function becomes 
 \begin{equation}
 	\widehat{Y} = 11.43 - 0.0000223 N'' 
 \end{equation}
-We use 95\% likelihood profile prediction intervals to estimate uncertainty around these estimates. All costs are \pounds, to put the yield and costs on the same scale we assume a winter wheat price of \pounds 146/t \citep{Nix2016}, 
+We use 95\% likelihood profile prediction intervals to describe uncertainty around these parameter estimates, see Appendix 2 for estimates of these limits. All costs are \pounds, to put the yield and costs on the same scale we assume a winter wheat price of \pounds 146/t \citep{Nix2016}, 
 \begin{equation}
 	\widehat{Y} = 1668 - 0.00326 N'' 
 \end{equation}

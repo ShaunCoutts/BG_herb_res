@@ -12,42 +12,40 @@
 \usepackage{longtable}
 
 \usepackage[left=2.5cm,top=2.5cm,right=2.5cm, bottom=2.5cm,nohead]{geometry}
-\doublespacing
 %paragraph formatting
 \setlength{\parskip}{12pt}
 \setlength{\parindent}{0cm}
 
-\setcounter{table}{0}
+\setcounter{table}{1}
 \renewcommand{\thetable}{S\arabic{table}}
-\renewcommand{\thefigure}{S\arabic{figure}}
 
 \begin{document}
-\section*{Appendix 1: Action space}
+\section*{Appendix 4: Action space}
+The sub-actions link management decisions to the population of \textit{Alopecurus myosuroides}, and thus the yield of wheat and so the reward function. Each sub-action also has a cost which affects the reward function.   
 \begin{longtable}[h]{c p{9cm} p{4cm}}
 \caption{Management sub-actions and their effects on the population model\label{table:actions}}\\
 	\hline
 	\textbf{Sub-action} & \textbf{Effect on system model} & \textbf{Management parameters}\\
 	\hline	
-	\multicolumn{3}{l}{\textit{Crop choice}: $a_k$, levels 1 -- 3}\\
-	wheat & higher survival rate for black grass and herbicide less effective due to spraying occurring earlier & Highest profit in the absence of black grass \\
-	alt & Black grass survival reduced under alternative crop due to competition or broad spectrum herbicide use before sowing & lower income than wheat\\
-	fallow & no crop planted. All above ground plants killed as we assume used alongside plowing or broad spectrum herbicide & small negative income, no production, costs for killing above ground plants\\
-	\multicolumn{3}{l}{\textit{Herbicide}: $a_h$, levels 1 -- 4}\\
-	no herb & no effect & no cost\\ 
-	herb 1 & reduced survival for emerged individuals with low $g_1$, high $g_2$ level may provide some protection if there is cross resistance. & small application cost.\\
-	herb 2 & reduced survival for emerged individuals with low $g_2$, high $g_1$ level may provide some protection if there is cross resistance. & small application cost.\\  
-	both & reduced survival for emerged individuals with low $g_2$ or $g_1$. & larger application cost.\\  
-	\multicolumn{3}{l}{\textit{Seed bank management}: $a_b$, levels 1 -- 2}\\
-	1 & Moves seeds from one level of the seed bank to the other & fixed cost\\
-	0 & no effect & no cost\\
-	\multicolumn{3}{l}{\textit{spot control}: $a_s$, levels 1 -- 2}\\
-	1 & No effect of above ground population & No cost\\
-	0 & Kills all remaining above ground plants & Cost scales with above ground post control populations $N'$ \\
+	\multicolumn{3}{l}{\textit{Crop choice}: $a_k$}\\
+	wheat & higher survival rate for \textit{Alopecurus myosuroides} without selective herbicides. & Highest profit in the absence of \textit{Alopecurus myosuroides}. \\
+	alt & \textit{Alopecurus myosuroides} survival reduced under alternative crop due to competition or broad spectrum herbicide use before sowing. We parameterize the alternative crop as spring barley, a common rotation used in the control of \textit{Alopecurus myosuroides}. & Lower income than winter wheat.\\
+	fallow & no crop planted. All above ground plants killed as we assume used alongside plowing or broad spectrum herbicide. & No production, costs for killing above ground plants.\\
+	\multicolumn{3}{l}{\textit{Herbicide}: $a_h$}\\
+	no herb & No effect & No cost\\ 
+	herb R & Individuals with resistance alleles $RR$ or $Rr$ are protected, but all other individuals have greatly reduced survival. & Application cost.\\
+	herb Q & Individuals with resistance alleles $QQ$ or $Qq$ are protected, but all other individuals have greatly reduced survival. & Application cost.\\  
+	both & Individuals with both resistance alleles ($RRQQ$, $RRQq$, $RrQQ$, $RrQq$) are protected, but all other individuals have greatly reduced survival. & Double application cost.\\  
+	\multicolumn{3}{l}{\textit{Seed bank management}: $a_b$}\\
+	1 & Moves seeds from one level of the seed bank to the other. & Fixed cost.\\
+	0 & No effect & No cost.\\
+	\multicolumn{3}{l}{\textit{spot control}: $a_s$}\\
+	1 & No effect of above ground population. & No cost.\\
+	0 & Kills all remaining above ground plants. & Cost scales with above ground post control populations. \\
 	\hline
 \end{longtable}
 
-\newpage
-These sub-actions are combined to create a single action $a_q$ that could be taken in a time step. However some sub-action combinations do not make sense, for example applying herbicide to the population when $a_k =$ 'fallow', since we assume all above ground plants are destroyed under this crop choice. The list of all allowed sub-action combinations is the action space $\mathbf{A}$   
+These sub-actions are combined to create a single action $a_j^t$ that could be taken in a time step (Table \ref{table:action_space}). However, some sub-action combinations do not make sense, for example applying herbicide to the population when $a_k =$ 'fallow', since we assume all above ground plants are destroyed under this crop choice. The list of all allowed sub-action combinations is the action space $\mathbf{A}$.   
 
 \begin{longtable}[h]{c c c c c c}
 \caption{Action space ($\mathbf{A}$) with all eligable combinations of sub actions\label{table:action_space}}\\
@@ -58,14 +56,14 @@ These sub-actions are combined to create a single action $a_q$ that could be tak
 	$a_2$ & wheat & no herb & 0 & 0\\
 	$a_3$ & wheat & no herb & 1 & 1\\
 	$a_4$ & wheat & no herb & 1 & 0\\
-	$a_5$ & wheat & herb 1 & 0 & 1\\
-	$a_6$ & wheat & herb 1 & 0 & 0\\
-	$a_7$ & wheat & herb 1 & 1 & 1\\
-	$a_8$ & wheat & herb 1 & 1 & 0\\
-	$a_9$ & wheat & herb 2 & 0 & 1\\
-	$a_{10}$ & wheat & herb 2 & 0 & 0\\
-	$a_{11}$ & wheat & herb 2 & 1 & 1\\
-	$a_{12}$ & wheat & herb 2 & 1 & 0\\
+	$a_5$ & wheat & herb R & 0 & 1\\
+	$a_6$ & wheat & herb R & 0 & 0\\
+	$a_7$ & wheat & herb R & 1 & 1\\
+	$a_8$ & wheat & herb R & 1 & 0\\
+	$a_9$ & wheat & herb Q & 0 & 1\\
+	$a_{10}$ & wheat & herb Q & 0 & 0\\
+	$a_{11}$ & wheat & herb Q & 1 & 1\\
+	$a_{12}$ & wheat & herb Q & 1 & 0\\
 	$a_{13}$ & wheat & both & 0 & 1\\
 	$a_{14}$ & wheat & both & 0 & 0\\
 	$a_{15}$ & wheat & both & 1 & 1\\
@@ -74,14 +72,14 @@ These sub-actions are combined to create a single action $a_q$ that could be tak
 	$a_{18}$ & alt & no herb & 0 & 0\\
 	$a_{19}$ & alt & no herb & 1 & 1\\
 	$a_{20}$ & alt & no herb & 1 & 0\\
-	$a_{21}$ & alt & herb 1 & 0 & 1\\
-	$a_{22}$ & alt & herb 1 & 0 & 0\\
-	$a_{23}$ & alt & herb 1 & 1 & 1\\
-	$a_{24}$ & alt & herb 1 & 1 & 0\\
-	$a_{25}$ & alt & herb 2 & 0 & 1\\
-	$a_{26}$ & alt & herb 2 & 0 & 0\\
-	$a_{27}$ & alt & herb 2 & 1 & 1\\
-	$a_{28}$ & alt & herb 2 & 1 & 0\\
+	$a_{21}$ & alt & herb R & 0 & 1\\
+	$a_{22}$ & alt & herb R & 0 & 0\\
+	$a_{23}$ & alt & herb R & 1 & 1\\
+	$a_{24}$ & alt & herb R & 1 & 0\\
+	$a_{25}$ & alt & herb Q & 0 & 1\\
+	$a_{26}$ & alt & herb Q & 0 & 0\\
+	$a_{27}$ & alt & herb Q & 1 & 1\\
+	$a_{28}$ & alt & herb Q & 1 & 0\\
 	$a_{29}$ & alt & both & 0 & 1\\
 	$a_{30}$ & alt & both & 0 & 0\\
 	$a_{31}$ & alt & both & 1 & 1\\

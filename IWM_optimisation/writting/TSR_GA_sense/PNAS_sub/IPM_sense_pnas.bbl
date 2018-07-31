@@ -35,9 +35,28 @@ Chesson HW, Kirkcaldy RD, Gift TL, Owusu-Edusei~Jr K, Weinstock HS (2018) An
   antibiotic-resistant gonorrhea.
 \newblock {\em Sexually transmitted diseases} 45(4):250--253.
 
+\bibitem{REX2013}
+{REX Consortium} (2013) Heterogeneity of selection and the evolution of
+  resistance.
+\newblock {\em Trends in ecology \& evolution} 28(2):110--118.
+
+\bibitem{Jord1997}
+Jordan N, Jannink J (1997) Assessing the practical importance of weed
+  evolution: a research agenda.
+\newblock {\em Weed Research} 37(4):237--246.
+
+\bibitem{Samm2014}
+Sammons RD, Gaines TA (2014) Glyphosate resistance: state of knowledge.
+\newblock {\em Pest management science} 70(9):1367--1377.
+
 \bibitem{Bott1979}
 Bottrell DR, , et~al. (1979) {\em Integrated pest management.}
 \newblock (United States Government Printing Office.).
+
+\bibitem{Hurl2016}
+Hurley TM, Frisvold G (2016) Economic barriers to herbicide-resistance
+  management.
+\newblock {\em Weed Science} 64(sp1):585--594.
 
 \bibitem{Dana2014}
 Dana ED, Jeschke JM, García-de Lomas J (2014) Decision tools for managing
@@ -50,35 +69,45 @@ Chalak M, Pannell DJ (2015) Optimal integrated strategies to control an
 \newblock {\em Canadian Journal of Agricultural Economics/Revue canadienne
   d'agroeconomie} 63(3):381--407.
 
-\bibitem{EpanN2010}
-Epanchin-Niell RS, Hastings A (2010) Controlling established invaders:
-  integrating economics and spread dynamics to determine optimal management.
-\newblock {\em Ecology letters} 13(4):528--541.
+\bibitem{Lutm2013}
+Lutman P, Moss S, Cook S, Welham S (2013) A review of the effects of crop
+  agronomy on the management of \textit{Alopecurus myosuroides}.
+\newblock {\em Weed Research} 53(5):299--313.
+
+\bibitem{Blea1960}
+Bleasdale JKA, Nelder JA (1960) Plant population and crop yield.
+\newblock {\em Nature} 188(4747):342.
+
+\bibitem{Cous1985}
+Cousens R (1985) A simple model relating yield loss to weed density.
+\newblock {\em Annals of applied biology} 107(2):239--252.
 
 \bibitem{Swin1994}
 Swinton SM, Buhler DD, Forcella F, Gunsolus JL, King RP (1994) Estimation of
   crop yield loss due to interference by multiple weed species.
 \newblock {\em Weed Science} 42(1):103--109.
 
+\bibitem{Wies1996}
+Wiese AF, Salisbury CD, Bean BW, Schoenhals MG, Amosson S (1996) Economic
+  evaluation of field bindweed (\textit{Convolvulus arvensis}) control in a
+  winter wheat-fallow rotation.
+\newblock {\em Weed science} pp. 622--628.
+
+\bibitem{Fras2004}
+Fraser ED (2004) Land tenure and agricultural management: soil conservation on
+  rented and owned fields in southwest british columbia.
+\newblock {\em Agriculture and Human Values} 21(1):73--79.
+
+\bibitem{EpanN2010}
+Epanchin-Niell RS, Hastings A (2010) Controlling established invaders:
+  integrating economics and spread dynamics to determine optimal management.
+\newblock {\em Ecology letters} 13(4):528--541.
+
 \bibitem{Llew2006}
 Llewellyn R, Pannell D, Lindner R, Powles S (2006) Targeting key perceptions
   when planning and evaluating extension.
 \newblock {\em Australian Journal of Experimental Agriculture}
   45(12):1627--1633.
-
-\bibitem{Moss2007}
-Moss SR, Perryman SAM, Tatnell LV (2007) Managing herbicide-resistant
-  blackgrass (alopecurus myosuroides): Theory and practice.
-\newblock {\em Weed Technology} 21(2):300--309.
-
-\bibitem{Heap2014}
-Heap I (2014) Global perspective of herbicide-resistant weeds.
-\newblock {\em Pest Management Science} 70(9):1306--1315.
-
-\bibitem{REX2013}
-{REX Consortium} (2013) Heterogeneity of selection and the evolution of
-  resistance.
-\newblock {\em Trends in ecology \& evolution} 28(2):110--118.
 
 \bibitem{Tayl2004GA}
 Taylor CM, Hastings A (2004) Finding optimal control strategies for invasive
@@ -92,46 +121,33 @@ Carrasco L, Mumford J, MacLeod A, Knight J, Baker R (2010) Comprehensive
 \newblock Special Section - Payments for Environmental Services: Reconciling
   Theory and Practice.
 
-\bibitem{Mill2016}
-Miller PJ, Lubke GH, McArtor DB, Bergeman C (2016) Finding structure in data
-  using multivariate tree boosting.
-\newblock {\em Psychological methods} 21(4):583.
+\bibitem{Moss2007}
+Moss SR, Perryman SAM, Tatnell LV (2007) Managing herbicide-resistant
+  blackgrass (alopecurus myosuroides): Theory and practice.
+\newblock {\em Weed Technology} 21(2):300--309.
 
-\bibitem{Cout2013}
-Coutts SR, Yokomizo H, Buckley YM (2013) The behavior of multiple independent
-  managers and ecological traits interact to determine prevalence of weeds.
-\newblock {\em Ecological Applications} 23(3):523--536.
-
-\bibitem{Frie2001}
-Friedman JH (2001) Greedy function approximation: a gradient boosting machine.
-\newblock {\em Annals of statistics} pp. 1189--1232.
-
-\bibitem{Colb2006}
-Colbach N, Busset H, Yamada O, Durr C, Caneill J (2006) {ALOMYSYS}: Modelling
-  black-grass (\textit{Alopecurus myosuroides} huds.) germination and
-  emergence, in interaction with seed characteristics, tillage and soil climate
-  - ii. evaluation.
-\newblock {\em European Journal of Agronomy} 24(2):113--128.
-
-\bibitem{Cous1985}
-Cousens R (1985) A simple model relating yield loss to weed density.
-\newblock {\em Annals of applied biology} 107(2):239--252.
+\bibitem{Heap2014}
+Heap I (2014) Global perspective of herbicide-resistant weeds.
+\newblock {\em Pest Management Science} 70(9):1306--1315.
 
 \bibitem{Doyl1986}
 Doyle CJ, Cousens R, Moss SR (1986) A model of the economics of controlling
   alopecurus-myosuroides huds in winter-wheat.
 \newblock {\em Crop Protection} 5(2):143--150.
 
-\bibitem{Wies1996}
-Wiese AF, Salisbury CD, Bean BW, Schoenhals MG, Amosson S (1996) Economic
-  evaluation of field bindweed (\textit{Convolvulus arvensis}) control in a
-  winter wheat-fallow rotation.
-\newblock {\em Weed science} pp. 622--628.
+\bibitem{Mill2016}
+Miller PJ, Lubke GH, McArtor DB, Bergeman C (2016) Finding structure in data
+  using multivariate tree boosting.
+\newblock {\em Psychological methods} 21(4):583.
 
-\bibitem{Fras2004}
-Fraser ED (2004) Land tenure and agricultural management: soil conservation on
-  rented and owned fields in southwest british columbia.
-\newblock {\em Agriculture and Human Values} 21(1):73--79.
+\bibitem{Cout2014}
+Coutts SR, Yokomizo H (2014) Meta-models as a straightforward approach to the
+  sensitivity analysis of complex models.
+\newblock {\em Population Ecology} 56(1):7--19.
+
+\bibitem{Frie2001}
+Friedman JH (2001) Greedy function approximation: a gradient boosting machine.
+\newblock {\em Annals of statistics} pp. 1189--1232.
 
 \bibitem{Bige2016}
 Bigelow D, Borchers A, Hubbs T (2016) {\em US Farmland Ownership, Tenure, and
@@ -155,35 +171,26 @@ Wilson RS, Tucker MA, Hooker NH, LeJeune JT, Doohan D (2008) Perceptions and
   farmers.
 \newblock {\em Weed Technology} 22(2):339--350.
 
-\bibitem{Moss2009}
-Moss SR, Hull R (2009) The value of pre-emergence herbicides for combating
-  herbicide-resistant \textit{Alopecurus myosuroides} (black-grass).
-\newblock {\em Aspects of Applied Biology} 91:79--86.
-
-\bibitem{Hull2014}
-Hull R, J CS, L W, Moss SR (2014) The efficacy of flufenacet based herbicides
-  on \textit{Alopecurus myosuroides} (blackgrass): analysis of data from 375
-  field trials.
-\newblock {\em Aspects of Applied Biology} 127:49--55.
-
 \bibitem{Duke2012}
 Duke SO (2012) Why have no new herbicide modes of action appeared in recent
   years?
 \newblock {\em Pest management science} 68(4):505--512.
 
-\bibitem{Hurl2016}
-Hurley TM, Frisvold G (2016) Economic barriers to herbicide-resistance
-  management.
-\newblock {\em Weed Science} 64(sp1):585--594.
+\bibitem{Barn2014}
+Barnett J, et~al. (2014) A local coastal adaptation pathway.
+\newblock {\em Nature Climate Change} 4(12):1103.
 
-\bibitem{Samm2014}
-Sammons RD, Gaines TA (2014) Glyphosate resistance: state of knowledge.
-\newblock {\em Pest management science} 70(9):1367--1377.
+\bibitem{Quee2011}
+Queenborough SA, Burnet KM, Sutherland WJ, Watkinson AR, Freckleton RP (2011)
+  From meso-to macroscale population dynamics: a new density-structured
+  approach.
+\newblock {\em Methods in Ecology and Evolution} 2(3):289--302.
 
-\bibitem{Cout2014}
-Coutts SR, Yokomizo H (2014) Meta-models as a straightforward approach to the
-  sensitivity analysis of complex models.
-\newblock {\em Population Ecology} 56(1):7--19.
+\bibitem{Lamb2018}
+Lambert JPT, Hicks HL, Childs DZ, Freckleton RP (2018) Evaluating the potential
+  of unmanned aerial systems for mapping weeds at field scales: a case study
+  with alopecurus myosuroides.
+\newblock {\em Weed research} 58(1):35--45.
 
 \bibitem{Nix2016}
 Redman G (2016) {\em John Nix Farm Managment Pocketbook}.

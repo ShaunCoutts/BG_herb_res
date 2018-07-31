@@ -1,4 +1,4 @@
-\begin{thebibliography}{39}
+\begin{thebibliography}{40}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\urlprefix}{URL }
@@ -57,11 +57,6 @@ Cousens, R. (1985) A simple model relating yield loss to weed density.
 Coutts, S.R. \& Yokomizo, H. (2014) Meta-models as a straightforward approach
   to the sensitivity analysis of complex models. \emph{Population Ecology},
   \textbf{56}(1), 7--19.
-
-\bibitem[{Coutts \emph{et~al.}(2013)Coutts, Yokomizo \& Buckley}]{Cout2013}
-Coutts, S.R., Yokomizo, H. \& Buckley, Y.M. (2013) The behavior of multiple
-  independent managers and ecological traits interact to determine prevalence
-  of weeds. \emph{Ecological Applications}, \textbf{23}(3), 523--536.
 
 \bibitem[{Dana \emph{et~al.}(2014)Dana, Jeschke \& García-de Lomas}]{Dana2014}
 Dana, E.D., Jeschke, J.M. \& García-de Lomas, J. (2014) Decision tools for
@@ -122,6 +117,10 @@ Hull, R., J, C.S., L, W. \& Moss, S.R. (2014) The efficacy of flufenacet based
 Hurley, T.M. \& Frisvold, G. (2016) Economic barriers to herbicide-resistance
   management. \emph{Weed Science}, \textbf{64}(sp1), 585--594.
 
+\bibitem[{Jordan \& Jannink(1997)}]{Jord1997}
+Jordan, N. \& Jannink, J. (1997) Assessing the practical importance of weed
+  evolution: a research agenda. \emph{Weed Research}, \textbf{37}(4), 237--246.
+
 \bibitem[{Laxminarayan \emph{et~al.}(2016)Laxminarayan, Matsoso, Pant, Brower,
   R{\o}ttingen, Klugman \& Davies}]{Laxm2016}
 Laxminarayan, R., Matsoso, P., Pant, S., Brower, C., R{\o}ttingen, J.A.,
@@ -178,6 +177,11 @@ Redman, G. (2016) \emph{John Nix Farm Managment Pocketbook}, 47th edn. Agro
 \bibitem[{Sammons \& Gaines(2014)}]{Samm2014}
 Sammons, R.D. \& Gaines, T.A. (2014) Glyphosate resistance: state of knowledge.
   \emph{Pest management science}, \textbf{70}(9), 1367--1377.
+
+\bibitem[{Steen \& Jachowski(2013)}]{Stee2013}
+Steen, D.A. \& Jachowski, D.S. (2013) Expanding shifting baseline syndrome to
+  accommodate increasing abundances. \emph{Restoration Ecology},
+  \textbf{21}(5), 527--529.
 
 \bibitem[{Swinton \emph{et~al.}(1994)Swinton, Buhler, Forcella, Gunsolus \&
   King}]{Swin1994}
